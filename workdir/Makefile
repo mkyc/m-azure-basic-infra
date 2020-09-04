@@ -1,7 +1,19 @@
+define M_METADATA
+labels:
+  version: $(M_VERSION)
+  name: Azure Basic Infrastructure
+  short: AzBI
+  kind: infrastructure
+  provider: azure
+  provides-vms: true
+  provides-pubips: true
+endef
+export M_METADATA
+
 #medatada method is printing static metadata information about module
 metadata: guard-M_RESOURCES
 	@echo \# AzBI \| metadata \| should print component metadata
-	@cat ${M_RESOURCES}/metadata.yml
+	@echo "$$M_METADATA"
 
 #init method is used to initialize module configuration and check if state is providing strong (and weak) dependencies
 init: guard-M_RESOURCES guard-M_SHARED guard-M_CONFIG

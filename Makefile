@@ -5,7 +5,10 @@ IMAGE:=azbi
 .PHONY: build metadata
 
 build: guard-VERSION guard-IMAGE guard-USER
-	docker build -t $(USER)/$(IMAGE):$(VERSION) .
+	docker build \
+		--build-arg ARG_M_VERSION=$(VERSION) \
+		-t $(USER)/$(IMAGE):$(VERSION) \
+		.
 
 guard-%:
 	@ if [ "${${*}}" = "" ]; then \
