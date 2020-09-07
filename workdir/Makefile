@@ -1,14 +1,4 @@
-define M_METADATA
-labels:
-  version: $(M_VERSION)
-  name: Azure Basic Infrastructure
-  short: AzBI
-  kind: infrastructure
-  provider: azure
-  provides-vms: true
-  provides-pubips: true
-endef
-export M_METADATA
+include ${M_RESOURCES}/templates.mk
 
 #medatada method is printing static metadata information about module
 metadata: guard-M_RESOURCES
