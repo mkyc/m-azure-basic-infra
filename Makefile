@@ -1,6 +1,6 @@
-VERSION:=0.0.1
-USER:=epiphany
-IMAGE:=azbi
+VERSION := 0.0.1
+USER := epiphany
+IMAGE := azbi
 
 .PHONY: build metadata
 

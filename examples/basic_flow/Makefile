@@ -1,8 +1,12 @@
-ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
+ROOT_DIR := $(patsubst %/,%,$(dir $(abspath $(firstword $(MAKEFILE_LIST)))))
 
-VERSION:=0.0.1
-USER:=epiphany
-IMAGE:=azbi
+VERSION := 0.0.1
+USER := epiphany
+IMAGE := azbi
+
+.PHONY: all clean init apply setup
+
+all: init apply
 
 clean:
 	@rm -rf $(ROOT_DIR)/shared
