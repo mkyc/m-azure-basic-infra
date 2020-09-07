@@ -7,38 +7,38 @@ metadata: guard-M_RESOURCES
 	@echo "$$M_METADATA_CONTENT"
 
 #init method is used to initialize module configuration and check if state is providing strong (and weak) dependencies
-init: guard-M_RESOURCES guard-M_SHARED guard-M_CONFIG
+init: guard-M_RESOURCES guard-M_SHARED guard-M_CONFIG_NAME guard-M_VMS_COUNT guard-M_PUBLIC_IPS
 	#AzBI | init | should create default config in shared directory
 	#AzBI | init | should also validate state if strong requirements are met
-	#TODO what if config already exists?
-	@echo "$$M_CONFIG_CONTENT" > ${M_SHARED}/${M_CONFIG}
-	#TODO create/update state
+	@#TODO what if config already exists?
+	@echo "$$M_CONFIG_CONTENT" > ${M_SHARED}/${M_CONFIG_NAME}
+	@#TODO create/update state
 
 #plan method would get config file and environment state file and compare them and calculate what would be done o apply stage
 plan: template
-	# AzBI | plan | should validate if config file is correct
-	# AzBI | plan | should validate how config is different from state
-	#TODO implement config validation
-	#TODO implement state comparison
-	#TODO consider parsing terraform plan output
+	#AzBI | plan | should validate if config file is correct
+	#AzBI | plan | should validate how config is different from state
+	@#TODO implement config validation
+	@#TODO implement state comparison
+	@#TODO consider parsing terraform plan output
 
 #apply method runs module provider logic using config file
 apply: plan
-	# AzBI | apply | should apply module logic
-	#TODO run terraform apply
+	#AzBI | apply | should apply module logic
+	@#TODO run terraform apply
 
 #audit method should call logic to check if remote components are in "known" state
 audit:
-	# AzBI | audit | should output current state of remote components
-	#TODO implement validation if remote resources are as expected, possibly with terraform plan
+	#AzBI | audit | should output current state of remote components
+	@#TODO implement validation if remote resources are as expected, possibly with terraform plan
 
 #template method should template terraform files using embedded templates and configuration
 template:
-	# AzBI | template | should template terraform files using config
-	#TODO template terraform files
+	#AzBI | template | should template terraform files using config
+	@#TODO template terraform files
 
 guard-%:
-	@ if [ "${${*}}" = "" ]; then \
+	@if [ "${${*}}" = "" ]; then \
 		echo "Environment variable $* not set"; \
 		exit 1; \
 	fi
