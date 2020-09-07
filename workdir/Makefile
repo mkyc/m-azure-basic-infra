@@ -25,15 +25,19 @@ plan: template
 #apply method runs module provider logic using config file
 apply: plan guard-M_RESOURCES guard-M_SHARED
 	#AzBI | apply | should apply module logic
-	@#TODO run terraform apply
-	@if test ! -d ${M_SHARED}/.terraform; then \
-  	  echo \#AzBI \| apply \| initializing terraform ;\
-  	  terraform init -no-color ${M_RESOURCES}/terraform ;\
-  	  mv ${M_WORKDIR}/.terraform ${M_SHARED}/.terraform ;\
-  	else \
-  	  echo \#AzBI \| apply \| checking terraform initialized directory ;\
-  	  terraform init -no-color -plugin-dir=${M_SHARED}/.terraform/plugins/linux_amd64 ${M_RESOURCES}/terraform ;\
-	fi
+	@mkdir -p ${M_SHARED}/.terraform
+	#AzBI | apply | will run init
+	TF_DATA_DIR=${M_SHARED}/.terraform \
+	TF_IN_AUTOMATION=true \
+ 		terraform init -no-color -input=false ${M_RESOURCES}/terraform
+	#AzBI | apply | will run plan
+	TF_DATA_DIR=${M_SHARED}/.terraform \
+	TF_IN_AUTOMATION=true \
+ 		terraform plan -no-color -input=false -state=${M_SHARED}/terraform.tfstate -out=${M_SHARED}/terraform.tfplan ${M_RESOURCES}/terraform
+	#AzBI | apply | will run apply
+	TF_DATA_DIR=${M_SHARED}/.terraform \
+	TF_IN_AUTOMATION=true \
+ 		terraform apply -no-color -input=false -auto-approve -state=${M_SHARED}/terraform.tfstate ${M_SHARED}/terraform.tfplan
 
 #audit method should call logic to check if remote components are in "known" state
 audit:
