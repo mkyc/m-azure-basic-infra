@@ -1,0 +1,2 @@
+M_VMS_COUNT ?= 5
+M_PUBLIC_IPS ?= true
