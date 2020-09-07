@@ -18,7 +18,7 @@ endef
 export M_CONFIG_CONTENT
 
 define M_TFVARS_CONTENT
-location = "us-west-2"
+location = "switzerlandwest"
 rg_name = "mkyc-test-rg"
 endef
 export M_TFVARS_CONTENT
