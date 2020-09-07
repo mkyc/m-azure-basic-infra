@@ -16,3 +16,9 @@ azi:
   provide-public-IPs: $(M_PUBLIC_IPS)
 endef
 export M_CONFIG_CONTENT
+
+define M_TFVARS_CONTENT
+location = "us-west-2"
+rg_name = "mkyc-test-rg"
+endef
+export M_TFVARS_CONTENT
