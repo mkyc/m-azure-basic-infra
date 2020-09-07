@@ -10,7 +10,7 @@ metadata: guard-M_RESOURCES
 init: guard-M_RESOURCES guard-M_SHARED guard-M_CONFIG_NAME guard-M_VMS_COUNT guard-M_PUBLIC_IPS
 	#AzBI | init | should create default config in shared directory
 	#AzBI | init | should also validate state if strong requirements are met
-	@#TODO what if config already exists?
+	@if test -f ${M_SHARED}/${M_CONFIG_NAME}; then mv ${M_SHARED}/${M_CONFIG_NAME} ${M_SHARED}/${M_CONFIG_NAME}.backup ; fi
 	@echo "$$M_CONFIG_CONTENT" > ${M_SHARED}/${M_CONFIG_NAME}
 	@#TODO create/update state
 
