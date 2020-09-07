@@ -15,5 +15,11 @@ init: setup
 		M_VMS_COUNT=4 \
 		M_PUBLIC_IPS=false
 
+apply: setup
+	@docker run --rm \
+		-v $(ROOT_DIR)/shared:/shared \
+		-t $(USER)/$(IMAGE):$(VERSION) \
+		apply
+
 setup:
 	@mkdir -p $(ROOT_DIR)/shared

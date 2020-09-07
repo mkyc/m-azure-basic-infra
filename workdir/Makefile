@@ -23,9 +23,17 @@ plan: template
 	@#TODO consider parsing terraform plan output
 
 #apply method runs module provider logic using config file
-apply: plan
+apply: plan guard-M_RESOURCES guard-M_SHARED
 	#AzBI | apply | should apply module logic
 	@#TODO run terraform apply
+	@if test ! -d ${M_SHARED}/.terraform; then \
+  	  echo \#AzBI \| apply \| initializing terraform ;\
+  	  terraform init -no-color ${M_RESOURCES}/terraform ;\
+  	  mv ${M_WORKDIR}/.terraform ${M_SHARED}/.terraform ;\
+  	else \
+  	  echo \#AzBI \| apply \| checking terraform initialized directory ;\
+  	  terraform init -no-color -plugin-dir=${M_SHARED}/.terraform/plugins/linux_amd64 ${M_RESOURCES}/terraform ;\
+	fi
 
 #audit method should call logic to check if remote components are in "known" state
 audit:
