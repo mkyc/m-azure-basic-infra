@@ -27,7 +27,8 @@ plan: setup
 		M_ARM_CLIENT_ID=$$ARM_CLIENT_ID \
 		M_ARM_CLIENT_SECRET=$$ARM_CLIENT_SECRET \
 		M_ARM_SUBSCRIPTION_ID=$$ARM_SUBSCRIPTION_ID \
-		M_ARM_TENANT_ID=$$ARM_TENANT_ID
+		M_ARM_TENANT_ID=$$ARM_TENANT_ID \
+		M_RG_NAME="mkyc-module-tests"
 
 apply: setup
 	@docker run --rm \
@@ -37,7 +38,31 @@ apply: setup
 		M_ARM_CLIENT_ID=$$ARM_CLIENT_ID \
 		M_ARM_CLIENT_SECRET=$$ARM_CLIENT_SECRET \
 		M_ARM_SUBSCRIPTION_ID=$$ARM_SUBSCRIPTION_ID \
-		M_ARM_TENANT_ID=$$ARM_TENANT_ID
+		M_ARM_TENANT_ID=$$ARM_TENANT_ID \
+        M_RG_NAME="mkyc-module-tests"
+
+destroy-plan: setup
+	@docker run --rm \
+		-v $(ROOT_DIR)/shared:/shared \
+		-t $(USER)/$(IMAGE):$(VERSION) \
+		destroy \
+		M_ARM_CLIENT_ID=$$ARM_CLIENT_ID \
+		M_ARM_CLIENT_SECRET=$$ARM_CLIENT_SECRET \
+		M_ARM_SUBSCRIPTION_ID=$$ARM_SUBSCRIPTION_ID \
+		M_ARM_TENANT_ID=$$ARM_TENANT_ID \
+        M_RG_NAME="mkyc-module-tests"
+
+destroy: setup
+	@docker run --rm \
+		-v $(ROOT_DIR)/shared:/shared \
+		-t $(USER)/$(IMAGE):$(VERSION) \
+		destroy \
+		M_ARM_CLIENT_ID=$$ARM_CLIENT_ID \
+		M_ARM_CLIENT_SECRET=$$ARM_CLIENT_SECRET \
+		M_ARM_SUBSCRIPTION_ID=$$ARM_SUBSCRIPTION_ID \
+		M_ARM_TENANT_ID=$$ARM_TENANT_ID \
+        M_RG_NAME="mkyc-module-tests" \
+        M_DO_DESTROY=true
 
 setup:
 	@mkdir -p $(ROOT_DIR)/shared

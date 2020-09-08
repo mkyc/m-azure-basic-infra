@@ -16,6 +16,6 @@ azi:
 endef
 
 define M_TFVARS_CONTENT
-location = $(M_LOCATION)
-rg_name = $(M_RG_NAME)
+location = "$(M_LOCATION)"
+rg_name = "$(M_RG_NAME)"
 endef

@@ -23,9 +23,6 @@ plan: template
 	@#TODO implement config validation
 	@#TODO implement state comparison
 	@#TODO consider parsing terraform plan output
-	#AzBI | plan | will template .tfvars file
-	@mkdir -p $(M_SHARED)/.terraform
-	@echo "$$M_TFVARS_CONTENT" > $(M_RESOURCES)/terraform/vars.tfvars
 	#AzBI | plan | will run init
 	TF_DATA_DIR=$(M_SHARED)/.terraform \
 	TF_IN_AUTOMATION=true \
@@ -80,7 +77,45 @@ audit:
 #template method should template terraform files using embedded templates and configuration
 template:
 	#AzBI | template | should template terraform files using config
-	@#TODO template terraform files
+	#AzBI | template | will template .tfvars file
+	@mkdir -p $(M_SHARED)/.terraform
+	@echo "$$M_TFVARS_CONTENT" > $(M_RESOURCES)/terraform/vars.tfvars
+
+destroy: template
+	#AzBI | destroy | destroyer of the worlds is planing ...
+	TF_DATA_DIR=$(M_SHARED)/.terraform \
+	TF_IN_AUTOMATION=true \
+	ARM_CLIENT_ID=$(M_ARM_CLIENT_ID) \
+	ARM_CLIENT_SECRET=$(M_ARM_CLIENT_SECRET) \
+	ARM_SUBSCRIPTION_ID=$(M_ARM_SUBSCRIPTION_ID) \
+	ARM_TENANT_ID=$(M_ARM_TENANT_ID) \
+		terraform plan \
+		-destroy \
+		-no-color \
+		-input=false \
+		-var-file=$(M_RESOURCES)/terraform/vars.tfvars \
+		-state=$(M_SHARED)/terraform.tfstate \
+		-out=$(M_SHARED)/terraform-destroy.tfplan \
+		$(M_RESOURCES)/terraform
+	if test -z $$M_DO_DESTROY ; \
+	then \
+		echo \#AzBI \| destroy \| destroyer of the worlds is sleeping ... ; \
+	else \
+	    echo \#AzBI \| destroy \| destroyer of the worlds is just about to begin ... ; \
+		TF_DATA_DIR=$(M_SHARED)/.terraform \
+		TF_IN_AUTOMATION=true \
+		ARM_CLIENT_ID=$(M_ARM_CLIENT_ID) \
+		ARM_CLIENT_SECRET=$(M_ARM_CLIENT_SECRET) \
+		ARM_SUBSCRIPTION_ID=$(M_ARM_SUBSCRIPTION_ID) \
+		ARM_TENANT_ID=$(M_ARM_TENANT_ID) \
+			terraform destroy \
+			-no-color \
+			-input=false \
+			-var-file=$(M_RESOURCES)/terraform/vars.tfvars \
+			-auto-approve \
+			-state=$(M_SHARED)/terraform.tfstate \
+			$(M_RESOURCES)/terraform ; \
+	fi
 
 guard-%:
 	@if [ "${${*}}" = "" ]; then \
