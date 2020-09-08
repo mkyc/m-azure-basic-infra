@@ -2,11 +2,17 @@ VERSION := 0.0.1
 USER := epiphany
 IMAGE := azbi
 
+#used for correctly setting shared folder permissions
+HOST_UID := $(shell id -u)
+HOST_GID := $(shell id -g)
+
 .PHONY: build metadata
 
 build: guard-VERSION guard-IMAGE guard-USER
 	docker build \
 		--build-arg ARG_M_VERSION=$(VERSION) \
+		--build-arg ARG_HOST_UID=$(HOST_UID) \
+		--build-arg ARG_HOST_GID=$(HOST_GID) \
 		-t $(USER)/$(IMAGE):$(VERSION) \
 		.
 
