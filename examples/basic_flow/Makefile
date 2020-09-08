@@ -4,11 +4,14 @@ VERSION := 0.0.1
 USER := epiphany
 IMAGE := azbi
 
+#makes it easier to replace the value
+M_NAME ?= mkyc-module-tests
+
 -include $(ROOT_DIR)/azure.mk
 
 export
 
-.PHONY: all clean init plan apply setup
+.PHONY: all clean init plan apply destroy-plan destroy setup
 
 all: init apply
 
@@ -22,7 +25,7 @@ init: setup
 		init \
 		M_VMS_COUNT=4 \
 		M_PUBLIC_IPS=false \
-		M_NAME="mkyc-module-tests"
+		M_NAME=$(M_NAME)
 
 plan: setup
 	@docker run --rm \
@@ -65,6 +68,8 @@ destroy: setup
 		M_ARM_TENANT_ID=$$ARM_TENANT_ID \
         M_DO_DESTROY=true
 
-setup:
-	@mkdir -p $(ROOT_DIR)/shared
-	@ssh-keygen -t rsa -b 4096 -f $(ROOT_DIR)/shared/azure_rsa -N '' <<<y 2>&1 >/dev/null
+setup: $(ROOT_DIR)/shared/azure_rsa
+
+$(ROOT_DIR)/shared/azure_rsa:
+	@mkdir -p $(dir $@)
+	@ssh-keygen -t rsa -b 4096 -f $@ -N '' 2>&1 >/dev/null
