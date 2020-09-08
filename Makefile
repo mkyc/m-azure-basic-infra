@@ -16,6 +16,12 @@ build: guard-VERSION guard-IMAGE guard-USER
 		-t $(USER)/$(IMAGE):$(VERSION) \
 		.
 
+release: guard-VERSION guard-IMAGE guard-USER
+	docker build \
+		--build-arg ARG_M_VERSION=$(VERSION) \
+		-t $(USER)/$(IMAGE):$(VERSION)-release \
+		.
+
 guard-%:
 	@ if [ "${${*}}" = "" ]; then \
 		echo "Environment variable $* not set"; \
