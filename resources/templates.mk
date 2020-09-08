@@ -14,5 +14,13 @@ azi:
   size: $(M_VMS_COUNT)
   provide-public-IPs: $(M_PUBLIC_IPS)
   location: "$(M_LOCATION)"
-  rg-name: "$(M_RG_NAME)"
+  name: "$(M_NAME)"
+  address_space:
+  - "10.0.0.0/16"
+  subnet_cidrs:
+  - "10.0.1.0/24"
+  - "10.0.2.0/24"
+  subnet_names:
+  - "$(M_NAME)-sn1"
+  - "$(M_NAME)-sn2"
 endef

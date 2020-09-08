@@ -1,9 +1,24 @@
-variable "rg-name" {
+variable "name" {
   type        = string
-  description = "Resource Group Name"
+  description = "resources base name"
 }
 
 variable "location" {
   type        = string
-  description = "Resource Group Location"
+  description = "resource group location"
+}
+
+variable "address_space" {
+  type        = list(string)
+  description = "vnet address space"
+}
+
+variable "subnet_cidrs" {
+  type        = list(string)
+  description = "subnets cidrs"
+}
+
+variable "subnet_names" {
+  type        = list(string)
+  description = "subnets names"
 }

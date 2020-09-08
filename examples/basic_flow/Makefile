@@ -22,7 +22,7 @@ init: setup
 		init \
 		M_VMS_COUNT=4 \
 		M_PUBLIC_IPS=false \
-		M_RG_NAME="mkyc-module-tests"
+		M_NAME="mkyc-module-tests"
 
 plan: setup
 	@docker run --rm \
