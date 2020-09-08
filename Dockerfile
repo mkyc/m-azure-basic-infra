@@ -17,3 +17,11 @@ ENV M_VERSION=$ARG_M_VERSION
 
 COPY resources /resources
 COPY workdir /workdir
+
+ARG ARG_HOST_UID=1000
+ARG ARG_HOST_GID=1000
+RUN chown -R $ARG_HOST_UID:$ARG_HOST_GID \
+    /workdir \
+    /resources
+
+USER $ARG_HOST_UID:$ARG_HOST_GID
