@@ -18,3 +18,16 @@ az ad sp create-for-rbac --role="Contributor" --scopes="/subscriptions/SUBSCRIPT
 cd examples/basic_flow
 ARM_CLIENT_ID="appId field" ARM_CLIENT_SECRET="password field" ARM_SUBSCRIPTION_ID="id field" ARM_TENANT_ID="tenant field" make all
 ```
+
+Or use config file with credentials:
+
+```
+cd examples/basic_flow
+cat >azure.mk <<'EOF'
+ARM_CLIENT_ID ?= "appId field"
+ARM_CLIENT_SECRET ?= "password field"
+ARM_SUBSCRIPTION_ID ?= "id field"
+ARM_TENANT_ID ?= "tenant field"
+EOF
+make all
+```

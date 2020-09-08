@@ -4,6 +4,10 @@ VERSION := 0.0.1
 USER := epiphany
 IMAGE := azbi
 
+-include $(ROOT_DIR)/azure.mk
+
+export
+
 .PHONY: all clean init plan apply setup
 
 all: init apply
