@@ -17,7 +17,8 @@ init: setup
 		-t $(USER)/$(IMAGE):$(VERSION) \
 		init \
 		M_VMS_COUNT=4 \
-		M_PUBLIC_IPS=false
+		M_PUBLIC_IPS=false \
+		M_RG_NAME="mkyc-module-tests"
 
 plan: setup
 	@docker run --rm \
@@ -27,8 +28,7 @@ plan: setup
 		M_ARM_CLIENT_ID=$$ARM_CLIENT_ID \
 		M_ARM_CLIENT_SECRET=$$ARM_CLIENT_SECRET \
 		M_ARM_SUBSCRIPTION_ID=$$ARM_SUBSCRIPTION_ID \
-		M_ARM_TENANT_ID=$$ARM_TENANT_ID \
-		M_RG_NAME="mkyc-module-tests"
+		M_ARM_TENANT_ID=$$ARM_TENANT_ID
 
 apply: setup
 	@docker run --rm \
@@ -38,8 +38,7 @@ apply: setup
 		M_ARM_CLIENT_ID=$$ARM_CLIENT_ID \
 		M_ARM_CLIENT_SECRET=$$ARM_CLIENT_SECRET \
 		M_ARM_SUBSCRIPTION_ID=$$ARM_SUBSCRIPTION_ID \
-		M_ARM_TENANT_ID=$$ARM_TENANT_ID \
-        M_RG_NAME="mkyc-module-tests"
+		M_ARM_TENANT_ID=$$ARM_TENANT_ID
 
 destroy-plan: setup
 	@docker run --rm \
@@ -49,8 +48,7 @@ destroy-plan: setup
 		M_ARM_CLIENT_ID=$$ARM_CLIENT_ID \
 		M_ARM_CLIENT_SECRET=$$ARM_CLIENT_SECRET \
 		M_ARM_SUBSCRIPTION_ID=$$ARM_SUBSCRIPTION_ID \
-		M_ARM_TENANT_ID=$$ARM_TENANT_ID \
-        M_RG_NAME="mkyc-module-tests"
+		M_ARM_TENANT_ID=$$ARM_TENANT_ID
 
 destroy: setup
 	@docker run --rm \
@@ -61,7 +59,6 @@ destroy: setup
 		M_ARM_CLIENT_SECRET=$$ARM_CLIENT_SECRET \
 		M_ARM_SUBSCRIPTION_ID=$$ARM_SUBSCRIPTION_ID \
 		M_ARM_TENANT_ID=$$ARM_TENANT_ID \
-        M_RG_NAME="mkyc-module-tests" \
         M_DO_DESTROY=true
 
 setup:

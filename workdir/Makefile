@@ -24,14 +24,14 @@ plan: template
 	@#TODO implement state comparison
 	@#TODO consider parsing terraform plan output
 	#AzBI | plan | will run init
-	TF_DATA_DIR=$(M_SHARED)/.terraform \
+	@TF_DATA_DIR=$(M_SHARED)/.terraform \
 	TF_IN_AUTOMATION=true \
 		terraform init \
 		-no-color \
 		-input=false \
 		$(M_RESOURCES)/terraform
 	#AzBI | plan | will run plan
-	TF_DATA_DIR=$(M_SHARED)/.terraform \
+	@TF_DATA_DIR=$(M_SHARED)/.terraform \
 	TF_IN_AUTOMATION=true \
 	ARM_CLIENT_ID=$(M_ARM_CLIENT_ID) \
 	ARM_CLIENT_SECRET=$(M_ARM_CLIENT_SECRET) \
@@ -40,12 +40,12 @@ plan: template
 		terraform plan \
 		-no-color \
 		-input=false \
-		-var-file=$(M_RESOURCES)/terraform/vars.tfvars \
+		-var-file=$(M_RESOURCES)/terraform/vars.tfvars.json \
 		-state=$(M_SHARED)/terraform.tfstate \
 		-out=$(M_SHARED)/terraform.tfplan \
 		$(M_RESOURCES)/terraform
 	#AzBI | plan | will show plan in json
-	TF_DATA_DIR=$(M_SHARED)/.terraform \
+	@TF_DATA_DIR=$(M_SHARED)/.terraform \
 	TF_IN_AUTOMATION=true \
 		terraform show \
 		-no-color \
@@ -56,7 +56,7 @@ plan: template
 apply: plan guard-M_RESOURCES guard-M_SHARED
 	#AzBI | apply | should apply module logic
 	#AzBI | apply | will run apply
-	TF_DATA_DIR=$(M_SHARED)/.terraform \
+	@TF_DATA_DIR=$(M_SHARED)/.terraform \
 	TF_IN_AUTOMATION=true \
 	ARM_CLIENT_ID=$(M_ARM_CLIENT_ID) \
 	ARM_CLIENT_SECRET=$(M_ARM_CLIENT_SECRET) \
@@ -77,13 +77,13 @@ audit:
 #template method should template terraform files using embedded templates and configuration
 template:
 	#AzBI | template | should template terraform files using config
-	#AzBI | template | will template .tfvars file
+	#AzBI | template | will template .tfvars.json file
 	@mkdir -p $(M_SHARED)/.terraform
-	@echo "$$M_TFVARS_CONTENT" > $(M_RESOURCES)/terraform/vars.tfvars
+	@yq read -jP $(M_SHARED)/$(M_CONFIG_NAME) 'azi*' > $(M_RESOURCES)/terraform/vars.tfvars.json
 
 destroy: template
 	#AzBI | destroy | destroyer of the worlds is planing ...
-	TF_DATA_DIR=$(M_SHARED)/.terraform \
+	@TF_DATA_DIR=$(M_SHARED)/.terraform \
 	TF_IN_AUTOMATION=true \
 	ARM_CLIENT_ID=$(M_ARM_CLIENT_ID) \
 	ARM_CLIENT_SECRET=$(M_ARM_CLIENT_SECRET) \
@@ -93,11 +93,11 @@ destroy: template
 		-destroy \
 		-no-color \
 		-input=false \
-		-var-file=$(M_RESOURCES)/terraform/vars.tfvars \
+		-var-file=$(M_RESOURCES)/terraform/vars.tfvars.json \
 		-state=$(M_SHARED)/terraform.tfstate \
 		-out=$(M_SHARED)/terraform-destroy.tfplan \
 		$(M_RESOURCES)/terraform
-	if test -z $$M_DO_DESTROY ; \
+	@if test -z $$M_DO_DESTROY ; \
 	then \
 		echo \#AzBI \| destroy \| destroyer of the worlds is sleeping ... ; \
 	else \
@@ -111,7 +111,7 @@ destroy: template
 			terraform destroy \
 			-no-color \
 			-input=false \
-			-var-file=$(M_RESOURCES)/terraform/vars.tfvars \
+			-var-file=$(M_RESOURCES)/terraform/vars.tfvars.json \
 			-auto-approve \
 			-state=$(M_SHARED)/terraform.tfstate \
 			$(M_RESOURCES)/terraform ; \
