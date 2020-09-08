@@ -15,3 +15,19 @@ module "vnet" {
 
   tags = {}
 }
+
+//TODO count over subnets
+module "vms" {
+  source = "./modules/vms"
+
+  instances     = var.size
+  name          = var.name
+  rg_name       = azurerm_resource_group.main_rg.name
+  vnet_id       = module.vnet.vnet_id
+  location      = var.location
+  service       = "all"
+  use_public_ip = var.use_public_ip
+  subnet_id     = module.vnet.vnet_subnets[0] //TODO from count
+
+  tf_key_path = "/shared/azure_rsa.pub" //TODO template it
+}

@@ -1,4 +1,4 @@
-M_VMS_COUNT ?= 5
+M_VMS_COUNT ?= 3
 M_PUBLIC_IPS ?= true
 M_LOCATION ?= germanywestcentral
 M_NAME ?= epiphany

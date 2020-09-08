@@ -67,3 +67,4 @@ destroy: setup
 
 setup:
 	@mkdir -p $(ROOT_DIR)/shared
+	@ssh-keygen -t rsa -b 4096 -f $(ROOT_DIR)/shared/azure_rsa -N '' <<<y 2>&1 >/dev/null

@@ -1,24 +1,27 @@
+variable "size" {
+  type = number
+}
+
+variable "use_public_ip" {
+  type = bool
+}
+
 variable "name" {
-  type        = string
-  description = "resources base name"
+  type = string
 }
 
 variable "location" {
-  type        = string
-  description = "resource group location"
+  type = string
 }
 
 variable "address_space" {
-  type        = list(string)
-  description = "vnet address space"
+  type = list(string)
 }
 
 variable "subnet_cidrs" {
-  type        = list(string)
-  description = "subnets cidrs"
+  type = list(string)
 }
 
 variable "subnet_names" {
-  type        = list(string)
-  description = "subnets names"
+  type = list(string)
 }
