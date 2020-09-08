@@ -23,22 +23,23 @@ plan: template
 	@#TODO implement config validation
 	@#TODO implement state comparison
 	@#TODO consider parsing terraform plan output
-
-#apply method runs module provider logic using config file
-apply: plan guard-M_RESOURCES guard-M_SHARED
-	#AzBI | apply | should apply module logic
+	#AzBI | plan | will template .tfvars file
 	@mkdir -p $(M_SHARED)/.terraform
 	@echo "$$M_TFVARS_CONTENT" > $(M_RESOURCES)/terraform/vars.tfvars
-	#AzBI | apply | will run init
+	#AzBI | plan | will run init
 	TF_DATA_DIR=$(M_SHARED)/.terraform \
 	TF_IN_AUTOMATION=true \
 		terraform init \
 		-no-color \
 		-input=false \
 		$(M_RESOURCES)/terraform
-	#AzBI | apply | will run plan
+	#AzBI | plan | will run plan
 	TF_DATA_DIR=$(M_SHARED)/.terraform \
 	TF_IN_AUTOMATION=true \
+	ARM_CLIENT_ID=$(M_ARM_CLIENT_ID) \
+	ARM_CLIENT_SECRET=$(M_ARM_CLIENT_SECRET) \
+	ARM_SUBSCRIPTION_ID=$(M_ARM_SUBSCRIPTION_ID) \
+	ARM_TENANT_ID=$(M_ARM_TENANT_ID) \
 		terraform plan \
 		-no-color \
 		-input=false \
@@ -46,9 +47,24 @@ apply: plan guard-M_RESOURCES guard-M_SHARED
 		-state=$(M_SHARED)/terraform.tfstate \
 		-out=$(M_SHARED)/terraform.tfplan \
 		$(M_RESOURCES)/terraform
+	#AzBI | plan | will show plan in json
+	TF_DATA_DIR=$(M_SHARED)/.terraform \
+	TF_IN_AUTOMATION=true \
+		terraform show \
+		-no-color \
+		-json \
+		$(M_SHARED)/terraform.tfplan
+
+#apply method runs module provider logic using config file
+apply: plan guard-M_RESOURCES guard-M_SHARED
+	#AzBI | apply | should apply module logic
 	#AzBI | apply | will run apply
 	TF_DATA_DIR=$(M_SHARED)/.terraform \
 	TF_IN_AUTOMATION=true \
+	ARM_CLIENT_ID=$(M_ARM_CLIENT_ID) \
+	ARM_CLIENT_SECRET=$(M_ARM_CLIENT_SECRET) \
+	ARM_SUBSCRIPTION_ID=$(M_ARM_SUBSCRIPTION_ID) \
+	ARM_TENANT_ID=$(M_ARM_TENANT_ID) \
 		terraform apply \
 		-no-color \
 		-input=false \

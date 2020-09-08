@@ -4,7 +4,7 @@ VERSION := 0.0.1
 USER := epiphany
 IMAGE := azbi
 
-.PHONY: all clean init apply setup
+.PHONY: all clean init plan apply setup
 
 all: init apply
 
@@ -19,11 +19,25 @@ init: setup
 		M_VMS_COUNT=4 \
 		M_PUBLIC_IPS=false
 
+plan: setup
+	@docker run --rm \
+		-v $(ROOT_DIR)/shared:/shared \
+		-t $(USER)/$(IMAGE):$(VERSION) \
+		plan \
+		M_ARM_CLIENT_ID=$$ARM_CLIENT_ID \
+		M_ARM_CLIENT_SECRET=$$ARM_CLIENT_SECRET \
+		M_ARM_SUBSCRIPTION_ID=$$ARM_SUBSCRIPTION_ID \
+		M_ARM_TENANT_ID=$$ARM_TENANT_ID
+
 apply: setup
 	@docker run --rm \
 		-v $(ROOT_DIR)/shared:/shared \
 		-t $(USER)/$(IMAGE):$(VERSION) \
-		apply
+		apply \
+		M_ARM_CLIENT_ID=$$ARM_CLIENT_ID \
+		M_ARM_CLIENT_SECRET=$$ARM_CLIENT_SECRET \
+		M_ARM_SUBSCRIPTION_ID=$$ARM_SUBSCRIPTION_ID \
+		M_ARM_TENANT_ID=$$ARM_TENANT_ID
 
 setup:
 	@mkdir -p $(ROOT_DIR)/shared

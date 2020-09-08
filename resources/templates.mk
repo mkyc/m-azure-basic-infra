@@ -16,6 +16,6 @@ azi:
 endef
 
 define M_TFVARS_CONTENT
-location = "switzerlandwest"
-rg_name = "mkyc-test-rg"
+location = $(M_LOCATION)
+rg_name = $(M_RG_NAME)
 endef
