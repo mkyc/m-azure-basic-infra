@@ -11,18 +11,22 @@ metadata: guard-M_RESOURCES
 
 #init method is used to initialize module configuration and check if state is providing strong (and weak) dependencies
 #TODO should also validate state if strong requirements are met
-init: guard-M_RESOURCES guard-M_SHARED ensure-state-file template-config-file initialize-state-file
+init: guard-M_RESOURCES guard-M_SHARED ensure-state-file template-config-file initialize-state-file display-config-file
 
 #plan method would get config file and environment state file and compare them and calculate what would be done o apply stage
 plan: guard-M_RESOURCES guard-M_SHARED validate-config validate-state setup template-tfvars module-plan terraform-init terraform-plan
 
 #apply method runs module provider logic using config file
-apply: guard-M_RESOURCES guard-M_SHARED module-plan terraform-apply update-state
+apply: guard-M_RESOURCES guard-M_SHARED module-plan terraform-apply update-state-after-apply
 
 #audit method should call logic to check if remote components are in "known" state
 #TODO implement validation if remote resources are as expected, possibly with terraform plan
 audit:
 	#AzBI | audit | should output current state of remote components
+
+destroy: setup template-tfvars terraform-destroy update-state-after-destroy
+
+plan-destroy: setup template-tfvars terraform-plan-destroy
 
 terraform-init:
 	#AzBI | terraform-init | will run terraform init
@@ -47,8 +51,17 @@ terraform-plan:
 		-input=false \
 		-var-file=$(M_RESOURCES)/terraform/vars.tfvars.json \
 		-state=$(M_SHARED)/terraform.tfstate \
-		-out=$(M_SHARED)/terraform.tfplan \
+		-out=$(M_SHARED)/terraform-apply.tfplan \
 		$(M_RESOURCES)/terraform
+
+terraform-plan-json:
+	#AzBI | terraform-plan-json | will show plan in json
+	@TF_DATA_DIR=$(M_SHARED)/.terraform \
+	TF_IN_AUTOMATION=true \
+		terraform show \
+		-no-color \
+		-json \
+		$(M_SHARED)/terraform-apply.tfplan
 
 terraform-apply:
 	#AzBI | terraform-apply | should apply module logic
@@ -64,19 +77,9 @@ terraform-apply:
 		-input=false \
 		-auto-approve \
 		-state=$(M_SHARED)/terraform.tfstate \
-		$(M_SHARED)/terraform.tfplan
+		$(M_SHARED)/terraform-apply.tfplan
 
-setup:
-	#AzBI | setup | ensure crucial directories are there
-	@mkdir -p $(M_SHARED)/.terraform
-
-
-template-tfvars:
-	#AzBI | template-tfvars | will template .tfvars.json file
-	@yq read -jP $(M_SHARED)/$(M_CONFIG_NAME) 'azbi*' > $(M_RESOURCES)/terraform/vars.tfvars.json
-
-destroy: setup template-tfvars
-	#AzBI | destroy | destroyer of the worlds is planing ...
+terraform-plan-destroy:
 	@TF_DATA_DIR=$(M_SHARED)/.terraform \
 	TF_IN_AUTOMATION=true \
 	ARM_CLIENT_ID=$(M_ARM_CLIENT_ID) \
@@ -91,31 +94,41 @@ destroy: setup template-tfvars
 		-state=$(M_SHARED)/terraform.tfstate \
 		-out=$(M_SHARED)/terraform-destroy.tfplan \
 		$(M_RESOURCES)/terraform
-	@if test -z $$M_DO_DESTROY ; \
-	then \
-		echo \#AzBI \| destroy \| destroyer of the worlds is sleeping ... ; \
-	else \
-	    echo \#AzBI \| destroy \| destroyer of the worlds is just about to begin ... ; \
-		TF_DATA_DIR=$(M_SHARED)/.terraform \
-		TF_IN_AUTOMATION=true \
-		ARM_CLIENT_ID=$(M_ARM_CLIENT_ID) \
-		ARM_CLIENT_SECRET=$(M_ARM_CLIENT_SECRET) \
-		ARM_SUBSCRIPTION_ID=$(M_ARM_SUBSCRIPTION_ID) \
-		ARM_TENANT_ID=$(M_ARM_TENANT_ID) \
-			terraform destroy \
-			-no-color \
-			-input=false \
-			-var-file=$(M_RESOURCES)/terraform/vars.tfvars.json \
-			-auto-approve \
-			-state=$(M_SHARED)/terraform.tfstate \
-			$(M_RESOURCES)/terraform ; \
-	fi
+
+terraform-destroy:
+	#AzBI | terraform-destroy | terraform-destroy is just about to begin ...
+	@TF_DATA_DIR=$(M_SHARED)/.terraform \
+	TF_IN_AUTOMATION=true \
+	ARM_CLIENT_ID=$(M_ARM_CLIENT_ID) \
+	ARM_CLIENT_SECRET=$(M_ARM_CLIENT_SECRET) \
+	ARM_SUBSCRIPTION_ID=$(M_ARM_SUBSCRIPTION_ID) \
+	ARM_TENANT_ID=$(M_ARM_TENANT_ID) \
+		terraform apply \
+		-no-color \
+		-input=false \
+		-auto-approve \
+		-state=$(M_SHARED)/terraform.tfstate \
+		$(M_SHARED)/terraform-destroy.tfplan
+
+setup:
+	#AzBI | setup | ensure crucial directories are there
+	@mkdir -p $(M_SHARED)/.terraform
+
+template-tfvars:
+	#AzBI | template-tfvars | will template .tfvars.json file
+	@yq read -jP $(M_SHARED)/$(M_CONFIG_NAME) '$(M_MODULE_SHORT)*' > $(M_RESOURCES)/terraform/vars.tfvars.json
 
 template-config-file:
 	#AzBI | template-config-file | will template config file (and backup previous if exists)
 	@if test -f $(M_SHARED)/$(M_CONFIG_NAME); then mv $(M_SHARED)/$(M_CONFIG_NAME) $(M_SHARED)/$(M_CONFIG_NAME).backup ; fi
 	@echo "$$M_CONFIG_CONTENT" > $(M_SHARED)/$(M_CONFIG_NAME)
 
+display-config-file:
+	#AzBI | display-config-file | config file content is:
+	@cat $(M_SHARED)/$(M_CONFIG_NAME)
+
+ensure-state-file: $(M_SHARED)/$(M_STATE_FILE_NAME)
+	#AzBI | ensure-state-file | checks if state file exists
 
 initialize-state-file:
 	#AzBI | initialize-state-file | will initialize state file
@@ -123,14 +136,15 @@ initialize-state-file:
 	@yq m -i -x $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/azbi-state.tmp
 	@rm $(M_SHARED)/azbi-state.tmp
 
-plan-json:
-	#AzBI | plan-json | will show plan in json
-	@TF_DATA_DIR=$(M_SHARED)/.terraform \
-	TF_IN_AUTOMATION=true \
-		terraform show \
-		-no-color \
-		-json \
-		$(M_SHARED)/terraform.tfplan
+update-state-after-apply:
+	#AzBI | update-state-after-apply | will update state file after apply
+	@yq m -x -i $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/$(M_CONFIG_NAME)
+	@yq w -i $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_MODULE_SHORT).status applied
+
+update-state-after-destroy:
+	#AzBI | update-state-after-destroy | will clean state file after destroy
+	@yq d -i $(M_SHARED)/$(M_STATE_FILE_NAME) '$(M_MODULE_SHORT)'
+	@yq w -i $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_MODULE_SHORT).status destroyed
 
 #TODO check if there is state file
 #TODO check if there is config
@@ -153,18 +167,11 @@ module-plan:
 	@- yq compare $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/azbi-future-state.tmp
 	@rm $(M_SHARED)/azbi-future-state.tmp
 
-update-state:
-	#AzBI | update-state | will update state file
-	@yq m -x -i $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/$(M_CONFIG_NAME)
-
 guard-%:
 	@if [ "${${*}}" = "" ]; then \
 		echo "Environment variable $* not set"; \
 		exit 1; \
 	fi
-
-ensure-state-file: $(M_SHARED)/$(M_STATE_FILE_NAME)
-	#AzBI | ensure-state-file | checks if state file exists
 
 $(M_SHARED)/$(M_STATE_FILE_NAME):
 	@mkdir -p $(dir $@)

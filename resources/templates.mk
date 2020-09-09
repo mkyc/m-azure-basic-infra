@@ -10,6 +10,7 @@ labels:
 endef
 
 define M_CONFIG_CONTENT
+kind: $(M_MODULE_SHORT)-aconfig
 $(M_MODULE_SHORT):
   size: $(M_VMS_COUNT)
   use_public_ip: $(M_PUBLIC_IPS)
@@ -24,6 +25,7 @@ $(M_MODULE_SHORT):
 endef
 
 define M_STATE_INITIAL
+kind: state
 $(M_MODULE_SHORT):
   status: initialized
 endef
