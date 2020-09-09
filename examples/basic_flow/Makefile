@@ -23,7 +23,7 @@ init: setup
 		-v $(ROOT_DIR)/shared:/shared \
 		-t $(USER)/$(IMAGE):$(VERSION) \
 		init \
-		M_VMS_COUNT=4 \
+		M_VMS_COUNT=2 \
 		M_PUBLIC_IPS=false \
 		M_NAME=$(M_NAME)
 
