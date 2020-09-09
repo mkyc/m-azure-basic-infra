@@ -2,7 +2,7 @@ define M_METADATA_CONTENT
 labels:
   version: $(M_VERSION)
   name: Azure Basic Infrastructure
-  short: AzBI
+  short: $(M_MODULE_SHORT)
   kind: infrastructure
   provider: azure
   provides-vms: true
@@ -10,7 +10,7 @@ labels:
 endef
 
 define M_CONFIG_CONTENT
-azi:
+$(M_MODULE_SHORT):
   size: $(M_VMS_COUNT)
   use_public_ip: $(M_PUBLIC_IPS)
   location: "$(M_LOCATION)"
@@ -21,4 +21,9 @@ azi:
   - "10.0.1.0/24"
   subnet_names:
   - "$(M_NAME)-sn1"
+endef
+
+define M_STATE_INITIAL
+$(M_MODULE_SHORT):
+  status: initialized
 endef

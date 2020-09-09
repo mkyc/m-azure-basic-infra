@@ -1,4 +1,5 @@
 include $(M_RESOURCES)/templates.mk
+include $(M_RESOURCES)/consts.mk
 include $(M_RESOURCES)/defaults.mk
 
 export
@@ -9,18 +10,19 @@ metadata: guard-M_RESOURCES
 	@echo "$$M_METADATA_CONTENT"
 
 #init method is used to initialize module configuration and check if state is providing strong (and weak) dependencies
-init: guard-M_RESOURCES guard-M_SHARED guard-M_CONFIG_NAME guard-M_VMS_COUNT guard-M_PUBLIC_IPS
+init: guard-M_RESOURCES guard-M_SHARED guard-M_CONFIG_NAME guard-M_VMS_COUNT guard-M_PUBLIC_IPS ensure-statefile
 	#AzBI | init | should create default config in shared directory
 	#AzBI | init | should also validate state if strong requirements are met
 	@if test -f $(M_SHARED)/$(M_CONFIG_NAME); then mv $(M_SHARED)/$(M_CONFIG_NAME) $(M_SHARED)/$(M_CONFIG_NAME).backup ; fi
-	@echo "$$M_CONFIG_CONTENT" > $(M_SHARED)/$(M_CONFIG_NAME)
-	@#TODO create/update state
+	echo "$$M_CONFIG_CONTENT" > $(M_SHARED)/$(M_CONFIG_NAME)
+	echo "$$M_STATE_INITIAL" > $(M_SHARED)/azbi_state.tmp
+	yq m -i -x $(M_SHARED)/$(M_STATEFILE_NAME) $(M_SHARED)/azbi_state.tmp
+	rm $(M_SHARED)/azbi_state.tmp
 
 #plan method would get config file and environment state file and compare them and calculate what would be done o apply stage
-plan: template
+plan: template validate-config
 	#AzBI | plan | should validate if config file is correct
 	#AzBI | plan | should validate how config is different from state
-	@#TODO implement config validation
 	@#TODO implement state comparison
 	@#TODO consider parsing terraform plan output
 	#AzBI | plan | will run init
@@ -45,12 +47,12 @@ plan: template
 		-out=$(M_SHARED)/terraform.tfplan \
 		$(M_RESOURCES)/terraform
 	#AzBI | plan | will show plan in json
-	@TF_DATA_DIR=$(M_SHARED)/.terraform \
-	TF_IN_AUTOMATION=true \
-		terraform show \
-		-no-color \
-		-json \
-		$(M_SHARED)/terraform.tfplan
+#	@TF_DATA_DIR=$(M_SHARED)/.terraform \
+#	TF_IN_AUTOMATION=true \
+#		terraform show \
+#		-no-color \
+#		-json \
+#		$(M_SHARED)/terraform.tfplan
 
 #apply method runs module provider logic using config file
 apply: plan guard-M_RESOURCES guard-M_SHARED
@@ -75,11 +77,11 @@ audit:
 	@#TODO implement validation if remote resources are as expected, possibly with terraform plan
 
 #template method should template terraform files using embedded templates and configuration
-template:
+template: ensure-statefile
 	#AzBI | template | should template terraform files using config
 	#AzBI | template | will template .tfvars.json file
 	@mkdir -p $(M_SHARED)/.terraform
-	@yq read -jP $(M_SHARED)/$(M_CONFIG_NAME) 'azi*' > $(M_RESOURCES)/terraform/vars.tfvars.json
+	@yq read -jP $(M_SHARED)/$(M_CONFIG_NAME) 'azbi*' > $(M_RESOURCES)/terraform/vars.tfvars.json
 
 destroy: template
 	#AzBI | destroy | destroyer of the worlds is planing ...
@@ -117,8 +119,20 @@ destroy: template
 			$(M_RESOURCES)/terraform ; \
 	fi
 
+validate-config:
+	#AzBI | validate-config | will perform config validation
+	@#TODO validate if config is correct
+	@#TODO consider https://github.com/santhosh-tekuri/jsonschema as it's small
+
 guard-%:
 	@if [ "${${*}}" = "" ]; then \
 		echo "Environment variable $* not set"; \
 		exit 1; \
 	fi
+
+ensure-statefile: $(M_SHARED)/$(M_STATEFILE_NAME)
+	#AzBI | ensure-statefile | checks that statefile exists
+
+$(M_SHARED)/$(M_STATEFILE_NAME):
+	@mkdir -p $(dir $@)
+	@touch $@
