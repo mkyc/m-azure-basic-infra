@@ -47,6 +47,16 @@ apply: setup
 		M_ARM_SUBSCRIPTION_ID=$$ARM_SUBSCRIPTION_ID \
 		M_ARM_TENANT_ID=$$ARM_TENANT_ID
 
+output: setup
+	@docker run --rm \
+		-v $(ROOT_DIR)/shared:/shared \
+		-t $(USER)/$(IMAGE):$(VERSION) \
+		output \
+		M_ARM_CLIENT_ID=$$ARM_CLIENT_ID \
+		M_ARM_CLIENT_SECRET=$$ARM_CLIENT_SECRET \
+		M_ARM_SUBSCRIPTION_ID=$$ARM_SUBSCRIPTION_ID \
+		M_ARM_TENANT_ID=$$ARM_TENANT_ID
+
 destroy-plan: setup
 	@docker run --rm \
 		-v $(ROOT_DIR)/shared:/shared \

@@ -17,7 +17,7 @@ init: guard-M_RESOURCES guard-M_SHARED ensure-state-file template-config-file in
 plan: guard-M_RESOURCES guard-M_SHARED validate-config validate-state setup template-tfvars module-plan terraform-init terraform-plan
 
 #apply method runs module provider logic using config file
-apply: guard-M_RESOURCES guard-M_SHARED module-plan terraform-apply update-state-after-apply
+apply: guard-M_RESOURCES guard-M_SHARED module-plan terraform-apply update-state-after-apply terraform-output
 
 #audit method should call logic to check if remote components are in "known" state
 #TODO implement validation if remote resources are as expected, possibly with terraform plan
@@ -27,6 +27,8 @@ audit:
 destroy: setup template-tfvars terraform-destroy update-state-after-destroy
 
 plan-destroy: setup template-tfvars terraform-plan-destroy
+
+output: terraform-output
 
 terraform-init:
 	#AzBI | terraform-init | will run terraform init
@@ -64,7 +66,6 @@ terraform-plan-json:
 		$(M_SHARED)/terraform-apply.tfplan
 
 terraform-apply:
-	#AzBI | terraform-apply | should apply module logic
 	#AzBI | terraform-apply | will run terraform apply
 	@TF_DATA_DIR=$(M_SHARED)/.terraform \
 	TF_IN_AUTOMATION=true \
@@ -80,6 +81,7 @@ terraform-apply:
 		$(M_SHARED)/terraform-apply.tfplan
 
 terraform-plan-destroy:
+	#AzBI | terraform-plan-destroy | will prepare plan of destruction
 	@TF_DATA_DIR=$(M_SHARED)/.terraform \
 	TF_IN_AUTOMATION=true \
 	ARM_CLIENT_ID=$(M_ARM_CLIENT_ID) \
@@ -96,7 +98,7 @@ terraform-plan-destroy:
 		$(M_RESOURCES)/terraform
 
 terraform-destroy:
-	#AzBI | terraform-destroy | terraform-destroy is just about to begin ...
+	#AzBI | terraform-destroy | will destroy using plan of destruction
 	@TF_DATA_DIR=$(M_SHARED)/.terraform \
 	TF_IN_AUTOMATION=true \
 	ARM_CLIENT_ID=$(M_ARM_CLIENT_ID) \
@@ -109,6 +111,19 @@ terraform-destroy:
 		-auto-approve \
 		-state=$(M_SHARED)/terraform.tfstate \
 		$(M_SHARED)/terraform-destroy.tfplan
+
+terraform-output:
+	#AzBI | terraform-output | will prepare terraform output
+	@TF_DATA_DIR=$(M_SHARED)/.terraform \
+	TF_IN_AUTOMATION=true \
+		terraform output \
+		-no-color \
+		-json \
+		-state=$(M_SHARED)/terraform.tfstate > $(M_SHARED)/output.tmp.json
+	@yq r --prettyPrint $(M_SHARED)/output.tmp.json > $(M_SHARED)/output.tmp.yml
+	@yq p -i $(M_SHARED)/output.tmp.yml $(M_MODULE_SHORT).output
+	@yq m -x -i $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/output.tmp.yml
+	@rm $(M_SHARED)/output.tmp.json $(M_SHARED)/output.tmp.yml
 
 setup:
 	#AzBI | setup | ensure crucial directories are there
