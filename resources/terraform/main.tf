@@ -27,7 +27,7 @@ module "vms" {
   location      = var.location
   service       = "all"
   use_public_ip = var.use_public_ip
-  subnet_id     = module.vnet.vnet_subnets[0] //TODO from count
+  subnet_id     = length(module.vnet.vnet_subnets) > 0 ? module.vnet.vnet_subnets[0] : null
 
   tf_key_path = "/shared/azure_rsa.pub" //TODO template it
 }

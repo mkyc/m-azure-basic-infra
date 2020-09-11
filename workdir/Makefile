@@ -92,6 +92,7 @@ terraform-destroy:
 	#AzBI | terraform-destroy | will destroy using plan of destruction
 	@cd $(M_RESOURCES)/terraform ; \
 	TF_IN_AUTOMATION=true \
+	TF_WARN_OUTPUT_ERRORS=1 \
 	ARM_CLIENT_ID=$(M_ARM_CLIENT_ID) \
 	ARM_CLIENT_SECRET=$(M_ARM_CLIENT_SECRET) \
 	ARM_SUBSCRIPTION_ID=$(M_ARM_SUBSCRIPTION_ID) \

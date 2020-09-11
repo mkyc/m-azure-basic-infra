@@ -11,9 +11,9 @@ M_NAME ?= mkyc-module-tests
 
 export
 
-.PHONY: all clean init plan apply destroy-plan destroy setup
+.PHONY: all clean init plan apply output destroy-plan destroy setup
 
-all: init apply
+all: init plan apply
 
 clean:
 	@rm -rf $(ROOT_DIR)/shared

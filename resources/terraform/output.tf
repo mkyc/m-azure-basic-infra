@@ -11,5 +11,5 @@ output "vm_names" {
 }
 
 output "subnet_id" {
-  value = module.vms.subnet_id
+  value = length(module.vnet.vnet_subnets) > 0 ? module.vnet.vnet_subnets[0] : null
 }
