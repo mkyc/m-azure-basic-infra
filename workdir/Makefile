@@ -28,19 +28,10 @@ destroy: setup template-tfvars terraform-destroy update-state-after-destroy
 
 plan-destroy: setup template-tfvars terraform-plan-destroy
 
-terraform-init:
-	#AzBI | terraform-init | will run terraform init
-	@TF_DATA_DIR=$(M_SHARED)/.terraform \
-	TF_IN_AUTOMATION=true \
-		terraform init \
-		-no-color \
-		-input=false \
-		$(M_RESOURCES)/terraform
-
 #TODO consider parsing terraform plan output
 terraform-plan:
 	#AzBI | terraform-plan | will run plan
-	@TF_DATA_DIR=$(M_RESOURCES)/terraform/.terraform \
+	@cd $(M_RESOURCES)/terraform ; \
 	TF_IN_AUTOMATION=true \
 	ARM_CLIENT_ID=$(M_ARM_CLIENT_ID) \
 	ARM_CLIENT_SECRET=$(M_ARM_CLIENT_SECRET) \
@@ -56,7 +47,7 @@ terraform-plan:
 
 terraform-plan-json:
 	#AzBI | terraform-plan-json | will show plan in json
-	@TF_DATA_DIR=$(M_SHARED)/.terraform \
+	@cd $(M_RESOURCES)/terraform ; \
 	TF_IN_AUTOMATION=true \
 		terraform show \
 		-no-color \
@@ -66,7 +57,7 @@ terraform-plan-json:
 terraform-apply:
 	#AzBI | terraform-apply | should apply module logic
 	#AzBI | terraform-apply | will run terraform apply
-	@TF_DATA_DIR=$(M_SHARED)/.terraform \
+	@cd $(M_RESOURCES)/terraform ; \
 	TF_IN_AUTOMATION=true \
 	ARM_CLIENT_ID=$(M_ARM_CLIENT_ID) \
 	ARM_CLIENT_SECRET=$(M_ARM_CLIENT_SECRET) \
@@ -80,7 +71,7 @@ terraform-apply:
 		$(M_SHARED)/terraform-apply.tfplan
 
 terraform-plan-destroy:
-	@TF_DATA_DIR=$(M_SHARED)/.terraform \
+	@cd $(M_RESOURCES)/terraform ; \
 	TF_IN_AUTOMATION=true \
 	ARM_CLIENT_ID=$(M_ARM_CLIENT_ID) \
 	ARM_CLIENT_SECRET=$(M_ARM_CLIENT_SECRET) \
@@ -97,7 +88,7 @@ terraform-plan-destroy:
 
 terraform-destroy:
 	#AzBI | terraform-destroy | terraform-destroy is just about to begin ...
-	@TF_DATA_DIR=$(M_SHARED)/.terraform \
+	@cd $(M_RESOURCES)/terraform ; \
 	TF_IN_AUTOMATION=true \
 	ARM_CLIENT_ID=$(M_ARM_CLIENT_ID) \
 	ARM_CLIENT_SECRET=$(M_ARM_CLIENT_SECRET) \
