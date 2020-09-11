@@ -1,3 +1,10 @@
+FROM hashicorp/terraform:0.12.25 as initializer
+
+COPY resources/terraform /files
+RUN TF_DATA_DIR=/wrkdr/.terraform terraform init /files
+RUN ls -laR /wrkdr/.terraform/
+
+
 FROM alpine:3.12.0
 
 ENV M_WORKDIR "/workdir"
@@ -15,6 +22,7 @@ ARG ARG_M_VERSION="unknown"
 ENV M_VERSION=$ARG_M_VERSION
 
 COPY resources /resources
+COPY --from=initializer /wrkdr/.terraform/ /resources/terraform/.terraform/
 COPY workdir /workdir
 
 ARG ARG_HOST_UID=1000
