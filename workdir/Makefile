@@ -14,7 +14,7 @@ metadata: guard-M_RESOURCES
 init: guard-M_RESOURCES guard-M_SHARED ensure-state-file template-config-file initialize-state-file display-config-file
 
 #plan method would get config file and environment state file and compare them and calculate what would be done o apply stage
-plan: guard-M_RESOURCES guard-M_SHARED validate-config validate-state setup template-tfvars module-plan terraform-init terraform-plan
+plan: guard-M_RESOURCES guard-M_SHARED validate-config validate-state setup template-tfvars module-plan terraform-plan
 
 #apply method runs module provider logic using config file
 apply: guard-M_RESOURCES guard-M_SHARED module-plan terraform-apply update-state-after-apply terraform-output
@@ -30,19 +30,10 @@ plan-destroy: setup template-tfvars terraform-plan-destroy
 
 output: terraform-output
 
-terraform-init:
-	#AzBI | terraform-init | will run terraform init
-	@TF_DATA_DIR=$(M_SHARED)/.terraform \
-	TF_IN_AUTOMATION=true \
-		terraform init \
-		-no-color \
-		-input=false \
-		$(M_RESOURCES)/terraform
-
 #TODO consider parsing terraform plan output
 terraform-plan:
 	#AzBI | terraform-plan | will run plan
-	@TF_DATA_DIR=$(M_SHARED)/.terraform \
+	@cd $(M_RESOURCES)/terraform ; \
 	TF_IN_AUTOMATION=true \
 	ARM_CLIENT_ID=$(M_ARM_CLIENT_ID) \
 	ARM_CLIENT_SECRET=$(M_ARM_CLIENT_SECRET) \
@@ -58,7 +49,7 @@ terraform-plan:
 
 terraform-plan-json:
 	#AzBI | terraform-plan-json | will show plan in json
-	@TF_DATA_DIR=$(M_SHARED)/.terraform \
+	@cd $(M_RESOURCES)/terraform ; \
 	TF_IN_AUTOMATION=true \
 		terraform show \
 		-no-color \
@@ -67,7 +58,7 @@ terraform-plan-json:
 
 terraform-apply:
 	#AzBI | terraform-apply | will run terraform apply
-	@TF_DATA_DIR=$(M_SHARED)/.terraform \
+	@cd $(M_RESOURCES)/terraform ; \
 	TF_IN_AUTOMATION=true \
 	ARM_CLIENT_ID=$(M_ARM_CLIENT_ID) \
 	ARM_CLIENT_SECRET=$(M_ARM_CLIENT_SECRET) \
@@ -82,7 +73,7 @@ terraform-apply:
 
 terraform-plan-destroy:
 	#AzBI | terraform-plan-destroy | will prepare plan of destruction
-	@TF_DATA_DIR=$(M_SHARED)/.terraform \
+	@cd $(M_RESOURCES)/terraform ; \
 	TF_IN_AUTOMATION=true \
 	ARM_CLIENT_ID=$(M_ARM_CLIENT_ID) \
 	ARM_CLIENT_SECRET=$(M_ARM_CLIENT_SECRET) \
@@ -99,7 +90,7 @@ terraform-plan-destroy:
 
 terraform-destroy:
 	#AzBI | terraform-destroy | will destroy using plan of destruction
-	@TF_DATA_DIR=$(M_SHARED)/.terraform \
+	@cd $(M_RESOURCES)/terraform ; \
 	TF_IN_AUTOMATION=true \
 	ARM_CLIENT_ID=$(M_ARM_CLIENT_ID) \
 	ARM_CLIENT_SECRET=$(M_ARM_CLIENT_SECRET) \
@@ -114,7 +105,7 @@ terraform-destroy:
 
 terraform-output:
 	#AzBI | terraform-output | will prepare terraform output
-	@TF_DATA_DIR=$(M_SHARED)/.terraform \
+	@cd $(M_RESOURCES)/terraform ; \
 	TF_IN_AUTOMATION=true \
 		terraform output \
 		-no-color \
