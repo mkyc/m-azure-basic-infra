@@ -11,22 +11,22 @@ metadata: guard-M_RESOURCES
 
 #init method is used to initialize module configuration and check if state is providing strong (and weak) dependencies
 #TODO should also validate state if strong requirements are met
-init: guard-M_RESOURCES guard-M_SHARED ensure-state-file template-config-file initialize-state-file display-config-file
+init: guard-M_RESOURCES guard-M_SHARED setup ensure-state-file template-config-file initialize-state-file display-config-file
 
 #plan method would get config file and environment state file and compare them and calculate what would be done o apply stage
-plan: guard-M_RESOURCES guard-M_SHARED validate-config validate-state setup template-tfvars module-plan terraform-plan
+plan: guard-M_RESOURCES guard-M_SHARED setup validate-config validate-state template-tfvars module-plan terraform-plan
 
 #apply method runs module provider logic using config file
-apply: guard-M_RESOURCES guard-M_SHARED module-plan terraform-apply update-state-after-apply terraform-output
+apply: guard-M_RESOURCES guard-M_SHARED setup module-plan terraform-apply update-state-after-apply terraform-output
 
 #audit method should call logic to check if remote components are in "known" state
 #TODO implement validation if remote resources are as expected, possibly with terraform plan
 audit:
 	#AzBI | audit | should output current state of remote components
 
-destroy: setup template-tfvars terraform-destroy update-state-after-destroy
+destroy: template-tfvars terraform-destroy update-state-after-destroy
 
-plan-destroy: setup template-tfvars terraform-plan-destroy
+plan-destroy: template-tfvars terraform-plan-destroy
 
 output: terraform-output
 
@@ -43,8 +43,8 @@ terraform-plan:
 		-no-color \
 		-input=false \
 		-var-file=$(M_RESOURCES)/terraform/vars.tfvars.json \
-		-state=$(M_SHARED)/terraform.tfstate \
-		-out=$(M_SHARED)/terraform-apply.tfplan \
+		-state=$(M_SHARED)/$(M_MODULE_SHORT)/terraform.tfstate \
+		-out=$(M_SHARED)/$(M_MODULE_SHORT)/terraform-apply.tfplan \
 		$(M_RESOURCES)/terraform
 
 terraform-plan-json:
@@ -54,7 +54,7 @@ terraform-plan-json:
 		terraform show \
 		-no-color \
 		-json \
-		$(M_SHARED)/terraform-apply.tfplan
+		$(M_SHARED)/$(M_MODULE_SHORT)/terraform-apply.tfplan
 
 terraform-apply:
 	#AzBI | terraform-apply | will run terraform apply
@@ -68,8 +68,8 @@ terraform-apply:
 		-no-color \
 		-input=false \
 		-auto-approve \
-		-state=$(M_SHARED)/terraform.tfstate \
-		$(M_SHARED)/terraform-apply.tfplan
+		-state=$(M_SHARED)/$(M_MODULE_SHORT)/terraform.tfstate \
+		$(M_SHARED)/$(M_MODULE_SHORT)/terraform-apply.tfplan
 
 terraform-plan-destroy:
 	#AzBI | terraform-plan-destroy | will prepare plan of destruction
@@ -84,8 +84,8 @@ terraform-plan-destroy:
 		-no-color \
 		-input=false \
 		-var-file=$(M_RESOURCES)/terraform/vars.tfvars.json \
-		-state=$(M_SHARED)/terraform.tfstate \
-		-out=$(M_SHARED)/terraform-destroy.tfplan \
+		-state=$(M_SHARED)/$(M_MODULE_SHORT)/terraform.tfstate \
+		-out=$(M_SHARED)/$(M_MODULE_SHORT)/terraform-destroy.tfplan \
 		$(M_RESOURCES)/terraform
 
 terraform-destroy:
@@ -101,8 +101,8 @@ terraform-destroy:
 		-no-color \
 		-input=false \
 		-auto-approve \
-		-state=$(M_SHARED)/terraform.tfstate \
-		$(M_SHARED)/terraform-destroy.tfplan
+		-state=$(M_SHARED)/$(M_MODULE_SHORT)/terraform.tfstate \
+		$(M_SHARED)/$(M_MODULE_SHORT)/terraform-destroy.tfplan
 
 terraform-output:
 	#AzBI | terraform-output | will prepare terraform output
@@ -111,42 +111,44 @@ terraform-output:
 		terraform output \
 		-no-color \
 		-json \
-		-state=$(M_SHARED)/terraform.tfstate > $(M_SHARED)/output.tmp.json
-	@yq r --prettyPrint $(M_SHARED)/output.tmp.json > $(M_SHARED)/output.tmp.yml
-	@yq p -i $(M_SHARED)/output.tmp.yml $(M_MODULE_SHORT).output
-	@yq m -x -i $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/output.tmp.yml
-	@rm $(M_SHARED)/output.tmp.json $(M_SHARED)/output.tmp.yml
+		-state=$(M_SHARED)/$(M_MODULE_SHORT)/terraform.tfstate > $(M_SHARED)/$(M_MODULE_SHORT)/output.tmp.json
+	@yq r --prettyPrint $(M_SHARED)/$(M_MODULE_SHORT)/output.tmp.json > $(M_SHARED)/$(M_MODULE_SHORT)/output.tmp.yml
+	@yq p -i $(M_SHARED)/$(M_MODULE_SHORT)/output.tmp.yml $(M_MODULE_SHORT).output
+	@yq m -x -i $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/$(M_MODULE_SHORT)/output.tmp.yml
+	@rm $(M_SHARED)/$(M_MODULE_SHORT)/output.tmp.json $(M_SHARED)/$(M_MODULE_SHORT)/output.tmp.yml
 
-setup:
-	#AzBI | setup | ensure crucial directories are there
-	@mkdir -p $(M_SHARED)/.terraform
+setup: $(M_SHARED)/$(M_MODULE_SHORT)
+	#AzBI | setup | ensure required directories
 
 template-tfvars:
 	#AzBI | template-tfvars | will template .tfvars.json file
-	@yq read -jP $(M_SHARED)/$(M_CONFIG_NAME) '$(M_MODULE_SHORT)*' > $(M_RESOURCES)/terraform/vars.tfvars.json
+	@yq read -jP $(M_SHARED)/$(M_MODULE_SHORT)/$(M_CONFIG_NAME) '$(M_MODULE_SHORT)*' > $(M_RESOURCES)/terraform/vars.tfvars.json
 
 template-config-file:
 	#AzBI | template-config-file | will template config file (and backup previous if exists)
-	@if test -f $(M_SHARED)/$(M_CONFIG_NAME); then mv $(M_SHARED)/$(M_CONFIG_NAME) $(M_SHARED)/$(M_CONFIG_NAME).backup ; fi
-	@echo "$$M_CONFIG_CONTENT" > $(M_SHARED)/$(M_CONFIG_NAME)
+	@if test -f $(M_SHARED)/$(M_MODULE_SHORT)/$(M_CONFIG_NAME); then mv $(M_SHARED)/$(M_MODULE_SHORT)/$(M_CONFIG_NAME) $(M_SHARED)/$(M_MODULE_SHORT)/$(M_CONFIG_NAME).backup ; fi
+	@echo "$$M_CONFIG_CONTENT" > $(M_SHARED)/$(M_MODULE_SHORT)/$(M_CONFIG_NAME)
 
 display-config-file:
 	#AzBI | display-config-file | config file content is:
-	@cat $(M_SHARED)/$(M_CONFIG_NAME)
+	@cat $(M_SHARED)/$(M_MODULE_SHORT)/$(M_CONFIG_NAME)
 
 ensure-state-file: $(M_SHARED)/$(M_STATE_FILE_NAME)
 	#AzBI | ensure-state-file | checks if state file exists
 
 initialize-state-file:
 	#AzBI | initialize-state-file | will initialize state file
-	@echo "$$M_STATE_INITIAL" > $(M_SHARED)/azbi-state.tmp
-	@yq m -i -x $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/azbi-state.tmp
-	@rm $(M_SHARED)/azbi-state.tmp
+	@echo "$$M_STATE_INITIAL" > $(M_SHARED)/$(M_MODULE_SHORT)/azbi-state.tmp
+	@yq m -i -x $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/$(M_MODULE_SHORT)/azbi-state.tmp
+	@rm $(M_SHARED)/$(M_MODULE_SHORT)/azbi-state.tmp
 
 update-state-after-apply:
 	#AzBI | update-state-after-apply | will update state file after apply
-	@yq m -x -i $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/$(M_CONFIG_NAME)
+	@cp $(M_SHARED)/$(M_MODULE_SHORT)/$(M_CONFIG_NAME) $(M_SHARED)/$(M_MODULE_SHORT)/azbi-config.tmp.yml
+	@yq d -i $(M_SHARED)/$(M_MODULE_SHORT)/azbi-config.tmp.yml kind
+	@yq m -x -i $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/$(M_MODULE_SHORT)/azbi-config.tmp.yml
 	@yq w -i $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_MODULE_SHORT).status applied
+	@rm $(M_SHARED)/$(M_MODULE_SHORT)/azbi-config.tmp.yml
 
 update-state-after-destroy:
 	#AzBI | update-state-after-destroy | will clean state file after destroy
@@ -170,9 +172,9 @@ validate-state:
 
 module-plan:
 	#AzBI | module-plan | will perform module plan
-	@yq m -x $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/$(M_CONFIG_NAME) > $(M_SHARED)/azbi-future-state.tmp
-	@- yq compare $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/azbi-future-state.tmp
-	@rm $(M_SHARED)/azbi-future-state.tmp
+	@yq m -x $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/$(M_MODULE_SHORT)/$(M_CONFIG_NAME) > $(M_SHARED)/$(M_MODULE_SHORT)/azbi-future-state.tmp
+	@- yq compare $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/$(M_MODULE_SHORT)/azbi-future-state.tmp
+	@rm $(M_SHARED)/$(M_MODULE_SHORT)/azbi-future-state.tmp
 
 guard-%:
 	@if [ "${${*}}" = "" ]; then \
@@ -183,3 +185,6 @@ guard-%:
 $(M_SHARED)/$(M_STATE_FILE_NAME):
 	@mkdir -p $(dir $@)
 	@touch $@
+
+$(M_SHARED)/$(M_MODULE_SHORT):
+	@mkdir -p $@

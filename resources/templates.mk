@@ -25,7 +25,7 @@ $(M_MODULE_SHORT):
 endef
 
 define M_STATE_INITIAL
-kind: $(M_MODULE_SHORT)-config
+kind: state
 $(M_MODULE_SHORT):
   status: initialized
 endef
