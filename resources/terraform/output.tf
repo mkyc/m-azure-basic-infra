@@ -10,6 +10,10 @@ output "vm_names" {
   value = module.vms.vm_names
 }
 
-output "subnet_id" {
-  value = length(module.vnet.vnet_subnets) > 0 ? module.vnet.vnet_subnets[0] : null
+output rg_name {
+  value = azurerm_resource_group.rg.name
+}
+
+output vnet_name {
+  value = azurerm_virtual_network.vnet.name
 }

@@ -18,10 +18,10 @@ variable "address_space" {
   type = list(string)
 }
 
-variable "subnet_cidrs" {
+variable "address_prefixes" {
   type = list(string)
 }
 
-variable "subnet_names" {
-  type = list(string)
+variable "rsa_pub_path" {
+  type = string
 }
