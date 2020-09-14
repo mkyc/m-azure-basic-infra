@@ -1,9 +1,9 @@
-FROM hashicorp/terraform:0.12.25 as initializer
+FROM hashicorp/terraform:0.13.2 as initializer
 
 COPY resources /resources
 RUN cd /resources/terraform && terraform init
 
-FROM alpine:3.12.0
+FROM hashicorp/terraform:0.13.2
 
 ENV M_WORKDIR "/workdir"
 ENV M_RESOURCES "/resources"
@@ -12,7 +12,7 @@ ENV M_SHARED "/shared"
 WORKDIR /workdir
 ENTRYPOINT ["make"]
 
-RUN apk add --update --no-cache make=4.3-r0 terraform=0.12.25-r0 &&\
+RUN apk add --update --no-cache make=4.3-r0 &&\
     wget https://github.com/mikefarah/yq/releases/download/3.3.4/yq_linux_amd64 -O /usr/bin/yq &&\
     chmod +x /usr/bin/yq
 
