@@ -15,5 +15,5 @@ module "vms" {
   use_public_ip = var.use_public_ip
   subnet_id     = azurerm_subnet.subnet.id
 
-  tf_key_path = "/shared/azure_rsa.pub" //TODO template it
+  tf_key_path = var.rsa_pub_path
 }

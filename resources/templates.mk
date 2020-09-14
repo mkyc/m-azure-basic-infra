@@ -18,6 +18,7 @@ $(M_MODULE_SHORT):
   name: "$(M_NAME)"
   address_space: ["10.0.0.0/16"]
   address_prefixes: ["10.0.1.0/24"]
+  rsa_pub_path: "$(M_SHARED)/$(M_VMS_RSA).pub"
 endef
 
 define M_STATE_INITIAL
