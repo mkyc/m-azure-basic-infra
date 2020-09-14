@@ -173,6 +173,7 @@ validate-state:
 module-plan:
 	#AzBI | module-plan | will perform module plan
 	@yq m -x $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/$(M_MODULE_SHORT)/$(M_CONFIG_NAME) > $(M_SHARED)/$(M_MODULE_SHORT)/azbi-future-state.tmp
+	@yq w -i $(M_SHARED)/$(M_MODULE_SHORT)/azbi-future-state.tmp kind state
 	@- yq compare $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/$(M_MODULE_SHORT)/azbi-future-state.tmp
 	@rm $(M_SHARED)/$(M_MODULE_SHORT)/azbi-future-state.tmp
 
