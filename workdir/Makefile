@@ -145,8 +145,11 @@ initialize-state-file:
 
 update-state-after-apply:
 	#AzBI | update-state-after-apply | will update state file after apply
-	@yq m -x -i $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/$(M_CONFIG_NAME)
+	@cp $(M_SHARED)/$(M_CONFIG_NAME) $(M_SHARED)/azbi-config.tmp.yml
+	@yq d -i $(M_SHARED)/azbi-config.tmp.yml kind
+	@yq m -x -i $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/azbi-config.tmp.yml
 	@yq w -i $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_MODULE_SHORT).status applied
+	@rm $(M_SHARED)/azbi-config.tmp.yml
 
 update-state-after-destroy:
 	#AzBI | update-state-after-destroy | will clean state file after destroy
