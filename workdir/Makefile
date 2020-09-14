@@ -14,7 +14,7 @@ metadata: guard-M_RESOURCES
 init: guard-M_RESOURCES guard-M_SHARED ensure-state-file template-config-file initialize-state-file display-config-file
 
 #plan method would get config file and environment state file and compare them and calculate what would be done o apply stage
-plan: guard-M_RESOURCES guard-M_SHARED validate-config validate-state setup template-tfvars module-plan terraform-plan
+plan: guard-M_RESOURCES guard-M_SHARED validate-config validate-state template-tfvars module-plan terraform-plan
 
 #apply method runs module provider logic using config file
 apply: guard-M_RESOURCES guard-M_SHARED module-plan terraform-apply update-state-after-apply terraform-output
@@ -24,9 +24,9 @@ apply: guard-M_RESOURCES guard-M_SHARED module-plan terraform-apply update-state
 audit:
 	#AzBI | audit | should output current state of remote components
 
-destroy: setup template-tfvars terraform-destroy update-state-after-destroy
+destroy: template-tfvars terraform-destroy update-state-after-destroy
 
-plan-destroy: setup template-tfvars terraform-plan-destroy
+plan-destroy: template-tfvars terraform-plan-destroy
 
 output: terraform-output
 
@@ -116,10 +116,6 @@ terraform-output:
 	@yq p -i $(M_SHARED)/output.tmp.yml $(M_MODULE_SHORT).output
 	@yq m -x -i $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/output.tmp.yml
 	@rm $(M_SHARED)/output.tmp.json $(M_SHARED)/output.tmp.yml
-
-setup:
-	#AzBI | setup | ensure crucial directories are there
-	@mkdir -p $(M_SHARED)/.terraform
 
 template-tfvars:
 	#AzBI | template-tfvars | will template .tfvars.json file
