@@ -1,8 +1,6 @@
 ROOT_DIR := $(patsubst %/,%,$(dir $(abspath $(firstword $(MAKEFILE_LIST)))))
 
-VERSION := 0.0.1
-USER := epiphany
-IMAGE := azbi
+AZBI := epiphany/azbi:0.0.1
 
 #makes it easier to replace the value
 M_NAME ?= mkyc-module-tests
@@ -16,12 +14,12 @@ export
 all: init plan apply
 
 clean:
-	@rm -rf $(ROOT_DIR)/shared
+	@rm -rf $(ROOT_DIR)/shared #TODO change root_dir to external dir
 
 init: setup
 	@docker run --rm \
 		-v $(ROOT_DIR)/shared:/shared \
-		-t $(USER)/$(IMAGE):$(VERSION) \
+		-t $(AZBI) \
 		init \
 		M_VMS_COUNT=2 \
 		M_PUBLIC_IPS=false \
@@ -30,7 +28,7 @@ init: setup
 plan: setup
 	@docker run --rm \
 		-v $(ROOT_DIR)/shared:/shared \
-		-t $(USER)/$(IMAGE):$(VERSION) \
+		-t $(AZBI) \
 		plan \
 		M_ARM_CLIENT_ID=$$ARM_CLIENT_ID \
 		M_ARM_CLIENT_SECRET=$$ARM_CLIENT_SECRET \
@@ -40,7 +38,7 @@ plan: setup
 apply: setup
 	@docker run --rm \
 		-v $(ROOT_DIR)/shared:/shared \
-		-t $(USER)/$(IMAGE):$(VERSION) \
+		-t $(AZBI) \
 		apply \
 		M_ARM_CLIENT_ID=$$ARM_CLIENT_ID \
 		M_ARM_CLIENT_SECRET=$$ARM_CLIENT_SECRET \
@@ -50,7 +48,7 @@ apply: setup
 output: setup
 	@docker run --rm \
 		-v $(ROOT_DIR)/shared:/shared \
-		-t $(USER)/$(IMAGE):$(VERSION) \
+		-t $(AZBI) \
 		output \
 		M_ARM_CLIENT_ID=$$ARM_CLIENT_ID \
 		M_ARM_CLIENT_SECRET=$$ARM_CLIENT_SECRET \
@@ -60,7 +58,7 @@ output: setup
 destroy-plan: setup
 	@docker run --rm \
 		-v $(ROOT_DIR)/shared:/shared \
-		-t $(USER)/$(IMAGE):$(VERSION) \
+		-t $(AZBI) \
 		plan-destroy \
 		M_ARM_CLIENT_ID=$$ARM_CLIENT_ID \
 		M_ARM_CLIENT_SECRET=$$ARM_CLIENT_SECRET \
@@ -70,7 +68,7 @@ destroy-plan: setup
 destroy: setup
 	@docker run --rm \
 		-v $(ROOT_DIR)/shared:/shared \
-		-t $(USER)/$(IMAGE):$(VERSION) \
+		-t $(AZBI) \
 		destroy \
 		M_ARM_CLIENT_ID=$$ARM_CLIENT_ID \
 		M_ARM_CLIENT_SECRET=$$ARM_CLIENT_SECRET \
