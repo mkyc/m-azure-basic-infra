@@ -1,5 +1,5 @@
-VERSION := 0.0.1
-USER := epiphany
+VERSION ?= 0.0.1
+USER := epiphanyplatform
 IMAGE := azbi
 
 #used for correctly setting shared folder permissions
@@ -19,7 +19,7 @@ build: guard-VERSION guard-IMAGE guard-USER
 release: guard-VERSION guard-IMAGE guard-USER
 	docker build \
 		--build-arg ARG_M_VERSION=$(VERSION) \
-		-t $(USER)/$(IMAGE):$(VERSION)-release \
+		-t $(USER)/$(IMAGE):$(VERSION) \
 		.
 
 guard-%:
