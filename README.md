@@ -1,4 +1,4 @@
-# m-azure-basic-infra
+# m-azure-basic-infrastructure
 Epiphany Module: Azure Basic Infrastructure
 
 # Prepare service principal
@@ -37,4 +37,16 @@ ARM_SUBSCRIPTION_ID ?= "id field"
 ARM_TENANT_ID ?= "tenant field"
 EOF
 make all
+```
+
+# Release module
+
+```
+make release
+```
+
+or if you want to set different version number: 
+
+```
+make release VERSION=number_of_your_choice
 ```
