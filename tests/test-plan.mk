@@ -13,7 +13,7 @@ plan-2-machines-no-pubips-named:
 
 check-2-machines-no-pubips-named-rsa-plan:
 	#	will test if file ./shared/state.yml exists
-	@if ! test -f $(ROOT_DIR)/shared/azbi/azbi-config.yml; then exit 1 ; fi
+	@if ! test -f $(ROOT_DIR)/shared/state.yml; then exit 1 ; fi
 	#	will test if file ./shared/state.yml has expected content
 	@cmp -b $(ROOT_DIR)/shared/state.yml $(ROOT_DIR)/mocks/plan/state.yml
 	#	will test if file ./shared/azbi/terraform-apply.tfplan exists
