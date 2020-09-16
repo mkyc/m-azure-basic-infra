@@ -6,7 +6,7 @@ IMAGE := azbi
 HOST_UID := $(shell id -u)
 HOST_GID := $(shell id -g)
 
-.PHONY: build metadata
+.PHONY: build test release metadata
 
 build: guard-VERSION guard-IMAGE guard-USER
 	docker build \
@@ -15,6 +15,9 @@ build: guard-VERSION guard-IMAGE guard-USER
 		--build-arg ARG_HOST_GID=$(HOST_GID) \
 		-t $(USER)/$(IMAGE):$(VERSION) \
 		.
+
+#prepare service principal variables file before running this target using `make prepare-service-principal` in `tests` directory
+test: build
 
 release: guard-VERSION guard-IMAGE guard-USER
 	docker build \
