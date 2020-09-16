@@ -21,7 +21,8 @@ build: guard-VERSION guard-IMAGE guard-USER
 #prepare service principal variables file before running this target using `make prepare-service-principal` in `tests` directory
 #test targets are located in ./test.mk file
 test: build \
-	test-default-config
+	test-default-config \
+	test-config-with-variables
 
 release: guard-VERSION guard-IMAGE guard-USER
 	docker build \
