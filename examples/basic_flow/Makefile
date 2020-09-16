@@ -1,9 +1,9 @@
 ROOT_DIR := $(patsubst %/,%,$(dir $(abspath $(firstword $(MAKEFILE_LIST)))))
 
-AZBI := epiphany/azbi:0.0.1
+AZBI := epiphanyplatform/azbi:0.0.1
 
 #makes it easier to replace the value
-M_NAME ?= mkyc-module-tests
+M_NAME ?= azbi-module-tests
 
 VMS_RSA_FILENAME = vms_rsa
 
