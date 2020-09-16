@@ -16,7 +16,7 @@ export
 all: init plan apply
 
 clean:
-	@rm -rf $(ROOT_DIR)/shared #TODO change root_dir to external dir
+	@rm -rf $(ROOT_DIR)/shared
 
 init: setup
 	@docker run --rm \

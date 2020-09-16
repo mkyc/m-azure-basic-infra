@@ -4,10 +4,13 @@ IMAGE_NAME := epiphanyplatform/azbi:0.0.1
 
 M_NAME ?= azbi-module-tests
 
-VMS_RSA_FILENAME = vms_rsa
+VMS_RSA_FILENAME = test_vms_rsa
 
--include $(ROOT_DIR)/service-principal.mk
-include $(ROOT_DIR)/templates.mk
+-include service-principal.mk
+include templates.mk
+
+#Tests makefiles
+include test-default-config.mk
 
 export
 
@@ -19,3 +22,12 @@ guard-%:
 		echo "Environment variable $* not set"; \
 		exit 1; \
 	fi
+
+setup: $(ROOT_DIR)/shared/$(VMS_RSA_FILENAME)
+
+$(ROOT_DIR)/shared/$(VMS_RSA_FILENAME):
+	@mkdir -p $(dir $@)
+	@ssh-keygen -t rsa -b 4096 -f $@ -N '' 2>&1 >/dev/null
+
+clean:
+	@rm -rf $(ROOT_DIR)/shared

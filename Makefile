@@ -2,6 +2,8 @@ VERSION ?= 0.0.1
 USER := epiphanyplatform
 IMAGE := azbi
 
+include ./test.mk
+
 #used for correctly setting shared folder permissions
 HOST_UID := $(shell id -u)
 HOST_GID := $(shell id -g)
@@ -17,7 +19,9 @@ build: guard-VERSION guard-IMAGE guard-USER
 		.
 
 #prepare service principal variables file before running this target using `make prepare-service-principal` in `tests` directory
-test: build
+#test targets are located in ./test.mk file
+test: build \
+	test-default-config
 
 release: guard-VERSION guard-IMAGE guard-USER
 	docker build \
