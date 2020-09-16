@@ -12,4 +12,14 @@ test-config-with-variables:
 	@cd tests ; $(MAKE) init-2-machines-no-pubips-named
 	@cd tests ; $(MAKE) check-2-machines-no-pubips-named-rsa-config-content
 	@cd tests ; $(MAKE) clean
-	#finished default config tests
+	#finished config with variables tests
+
+test-plan:
+	#will run plan tests
+	@cd tests ; $(MAKE) clean
+	@cd tests ; $(MAKE) init-2-machines-no-pubips-named
+	@cd tests ; $(MAKE) check-2-machines-no-pubips-named-rsa-config-content
+	@cd tests ; $(MAKE) plan-2-machines-no-pubips-named
+	@cd tests ; $(MAKE) check-2-machines-no-pubips-named-rsa-plan
+	@cd tests ; $(MAKE) clean
+	#finished plan tests

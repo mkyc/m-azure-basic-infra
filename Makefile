@@ -22,7 +22,8 @@ build: guard-VERSION guard-IMAGE guard-USER
 #test targets are located in ./test.mk file
 test: build \
 	test-default-config \
-	test-config-with-variables
+	test-config-with-variables \
+	test-plan
 
 release: guard-VERSION guard-IMAGE guard-USER
 	docker build \

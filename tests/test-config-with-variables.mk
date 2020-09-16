@@ -15,4 +15,4 @@ check-2-machines-no-pubips-named-rsa-config-content:
 	#	will test if file ./shared/azbi/azbi-config.yml exists
 	@if ! test -f $(ROOT_DIR)/shared/azbi/azbi-config.yml; then exit 1 ; fi
 	#	will test if file ./shared/azbi/azbi-config.yml has expected content
-	@cmp -b $(ROOT_DIR)/shared/azbi/azbi-config.yml $(ROOT_DIR)/mocks/config-with-variables-test.yml
+	@cmp -b $(ROOT_DIR)/shared/azbi/azbi-config.yml $(ROOT_DIR)/mocks/config-with-variables/config.yml

@@ -12,6 +12,7 @@ include templates.mk
 #Tests makefiles
 include test-default-config.mk
 include test-config-with-variables.mk
+include test-plan-apply.mk
 
 export
 
