@@ -3,3 +3,4 @@
 *.swp
 *.swo
 **/shared/
+/service-principal.mk

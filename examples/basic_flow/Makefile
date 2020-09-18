@@ -18,6 +18,12 @@ all: init plan apply
 clean:
 	@rm -rf $(ROOT_DIR)/shared
 
+
+metadata:
+	@docker run --rm \
+		-t $(AZBI) \
+		metadata
+
 init: setup
 	@docker run --rm \
 		-v $(ROOT_DIR)/shared:/shared \
