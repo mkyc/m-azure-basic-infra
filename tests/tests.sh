@@ -1,53 +1,114 @@
 #!/usr/bin/env bash
 
-usage() {
+function usage() {
   echo "usage:
-    $0 clean
-    $0 init-default-config [image_name]
-    $0 check-default-config-content [image_name]
-    $0 init-2-machines-no-public-ips-named [image_name]
-    $0 check-2-machines-no-public-ips-named-rsa-config-content [image_name]
-    $0 plan-2-machines-no-public-ips-named [image_name] ARM_CLIENT_ID ARM_CLIENT_SECRET ARM_SUBSCRIPTION_ID ARM_TENANT_ID
-    $0 check-2-machines-no-public-ips-named-rsa-plan [image_name]
-    $0 apply-2-machines-no-public-ips-named [image_name] ARM_CLIENT_ID ARM_CLIENT_SECRET ARM_SUBSCRIPTION_ID ARM_TENANT_ID
-    $0 check-2-machines-no-public-ips-named-rsa-apply [image_name]
-    $0 validate-azure-resources-presence [image_name] ARM_CLIENT_ID ARM_CLIENT_SECRET ARM_SUBSCRIPTION_ID ARM_TENANT_ID
-    $0 cleanup-after-apply [image_name] ARM_CLIENT_ID ARM_CLIENT_SECRET ARM_SUBSCRIPTION_ID ARM_TENANT_ID
+    $0 cleanup
+    $0 setup
+    $0 generate_junit_report
+    $0 test-default-config-suite [image_name]
+    $0 test-config-with-variables-suite [image_name]
+    $0 test-plan-suite [image_name] [ARM_CLIENT_ID] [ARM_CLIENT_SECRET] [ARM_SUBSCRIPTION_ID] [ARM_TENANT_ID]
+    $0 test-apply-suite [image_name] [ARM_CLIENT_ID] [ARM_CLIENT_SECRET] [ARM_SUBSCRIPTION_ID] [ARM_TENANT_ID]
     "
 }
 
-clean() {
-  rm -rf "$TESTS_DIR"/shared
+function test-default-config-suite() {
+  #$1 is IMAGE_NAME
+  start_suite test-default-config
+
+  r=0
+  run_test init-default-config "$r" "$1"
+  r=$?
+  run_test check-default-config-content "$r" "$1"
+  r=$?
+
+  stop_suite test-default-config "$r"
 }
 
-setup() {
-  mkdir -p "$TESTS_DIR"/shared/
-  if [[ ! -f "$TESTS_DIR"/shared/test_vms_rsa ]]
-  then
-    ssh-keygen -t rsa -b 4096 -f "$TESTS_DIR"/shared/test_vms_rsa -N '' >/dev/null 2>&1
-  fi
+function test-config-with-variables-suite() {
+  #$1 is IMAGE_NAME
+  start_suite test-config-with-variables
+
+  r=0
+  run_test init-2-machines-no-public-ips-named "$r" "$1"
+  r=$?
+  run_test check-2-machines-no-public-ips-named-rsa-config-content "$r" "$1"
+  r=$?
+
+  stop_suite test-config-with-variables "$r"
 }
 
-init-default-config() {
+
+function test-plan-suite() {
+  #$1 is IMAGE_NAME
+  #$2 is ARM_CLIENT_ID
+  #$3 is ARM_CLIENT_SECRET
+  #$4 is ARM_SUBSCRIPTION_ID
+  #$5 is ARM_TENANT_ID
+  start_suite test-plan
+
+  r=0
+  run_test init-2-machines-no-public-ips-named "$r" "$1"
+  r=$?
+  run_test check-2-machines-no-public-ips-named-rsa-config-content "$r" "$1"
+  r=$?
+  run_test plan-2-machines-no-public-ips-named "$r" "$1 $2 $3 $4 $5"
+  r=$?
+  run_test check-2-machines-no-public-ips-named-rsa-plan "$r" "$1"
+  r=$?
+
+  stop_suite test-plan "$r"
+}
+
+function test-apply-suite() {
+  #$1 is IMAGE_NAME
+  #$2 is ARM_CLIENT_ID
+  #$3 is ARM_CLIENT_SECRET
+  #$4 is ARM_SUBSCRIPTION_ID
+  #$5 is ARM_TENANT_ID
+  start_suite test-apply
+
+  r=0
+  run_test init-2-machines-no-public-ips-named "$r" "$1"
+  r=$?
+  run_test check-2-machines-no-public-ips-named-rsa-config-content "$r" "$1"
+  r=$?
+  run_test plan-2-machines-no-public-ips-named "$r" "$1 $2 $3 $4 $5"
+  r=$?
+  run_test check-2-machines-no-public-ips-named-rsa-plan "$r" "$1"
+  r=$?
+  run_test apply-2-machines-no-public-ips-named "$r" "$1 $2 $3 $4 $5"
+  r=$?
+  run_test check-2-machines-no-public-ips-named-rsa-apply "$r" "$1"
+  r=$?
+  run_test validate-azure-resources-presence "$r" "$1 $2 $3 $4 $5"
+  r=0
+  run_test cleanup-after-apply "$r" "$1 $2 $3 $4 $5"
+  r=$?
+
+  stop_suite test-apply "$r"
+}
+
+function init-default-config() {
   echo "#	will initialize config with \"docker run ... init\" command"
   docker run --rm \
     -v "$TESTS_DIR"/shared:/shared \
-    -t "$IMAGE_NAME" \
+    -t "$1" \
     init
 }
 
-check-default-config-content() {
+function check-default-config-content() {
   echo "#	will test if file ./shared/azbi/azbi-config.yml exists"
   if ! test -f "$TESTS_DIR"/shared/azbi/azbi-config.yml; then exit 1; fi
   echo "# will test if file ./shared/azbi/azbi-config.yml has expected content"
   cmp -b "$TESTS_DIR"/shared/azbi/azbi-config.yml "$TESTS_DIR"/mocks/default-config/config.yml
 }
 
-init-2-machines-no-public-ips-named() {
+function init-2-machines-no-public-ips-named() {
   echo "#	will initialize config with \"docker run ... init M_VMS_COUNT=2 M_PUBLIC_IPS=false M_NAME=azbi-module-tests M_VMS_RSA=test_vms_rsa command\""
   docker run --rm \
     -v "$TESTS_DIR"/shared:/shared \
-    -t "$IMAGE_NAME" \
+    -t "$1" \
     init \
     M_VMS_COUNT=2 \
     M_PUBLIC_IPS=false \
@@ -55,26 +116,26 @@ init-2-machines-no-public-ips-named() {
     M_VMS_RSA=test_vms_rsa
 }
 
-check-2-machines-no-public-ips-named-rsa-config-content() {
+function check-2-machines-no-public-ips-named-rsa-config-content() {
   echo "#	will test if file ./shared/azbi/azbi-config.yml exists"
   if ! test -f "$TESTS_DIR"/shared/azbi/azbi-config.yml; then exit 1; fi
   echo "#	will test if file ./shared/azbi/azbi-config.yml has expected content"
   cmp -b "$TESTS_DIR"/shared/azbi/azbi-config.yml "$TESTS_DIR"/mocks/config-with-variables/config.yml
 }
 
-plan-2-machines-no-public-ips-named() {
+function plan-2-machines-no-public-ips-named() {
   echo "#	will plan with \"docker run ... plan M_ARM_CLIENT_ID=... M_ARM_CLIENT_SECRET=... M_ARM_SUBSCRIPTION_ID=... M_ARM_TENANT_ID=...\""
   docker run --rm \
     -v "$TESTS_DIR"/shared:/shared \
-    -t "$IMAGE_NAME" \
+    -t "$1" \
     plan \
-    M_ARM_CLIENT_ID="$1" \
-    M_ARM_CLIENT_SECRET="$2" \
-    M_ARM_SUBSCRIPTION_ID="$3" \
-    M_ARM_TENANT_ID="$4"
+    M_ARM_CLIENT_ID="$2" \
+    M_ARM_CLIENT_SECRET="$3" \
+    M_ARM_SUBSCRIPTION_ID="$4" \
+    M_ARM_TENANT_ID="$5"
 }
 
-check-2-machines-no-public-ips-named-rsa-plan() {
+function check-2-machines-no-public-ips-named-rsa-plan() {
   echo "#	will test if file ./shared/state.yml exists"
   if ! test -f "$TESTS_DIR"/shared/state.yml; then exit 1; fi
   echo "#	will test if file ./shared/state.yml has expected content"
@@ -86,19 +147,19 @@ check-2-machines-no-public-ips-named-rsa-plan() {
   if [[ ! $filesize -gt 0 ]]; then exit 1; fi
 }
 
-apply-2-machines-no-public-ips-named() {
+function apply-2-machines-no-public-ips-named() {
   echo "#	will apply with \"docker run ... apply M_ARM_CLIENT_ID=... M_ARM_CLIENT_SECRET=... M_ARM_SUBSCRIPTION_ID=... M_ARM_TENANT_ID=...\""
   docker run --rm \
     -v "$TESTS_DIR"/shared:/shared \
-    -t "$IMAGE_NAME" \
+    -t "$1" \
     apply \
-    M_ARM_CLIENT_ID="$1" \
-    M_ARM_CLIENT_SECRET="$2" \
-    M_ARM_SUBSCRIPTION_ID="$3" \
-    M_ARM_TENANT_ID="$4"
+    M_ARM_CLIENT_ID="$2" \
+    M_ARM_CLIENT_SECRET="$3" \
+    M_ARM_SUBSCRIPTION_ID="$4" \
+    M_ARM_TENANT_ID="$5"
 }
 
-check-2-machines-no-public-ips-named-rsa-apply() {
+function check-2-machines-no-public-ips-named-rsa-apply() {
   echo "#	will test if file ./shared/state.yml exists"
   if ! test -f "$TESTS_DIR"/shared/state.yml; then exit 1; fi
   echo "#	will test if file ./shared/state.yml has expected content"
@@ -110,48 +171,78 @@ check-2-machines-no-public-ips-named-rsa-apply() {
   if [[ ! $filesize -gt 0 ]]; then exit 1; fi
 }
 
-validate-azure-resources-presence() {
+function validate-azure-resources-presence() {
   echo "#	will do az login"
-  az login --service-principal --username "$1" --password "$2" --tenant "$4" -o none
+  az login --service-principal --username "$2" --password "$3" --tenant "$5" -o none
   echo "#	will test if there is expected resource group in subscription"
-  group_id=$(az group show --subscription "$3" --name azbi-module-tests-rg --query id)
+  group_id=$(az group show --subscription "$4" --name azbi-module-tests-rg --query id)
   if [[ -z $group_id ]]; then exit 1; fi
   echo "#	will test if there is expected amount of machines in resource group"
-  vms_count=$(az vm list --subscription "$3" --resource-group azbi-module-tests-rg -o yaml | yq r - --length)
+  vms_count=$(az vm list --subscription "$4" --resource-group azbi-module-tests-rg -o yaml | yq r - --length)
   if [[ $vms_count -ne 2 ]]; then exit 1; fi
 }
 
-cleanup-after-apply() {
+function cleanup-after-apply() {
   echo "#	will apply with \"docker run ... plan-destroy M_ARM_CLIENT_ID=... M_ARM_CLIENT_SECRET=... M_ARM_SUBSCRIPTION_ID=... M_ARM_TENANT_ID=...\""
   docker run --rm \
     -v "$TESTS_DIR"/shared:/shared \
-    -t "$IMAGE_NAME" \
+    -t "$1" \
     plan-destroy \
-    M_ARM_CLIENT_ID="$1" \
-    M_ARM_CLIENT_SECRET="$2" \
-    M_ARM_SUBSCRIPTION_ID="$3" \
-    M_ARM_TENANT_ID="$4"
+    M_ARM_CLIENT_ID="$2" \
+    M_ARM_CLIENT_SECRET="$3" \
+    M_ARM_SUBSCRIPTION_ID="$4" \
+    M_ARM_TENANT_ID="$5"
   echo "#	will apply with \"docker run ... destroy M_ARM_CLIENT_ID=... M_ARM_CLIENT_SECRET=... M_ARM_SUBSCRIPTION_ID=... M_ARM_TENANT_ID=...\""
   docker run --rm \
     -v "$TESTS_DIR"/shared:/shared \
-    -t "$IMAGE_NAME" \
+    -t "$1" \
     destroy \
-    M_ARM_CLIENT_ID="$1" \
-    M_ARM_CLIENT_SECRET="$2" \
-    M_ARM_SUBSCRIPTION_ID="$3" \
-    M_ARM_TENANT_ID="$4"
+    M_ARM_CLIENT_ID="$2" \
+    M_ARM_CLIENT_SECRET="$3" \
+    M_ARM_SUBSCRIPTION_ID="$4" \
+    M_ARM_TENANT_ID="$5"
 }
 
 TESTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-IMAGE_NAME=$2
+
+# shellcheck disable=SC1090
+source "$(dirname "$0")/suite.sh"
 
 case $1 in
-clean)
+test-default-config-suite)
+  if [[ $# -ne 2 ]]; then
+    usage
+    exit 1
+  fi
+  test-default-config-suite "$2"
+  ;;
+test-config-with-variables-suite)
+  if [[ $# -ne 2 ]]; then
+    usage
+    exit 1
+  fi
+  test-config-with-variables-suite "$2"
+  ;;
+test-plan-suite)
+  if [[ $# -ne 6 ]]; then
+    usage
+    exit 1
+  fi
+  test-plan-suite "$2" "$3" "$4" "$5" "$6"
+  ;;
+test-apply-suite)
+  if [[ $# -ne 6 ]]; then
+    usage
+    exit 1
+  fi
+  test-apply-suite "$2" "$3" "$4" "$5" "$6"
+  ;;
+cleanup)
   if [[ $# -ne 1 ]]; then
     usage
     exit 1
   fi
-  clean
+  cleanup
   ;;
 setup)
   if [[ $# -ne 1 ]]; then
@@ -160,75 +251,12 @@ setup)
   fi
   setup
   ;;
-init-default-config)
-  if [[ $# -ne 2 ]]; then
+generate_junit_report)
+  if [[ $# -ne 1 ]]; then
     usage
     exit 1
   fi
-  init-default-config
-  ;;
-check-default-config-content)
-  if [[ $# -ne 2 ]]; then
-    usage
-    exit 1
-  fi
-  check-default-config-content
-  ;;
-init-2-machines-no-public-ips-named)
-  if [[ $# -ne 2 ]]; then
-    usage
-    exit 1
-  fi
-  init-2-machines-no-public-ips-named
-  ;;
-check-2-machines-no-public-ips-named-rsa-config-content)
-  if [[ $# -ne 2 ]]; then
-    usage
-    exit 1
-  fi
-  check-2-machines-no-public-ips-named-rsa-config-content
-  ;;
-plan-2-machines-no-public-ips-named)
-  if [[ $# -ne 6 ]]; then
-    usage
-    exit 1
-  fi
-  plan-2-machines-no-public-ips-named "$3" "$4" "$5" "$6"
-  ;;
-check-2-machines-no-public-ips-named-rsa-plan)
-  if [[ $# -ne 2 ]]; then
-    usage
-    exit 1
-  fi
-  check-2-machines-no-public-ips-named-rsa-plan
-  ;;
-apply-2-machines-no-public-ips-named)
-  if [[ $# -ne 6 ]]; then
-    usage
-    exit 1
-  fi
-  apply-2-machines-no-public-ips-named "$3" "$4" "$5" "$6"
-  ;;
-check-2-machines-no-public-ips-named-rsa-apply)
-  if [[ $# -ne 2 ]]; then
-    usage
-    exit 1
-  fi
-  check-2-machines-no-public-ips-named-rsa-apply
-  ;;
-validate-azure-resources-presence)
-  if [[ $# -ne 6 ]]; then
-    usage
-    exit 1
-  fi
-  validate-azure-resources-presence "$3" "$4" "$5" "$6"
-  ;;
-cleanup-after-apply)
-  if [[ $# -ne 6 ]]; then
-    usage
-    exit 1
-  fi
-  cleanup-after-apply "$3" "$4" "$5" "$6"
+  generate_junit_report
   ;;
 *)
   usage
