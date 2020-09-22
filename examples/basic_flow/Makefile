@@ -11,7 +11,7 @@ VMS_RSA_FILENAME = vms_rsa
 
 export
 
-.PHONY: all clean init plan apply output destroy-plan destroy setup
+.PHONY: all clean metadata init plan apply output destroy-plan destroy setup
 
 all: init plan apply
 

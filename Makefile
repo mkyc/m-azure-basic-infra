@@ -23,7 +23,7 @@ export
 HOST_UID := $(shell id -u)
 HOST_GID := $(shell id -g)
 
-.PHONY: build test release metadata prepare-service-principal
+.PHONY: build test release prepare-service-principal
 
 build: guard-VERSION guard-IMAGE guard-USER
 	docker build \
