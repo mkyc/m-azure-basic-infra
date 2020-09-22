@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 function run_test() {
   # $1 is function name
   # $2 is result of previous test

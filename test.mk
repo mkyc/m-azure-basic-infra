@@ -1,18 +1,3 @@
-define t_test
-	echo === RUN $1 >> $(ROOT_DIR)/output.txt
-	-cd tests ; $(MAKE) $1 > $(ROOT_DIR)/output-$1.txt 2>&1 ;								\
-	EXIT_CODE=$$? ;																			\
-	if [ $$EXIT_CODE == "0" ] ; then 														\
-		echo "--- PASS: $1 (1.00 seconds)" >> $(ROOT_DIR)/output.txt ;						\
-	else 																					\
-		echo "--- FAIL: $1 (1.00 seconds)" >> $(ROOT_DIR)/output.txt ;						\
-		cat $(ROOT_DIR)/output-$1.txt | awk '{print "\t"$$0}' >> $(ROOT_DIR)/output.txt ;	\
-		rm $(ROOT_DIR)/output-$1.txt ; 														\
-	fi ;																					\
-	exit $$EXIT_CODE
-	echo END TEST >> $(ROOT_DIR)/output.txt
-endef
-
 test-default-config:
 	#will run default config tests
 	@bash tests/tests.sh cleanup

@@ -13,7 +13,6 @@ ARM_SUBSCRIPTION_ID ?= $(SUBSCRIPTION_ID)
 ARM_TENANT_ID ?= $(TENANT_ID)
 endef
 
-
 -include ./service-principal.mk
 include ./test.mk
 
