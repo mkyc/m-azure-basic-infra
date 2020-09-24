@@ -1,20 +1,37 @@
 #!/usr/bin/env bash
 
+set -o errexit -o nounset -o pipefail
+
+function self_check() {
+    local required_binaries=(which bc awk ssh-keygen go-junit-report python)
+    local failed=1  # false
+    local binary
+    for binary in ${required_binaries[@]}; do
+        if ! which $binary >/dev/null 2>&1; then
+            failed=0  # true
+            echo "FATAL: $binary is missing from PATH"
+        fi
+    done
+    if [[ $failed -eq 0 ]]; then
+        exit 1
+    fi
+}
+
 function run_test() {
   # $1 is function name
   # $2 is result of previous test
   # $3 are all target function arguments
-  fn_name=$1
+  local fn_name=$1
   shift
-  previous_r=$1
+  local previous_r=$1
   shift
-  if [[ "$previous_r" -eq "0" ]]; then
+  local result
+  if [[ "$previous_r" -eq 0 ]]; then
     start_test "$fn_name"
     # shellcheck disable=SC2068
-    $fn_name $@ >>"$TESTS_DIR"/output/"$fn_name"-tests.out 2>&1
-    result=$?
-    stop_test "$fn_name" $result
-    return $result
+    $fn_name $@ >>"$TESTS_DIR"/output/"$fn_name"-tests.out 2>&1 && result=$? || result=$?
+    stop_test "$fn_name" "$result"
+    return "$result"
   else
     start_test "$fn_name"
     skip_test "$fn_name"
@@ -24,19 +41,19 @@ function run_test() {
 
 function start_suite() {
   #$1 is test name
-  suite_start_time=$(microtime)
+  SUITE_START_TIME=$(microtime)
 }
 
 function stop_suite() {
   #$1 is test name
   #$2 is $?
-  if [[ $2 == "0" ]]; then
-    duration=$(echo "$(microtime) - $suite_start_time" | bc)
-    execution_time=$(printf "%.2fs" "$duration")
+  if [[ $2 -eq 0 ]]; then
+    local duration=$(echo "$(microtime) - $SUITE_START_TIME" | bc)
+    local execution_time=$(printf "%.2fs" "$duration")
     printf "PASS\nok\t\t%s %s\n" "$1" "$execution_time" >>"$TESTS_DIR"/tests.out
   else
-    duration=$(echo "$(microtime) - $suite_start_time" | bc)
-    execution_time=$(printf "%.2fs" "$duration")
+    local duration=$(echo "$(microtime) - $SUITE_START_TIME" | bc)
+    local execution_time=$(printf "%.2fs" "$duration")
     printf "FAIL\nexit status %s\nFAIL\t\t%s %s\n" "$2" "$1" "$execution_time" >>"$TESTS_DIR"/tests.out
   fi
 }
@@ -44,13 +61,13 @@ function stop_suite() {
 function start_test() {
   #$1 is test name
   echo "=== RUN $1" >>"$TESTS_DIR"/tests.out
-  test_start_time=$(microtime)
+  TEST_START_TIME=$(microtime)
 }
 
 function stop_test() {
   #$1 is test name
   #$2 is $?
-  if [[ $2 == "0" ]]; then
+  if [[ $2 -eq 0 ]]; then
     pass_test "$1"
   else
     fail_test "$1"
@@ -59,23 +76,23 @@ function stop_test() {
 
 function pass_test() {
   #$1 is test name
-  duration=$(echo "$(microtime) - $test_start_time" | bc)
-  execution_time=$(printf "%.2f seconds" "$duration")
+  local duration=$(echo "$(microtime) - $TEST_START_TIME" | bc)
+  local execution_time=$(printf "%.2f seconds" "$duration")
   echo "--- PASS: $1 ($execution_time)" >>"$TESTS_DIR"/tests.out
 }
 
 function fail_test() {
   #$1 is test name
-  duration=$(echo "$(microtime) - $test_start_time" | bc)
-  execution_time=$(printf "%.2f seconds" "$duration")
+  local duration=$(echo "$(microtime) - $TEST_START_TIME" | bc)
+  local execution_time=$(printf "%.2f seconds" "$duration")
   echo "--- FAIL: $1 ($execution_time)" >>"$TESTS_DIR"/tests.out
   awk <"$TESTS_DIR"/output/"$1"-tests.out '{print "\t\t"$0}' >>"$TESTS_DIR"/tests.out
 }
 
 function skip_test() {
   #$1 is test name
-  duration=$(echo "$(microtime) - $test_start_time" | bc)
-  execution_time=$(printf "%.2f seconds" "$duration")
+  local duration=$(echo "$(microtime) - $TEST_START_TIME" | bc)
+  local execution_time=$(printf "%.2f seconds" "$duration")
   echo "--- SKIP: $1 ($execution_time)" >>"$TESTS_DIR"/tests.out
   printf "\tprevious test failed\n" >>"$TESTS_DIR"/tests.out
 }
@@ -100,5 +117,7 @@ function generate_junit_report() {
 
 function microtime() {
   #this is due to macOS BSD'ish date command
-  python -c 'import time; print time.time()'
+  python -c 'import time; print(time.time())'
 }
+
+self_check
