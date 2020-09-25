@@ -1,9 +1,9 @@
 ROOT_DIR := $(patsubst %/,%,$(dir $(abspath $(firstword $(MAKEFILE_LIST)))))
 
-AZBI := epiphany/azbi:0.0.1
+AZBI := epiphanyplatform/azbi:0.0.1
 
 #makes it easier to replace the value
-M_NAME ?= mkyc-module-tests
+M_NAME ?= azbi-module-tests
 
 VMS_RSA_FILENAME = vms_rsa
 
@@ -11,12 +11,18 @@ VMS_RSA_FILENAME = vms_rsa
 
 export
 
-.PHONY: all clean init plan apply output destroy-plan destroy setup
+.PHONY: all clean metadata init plan apply output destroy-plan destroy setup
 
 all: init plan apply
 
 clean:
-	@rm -rf $(ROOT_DIR)/shared #TODO change root_dir to external dir
+	@rm -rf $(ROOT_DIR)/shared
+
+
+metadata:
+	@docker run --rm \
+		-t $(AZBI) \
+		metadata
 
 init: setup
 	@docker run --rm \

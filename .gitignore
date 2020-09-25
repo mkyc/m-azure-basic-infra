@@ -3,3 +3,6 @@
 *.swp
 *.swo
 **/shared/
+/service-principal.mk
+/tests/repot.xml
+/tests/tests.out

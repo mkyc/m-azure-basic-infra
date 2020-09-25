@@ -1,0 +1,22 @@
+kind: state
+azbi:
+  status: applied
+  size: 2
+  use_public_ip: false
+  location: "germanywestcentral"
+  name: "azbi-module-tests"
+  address_space:
+    - "10.0.0.0/16"
+  address_prefixes:
+    - "10.0.1.0/24"
+  rsa_pub_path: "/shared/test_vms_rsa.pub"
+  output:
+    private_ips.value:
+      - 10.0.1.5
+      - 10.0.1.4
+    public_ips.value: []
+    rg_name.value: azbi-module-tests-rg
+    vm_names.value:
+      - azbi-module-tests-all-0
+      - azbi-module-tests-all-1
+    vnet_name.value: azbi-module-tests-vnet
