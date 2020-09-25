@@ -77,14 +77,16 @@ function test-apply-suite() {
   start_suite test-apply
 
   local r=0
-  run_test init-2-machines-no-public-ips-named "$r" "$1"                     && r=$? || r=$?
-  run_test check-2-machines-no-public-ips-named-rsa-config-content "$r" "$1" && r=$? || r=$?
-  run_test plan-2-machines-no-public-ips-named "$r" "$1 $2 $3 $4 $5"         && r=$? || r=$?
-  run_test check-2-machines-no-public-ips-named-rsa-plan "$r" "$1"           && r=$? || r=$?
-  run_test apply-2-machines-no-public-ips-named "$r" "$1 $2 $3 $4 $5"        && r=$? || r=$?
-  run_test check-2-machines-no-public-ips-named-rsa-apply "$r" "$1"          && r=$? || r=$?
-  run_test validate-azure-resources-presence "$r" "$1 $2 $3 $4 $5"           && r=0  || r=0
-  run_test cleanup-after-apply "$r" "$1 $2 $3 $4 $5"                         && r=$? || r=$?
+  run_test init-2-machines-no-public-ips-named "$r" "$1"                          && r=$? || r=$?
+  run_test check-2-machines-no-public-ips-named-rsa-config-content "$r" "$1"      && r=$? || r=$?
+  run_test plan-2-machines-no-public-ips-named "$r" "$1 $2 $3 $4 $5"              && r=$? || r=$?
+  run_test check-2-machines-no-public-ips-named-rsa-plan "$r" "$1"                && r=$? || r=$?
+  run_test apply-2-machines-no-public-ips-named "$r" "$1 $2 $3 $4 $5"             && r=$? || r=$?
+  run_test check-2-machines-no-public-ips-named-rsa-apply "$r" "$1"               && r=$? || r=$?
+  run_test plan-2-machines-no-public-ips-enable-public-ips "$r" "$1 $2 $3 $4 $5"  && r=$? || r=$?
+  run_test apply-2-machines-no-public-ips-enable-public-ips "$r" "$1 $2 $3 $4 $5" && r=$? || r=$?
+  run_test validate-azure-resources-presence "$r" "$1 $2 $3 $4 $5"                && r=0  || r=0
+  run_test cleanup-after-apply "$r" "$1 $2 $3 $4 $5"                              && r=$? || r=$?
 
   stop_suite test-apply "$r"
 }
@@ -171,6 +173,32 @@ function check-2-machines-no-public-ips-named-rsa-apply() {
   if [[ ! $filesize -gt 0 ]]; then exit 1; fi
 }
 
+function plan-2-machines-no-public-ips-enable-public-ips() {
+  echo "#   will enable public ips inside azbi-config.yml"
+  yq w --inplace "$TESTS_DIR"/shared/azbi/azbi-config.yml azbi.use_public_ip true
+  echo "#	will plan with \"docker run ... plan M_ARM_CLIENT_ID=... M_ARM_CLIENT_SECRET=... M_ARM_SUBSCRIPTION_ID=... M_ARM_TENANT_ID=...\""
+  docker run --rm \
+    -v "$TESTS_DIR"/shared:/shared \
+    -t "$1" \
+    plan \
+    M_ARM_CLIENT_ID="$2" \
+    M_ARM_CLIENT_SECRET="$3" \
+    M_ARM_SUBSCRIPTION_ID="$4" \
+    M_ARM_TENANT_ID="$5"
+}
+
+function apply-2-machines-no-public-ips-enable-public-ips() {
+  echo "#	will apply with \"docker run ... apply M_ARM_CLIENT_ID=... M_ARM_CLIENT_SECRET=... M_ARM_SUBSCRIPTION_ID=... M_ARM_TENANT_ID=...\""
+  docker run --rm \
+    -v "$TESTS_DIR"/shared:/shared \
+    -t "$1" \
+    apply \
+    M_ARM_CLIENT_ID="$2" \
+    M_ARM_CLIENT_SECRET="$3" \
+    M_ARM_SUBSCRIPTION_ID="$4" \
+    M_ARM_TENANT_ID="$5"
+}
+
 function validate-azure-resources-presence() {
   echo "#	will do az login"
   az login --service-principal --username "$2" --password "$3" --tenant "$5" -o none
@@ -180,6 +208,8 @@ function validate-azure-resources-presence() {
   echo "#	will test if there is expected amount of machines in resource group"
   local vms_count=$(az vm list --subscription "$4" --resource-group azbi-module-tests-rg -o yaml | yq r - --length)
   if [[ $vms_count -ne 2 ]]; then exit 1; fi
+  local nsg_nic_count=$(az network nsg show --subscription "$4" --resource-group azbi-module-tests-rg --name vm-nic-nsg-0 -o yaml | yq r - networkInterfaces --length)
+  if [[ $nsg_nic_count -ne 2 ]]; then exit 1; fi
 }
 
 function cleanup-after-apply() {
