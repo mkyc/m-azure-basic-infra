@@ -2,7 +2,7 @@
 
 set -o errexit -o nounset -o pipefail
 
-function self-check() {
+function selfcheck() {
   local required_binaries=(which docker az yq ssh)
   local failed=1  # false
   local binary
@@ -34,8 +34,8 @@ function test-default-config-suite() {
   start_suite test-default-config
 
   local r=0
-  run_test init-default-config "$r" "$1"          && r=$? || r=$?
-  run_test check-default-config-content "$r" "$1" && r=$? || r=$?
+  run_test init-default-config "$r" "$1"          && r=0 || r=$?
+  run_test check-default-config-content "$r" "$1" && r=0 || r=$?
 
   stop_suite test-default-config "$r"
 }
@@ -45,8 +45,8 @@ function test-config-with-variables-suite() {
   start_suite test-config-with-variables
 
   local r=0
-  run_test init-2-machines-no-public-ips-named "$r" "$1"                     && r=$? || r=$?
-  run_test check-2-machines-no-public-ips-named-rsa-config-content "$r" "$1" && r=$? || r=$?
+  run_test init-2-machines-no-public-ips-named "$r" "$1"                     && r=0 || r=$?
+  run_test check-2-machines-no-public-ips-named-rsa-config-content "$r" "$1" && r=0 || r=$?
 
   stop_suite test-config-with-variables "$r"
 }
@@ -60,10 +60,10 @@ function test-plan-suite() {
   start_suite test-plan
 
   local r=0
-  run_test init-2-machines-no-public-ips-named "$r" "$1"                     && r=$? || r=$?
-  run_test check-2-machines-no-public-ips-named-rsa-config-content "$r" "$1" && r=$? || r=$?
-  run_test plan-2-machines-no-public-ips-named "$r" "$1 $2 $3 $4 $5"         && r=$? || r=$?
-  run_test check-2-machines-no-public-ips-named-rsa-plan "$r" "$1"           && r=$? || r=$?
+  run_test init-2-machines-no-public-ips-named "$r" "$1"                     && r=0 || r=$?
+  run_test check-2-machines-no-public-ips-named-rsa-config-content "$r" "$1" && r=0 || r=$?
+  run_test plan-2-machines-no-public-ips-named "$r" "$1 $2 $3 $4 $5"         && r=0 || r=$?
+  run_test check-2-machines-no-public-ips-named-rsa-plan "$r" "$1"           && r=0 || r=$?
 
   stop_suite test-plan "$r"
 }
@@ -77,17 +77,17 @@ function test-apply-suite() {
   start_suite test-apply
 
   local r=0
-  run_test init-2-machines-no-public-ips-named "$r" "$1"                          && r=$? || r=$?
-  run_test check-2-machines-no-public-ips-named-rsa-config-content "$r" "$1"      && r=$? || r=$?
-  run_test plan-2-machines-no-public-ips-named "$r" "$1 $2 $3 $4 $5"              && r=$? || r=$?
-  run_test check-2-machines-no-public-ips-named-rsa-plan "$r" "$1"                && r=$? || r=$?
-  run_test apply-2-machines-no-public-ips-named "$r" "$1 $2 $3 $4 $5"             && r=$? || r=$?
-  run_test check-2-machines-no-public-ips-named-rsa-apply "$r" "$1"               && r=$? || r=$?
-  run_test plan-2-machines-no-public-ips-enable-public-ips "$r" "$1 $2 $3 $4 $5"  && r=$? || r=$?
-  run_test apply-2-machines-no-public-ips-enable-public-ips "$r" "$1 $2 $3 $4 $5" && r=$? || r=$?
-  run_test validate-azure-resources-presence "$r" "$1 $2 $3 $4 $5"                && r=0  || r=0
-  run_test validate-ssh-connectivity "$r"                                         && r=0  || r=0
-  run_test cleanup-after-apply "$r" "$1 $2 $3 $4 $5"                              && r=$? || r=$?
+  run_test init-2-machines-no-public-ips-named "$r" "$1"                          && r=0 || r=$?
+  run_test check-2-machines-no-public-ips-named-rsa-config-content "$r" "$1"      && r=0 || r=$?
+  run_test plan-2-machines-no-public-ips-named "$r" "$1 $2 $3 $4 $5"              && r=0 || r=$?
+  run_test check-2-machines-no-public-ips-named-rsa-plan "$r" "$1"                && r=0 || r=$?
+  run_test apply-2-machines-no-public-ips-named "$r" "$1 $2 $3 $4 $5"             && r=0 || r=$?
+  run_test check-2-machines-no-public-ips-named-rsa-apply "$r" "$1"               && r=0 || r=$?
+  run_test plan-2-machines-no-public-ips-enable-public-ips "$r" "$1 $2 $3 $4 $5"  && r=0 || r=$?
+  run_test apply-2-machines-no-public-ips-enable-public-ips "$r" "$1 $2 $3 $4 $5" && r=0 || r=$?
+  run_test validate-azure-resources-presence "$r" "$1 $2 $3 $4 $5"                && r=0 || r=0
+  run_test validate-ssh-connectivity "$r"                                         && r=0 || r=0
+  run_test cleanup-after-apply "$r" "$1 $2 $3 $4 $5"                              && r=0 || r=$?
 
   stop_suite test-apply "$r"
 }
@@ -242,7 +242,7 @@ function cleanup-after-apply() {
     M_ARM_TENANT_ID="$5"
 }
 
-self-check
+selfcheck
 
 TESTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 
