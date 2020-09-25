@@ -3,18 +3,18 @@
 set -o errexit -o nounset -o pipefail
 
 function self-check() {
-    local required_binaries=(which docker az yq)
-    local failed=1  # false
-    local binary
-    for binary in ${required_binaries[@]}; do
-        if ! which $binary >/dev/null 2>&1; then
-            failed=0  # true
-            echo "FATAL: $binary is missing from PATH"
-        fi
-    done
-    if [[ $failed -eq 0 ]]; then
-        exit 1
+  local required_binaries=(which docker az yq)
+  local failed=1  # false
+  local binary
+  for binary in ${required_binaries[@]}; do
+    if ! which $binary >/dev/null 2>&1; then
+      failed=0  # true
+      echo "FATAL: $binary is missing from PATH"
     fi
+  done
+  if [[ $failed -eq 0 ]]; then
+    exit 1
+  fi
 }
 
 function usage() {
