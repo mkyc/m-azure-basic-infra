@@ -3,7 +3,7 @@
 set -o errexit -o nounset -o pipefail
 
 function self-check() {
-  local required_binaries=(which docker az yq)
+  local required_binaries=(which docker az yq ssh)
   local failed=1  # false
   local binary
   for binary in ${required_binaries[@]}; do
@@ -86,6 +86,7 @@ function test-apply-suite() {
   run_test plan-2-machines-no-public-ips-enable-public-ips "$r" "$1 $2 $3 $4 $5"  && r=$? || r=$?
   run_test apply-2-machines-no-public-ips-enable-public-ips "$r" "$1 $2 $3 $4 $5" && r=$? || r=$?
   run_test validate-azure-resources-presence "$r" "$1 $2 $3 $4 $5"                && r=0  || r=0
+  run_test validate-ssh-connectivity "$r"                                         && r=0  || r=0
   run_test cleanup-after-apply "$r" "$1 $2 $3 $4 $5"                              && r=$? || r=$?
 
   stop_suite test-apply "$r"
@@ -210,6 +211,14 @@ function validate-azure-resources-presence() {
   if [[ $vms_count -ne 2 ]]; then exit 1; fi
   local nsg_nic_count=$(az network nsg show --subscription "$4" --resource-group azbi-module-tests-rg --name vm-nic-nsg-0 -o yaml | yq r - networkInterfaces --length)
   if [[ $nsg_nic_count -ne 2 ]]; then exit 1; fi
+}
+
+function validate-ssh-connectivity() {
+  local ssh_options='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectionAttempts=10 -o ControlMaster=no -o BatchMode=yes'
+  local ip_address
+  unset IFS && yq r "$TESTS_DIR"/shared/state.yml 'azbi.output[public_ips.value].*' | while read ip_address; do
+    if ! ssh -q -F /dev/null $ssh_options -i "$TESTS_DIR"/shared/test_vms_rsa -nT "operations@$ip_address" -- uname -a; then exit 1; fi
+  done
 }
 
 function cleanup-after-apply() {
