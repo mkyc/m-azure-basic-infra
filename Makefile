@@ -14,13 +14,18 @@ ARM_TENANT_ID ?= $(TENANT_ID)
 endef
 
 -include ./service-principal.mk
-include ./test.mk
 
 export
 
 #used for correctly setting shared folder permissions
 HOST_UID := $(shell id -u)
 HOST_GID := $(shell id -g)
+
+.PHONY: all
+
+all: build
+
+include ./test.mk
 
 .PHONY: build test release prepare-service-principal
 
