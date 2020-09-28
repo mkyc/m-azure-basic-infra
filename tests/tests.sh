@@ -2,8 +2,8 @@
 
 set -o errexit -o nounset -o pipefail
 
-function self-check() {
-  local required_binaries=(which docker az yq)
+function selfcheck() {
+  local required_binaries=(which docker az yq ssh)
   local failed=1  # false
   local binary
   for binary in ${required_binaries[@]}; do
@@ -34,8 +34,8 @@ function test-default-config-suite() {
   start_suite test-default-config
 
   local r=0
-  run_test init-default-config "$r" "$1"          && r=$? || r=$?
-  run_test check-default-config-content "$r" "$1" && r=$? || r=$?
+  run_test init-default-config "$r" "$1"          && r=0 || r=$?
+  run_test check-default-config-content "$r" "$1" && r=0 || r=$?
 
   stop_suite test-default-config "$r"
 }
@@ -45,8 +45,8 @@ function test-config-with-variables-suite() {
   start_suite test-config-with-variables
 
   local r=0
-  run_test init-2-machines-no-public-ips-named "$r" "$1"                     && r=$? || r=$?
-  run_test check-2-machines-no-public-ips-named-rsa-config-content "$r" "$1" && r=$? || r=$?
+  run_test init-2-machines-no-public-ips-named "$r" "$1"                     && r=0 || r=$?
+  run_test check-2-machines-no-public-ips-named-rsa-config-content "$r" "$1" && r=0 || r=$?
 
   stop_suite test-config-with-variables "$r"
 }
@@ -60,10 +60,10 @@ function test-plan-suite() {
   start_suite test-plan
 
   local r=0
-  run_test init-2-machines-no-public-ips-named "$r" "$1"                     && r=$? || r=$?
-  run_test check-2-machines-no-public-ips-named-rsa-config-content "$r" "$1" && r=$? || r=$?
-  run_test plan-2-machines-no-public-ips-named "$r" "$1 $2 $3 $4 $5"         && r=$? || r=$?
-  run_test check-2-machines-no-public-ips-named-rsa-plan "$r" "$1"           && r=$? || r=$?
+  run_test init-2-machines-no-public-ips-named "$r" "$1"                     && r=0 || r=$?
+  run_test check-2-machines-no-public-ips-named-rsa-config-content "$r" "$1" && r=0 || r=$?
+  run_test plan-2-machines-no-public-ips-named "$r" "$1 $2 $3 $4 $5"         && r=0 || r=$?
+  run_test check-2-machines-no-public-ips-named-rsa-plan "$r" "$1"           && r=0 || r=$?
 
   stop_suite test-plan "$r"
 }
@@ -77,14 +77,17 @@ function test-apply-suite() {
   start_suite test-apply
 
   local r=0
-  run_test init-2-machines-no-public-ips-named "$r" "$1"                     && r=$? || r=$?
-  run_test check-2-machines-no-public-ips-named-rsa-config-content "$r" "$1" && r=$? || r=$?
-  run_test plan-2-machines-no-public-ips-named "$r" "$1 $2 $3 $4 $5"         && r=$? || r=$?
-  run_test check-2-machines-no-public-ips-named-rsa-plan "$r" "$1"           && r=$? || r=$?
-  run_test apply-2-machines-no-public-ips-named "$r" "$1 $2 $3 $4 $5"        && r=$? || r=$?
-  run_test check-2-machines-no-public-ips-named-rsa-apply "$r" "$1"          && r=$? || r=$?
-  run_test validate-azure-resources-presence "$r" "$1 $2 $3 $4 $5"           && r=0  || r=0
-  run_test cleanup-after-apply "$r" "$1 $2 $3 $4 $5"                         && r=$? || r=$?
+  run_test init-2-machines-no-public-ips-named "$r" "$1"                          && r=0 || r=$?
+  run_test check-2-machines-no-public-ips-named-rsa-config-content "$r" "$1"      && r=0 || r=$?
+  run_test plan-2-machines-no-public-ips-named "$r" "$1 $2 $3 $4 $5"              && r=0 || r=$?
+  run_test check-2-machines-no-public-ips-named-rsa-plan "$r" "$1"                && r=0 || r=$?
+  run_test apply-2-machines-no-public-ips-named "$r" "$1 $2 $3 $4 $5"             && r=0 || r=$?
+  run_test check-2-machines-no-public-ips-named-rsa-apply "$r" "$1"               && r=0 || r=$?
+  run_test plan-2-machines-no-public-ips-enable-public-ips "$r" "$1 $2 $3 $4 $5"  && r=0 || r=$?
+  run_test apply-2-machines-no-public-ips-enable-public-ips "$r" "$1 $2 $3 $4 $5" && r=0 || r=$?
+  run_test validate-azure-resources-presence "$r" "$1 $2 $3 $4 $5"                && r=0 || r=0
+  run_test validate-ssh-connectivity "$r"                                         && r=0 || r=0
+  run_test cleanup-after-apply "$r" "$1 $2 $3 $4 $5"                              && r=0 || r=$?
 
   stop_suite test-apply "$r"
 }
@@ -171,6 +174,32 @@ function check-2-machines-no-public-ips-named-rsa-apply() {
   if [[ ! $filesize -gt 0 ]]; then exit 1; fi
 }
 
+function plan-2-machines-no-public-ips-enable-public-ips() {
+  echo "#   will enable public ips inside azbi-config.yml"
+  yq w --inplace "$TESTS_DIR"/shared/azbi/azbi-config.yml azbi.use_public_ip true
+  echo "#	will plan with \"docker run ... plan M_ARM_CLIENT_ID=... M_ARM_CLIENT_SECRET=... M_ARM_SUBSCRIPTION_ID=... M_ARM_TENANT_ID=...\""
+  docker run --rm \
+    -v "$TESTS_DIR"/shared:/shared \
+    -t "$1" \
+    plan \
+    M_ARM_CLIENT_ID="$2" \
+    M_ARM_CLIENT_SECRET="$3" \
+    M_ARM_SUBSCRIPTION_ID="$4" \
+    M_ARM_TENANT_ID="$5"
+}
+
+function apply-2-machines-no-public-ips-enable-public-ips() {
+  echo "#	will apply with \"docker run ... apply M_ARM_CLIENT_ID=... M_ARM_CLIENT_SECRET=... M_ARM_SUBSCRIPTION_ID=... M_ARM_TENANT_ID=...\""
+  docker run --rm \
+    -v "$TESTS_DIR"/shared:/shared \
+    -t "$1" \
+    apply \
+    M_ARM_CLIENT_ID="$2" \
+    M_ARM_CLIENT_SECRET="$3" \
+    M_ARM_SUBSCRIPTION_ID="$4" \
+    M_ARM_TENANT_ID="$5"
+}
+
 function validate-azure-resources-presence() {
   echo "#	will do az login"
   az login --service-principal --username "$2" --password "$3" --tenant "$5" -o none
@@ -180,6 +209,16 @@ function validate-azure-resources-presence() {
   echo "#	will test if there is expected amount of machines in resource group"
   local vms_count=$(az vm list --subscription "$4" --resource-group azbi-module-tests-rg -o yaml | yq r - --length)
   if [[ $vms_count -ne 2 ]]; then exit 1; fi
+  local nsg_nic_count=$(az network nsg show --subscription "$4" --resource-group azbi-module-tests-rg --name vm-nic-nsg-0 -o yaml | yq r - networkInterfaces --length)
+  if [[ $nsg_nic_count -ne 2 ]]; then exit 1; fi
+}
+
+function validate-ssh-connectivity() {
+  local ssh_options='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectionAttempts=10 -o ControlMaster=no -o BatchMode=yes'
+  local ip_address
+  unset IFS && yq r "$TESTS_DIR"/shared/state.yml 'azbi.output[public_ips.value].*' | while read ip_address; do
+    if ! ssh -q -F /dev/null $ssh_options -i "$TESTS_DIR"/shared/test_vms_rsa -nT "operations@$ip_address" -- uname -a; then exit 1; fi
+  done
 }
 
 function cleanup-after-apply() {
@@ -203,7 +242,7 @@ function cleanup-after-apply() {
     M_ARM_TENANT_ID="$5"
 }
 
-self-check
+selfcheck
 
 TESTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 

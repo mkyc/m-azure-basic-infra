@@ -1,6 +1,6 @@
 M_VMS_COUNT ?= 3
 M_PUBLIC_IPS ?= true
-M_LOCATION ?= germanywestcentral
+M_LOCATION ?= northeurope
 M_NAME ?= epiphany
 M_VMS_RSA ?= vms_rsa
 

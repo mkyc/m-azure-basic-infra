@@ -37,7 +37,7 @@ variable "tf_key_path" {
 
 variable "vm_size" {
   type = string
-  default = "Standard_DS1_v2"
+  default = "Standard_DS2_v2"
 }
 
 variable "admin_username" {

@@ -2,7 +2,7 @@
 
 set -o errexit -o nounset -o pipefail
 
-function self_check() {
+function selfcheck() {
   local required_binaries=(which bc awk ssh-keygen go-junit-report python)
   local failed=1  # false
   local binary
@@ -29,7 +29,7 @@ function run_test() {
   if [[ "$previous_r" -eq 0 ]]; then
     start_test "$fn_name"
     # shellcheck disable=SC2068
-    $fn_name $@ >>"$TESTS_DIR"/output/"$fn_name"-tests.out 2>&1 && result=$? || result=$?
+    $fn_name $@ >>"$TESTS_DIR"/output/"$fn_name"-tests.out 2>&1 && result=0 || result=$?
     stop_test "$fn_name" "$result"
     return "$result"
   else
@@ -120,4 +120,4 @@ function microtime() {
   python -c 'import time; print(time.time())'
 }
 
-self_check
+selfcheck

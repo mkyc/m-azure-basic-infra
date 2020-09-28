@@ -2,7 +2,7 @@ kind: azbi-config
 azbi:
   size: 2
   use_public_ip: false
-  location: "germanywestcentral"
+  location: "northeurope"
   name: "azbi-module-tests"
   address_space: ["10.0.0.0/16"]
   address_prefixes: ["10.0.1.0/24"]

@@ -23,6 +23,31 @@ resource "azurerm_network_interface" "nic" {
   }
 }
 
+resource "azurerm_network_security_group" "nsg" {
+  count               = var.use_public_ip != true ? 0 : 1
+  name                = "vm-nic-nsg-0"
+  location            = var.location
+  resource_group_name = var.rg_name
+
+  security_rule {
+    name                       = "SSH"
+    priority                   = 100
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "22"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+}
+
+resource "azurerm_network_interface_security_group_association" "nic-nsg-assoc" {
+  count                     = var.use_public_ip != true ? 0 : var.instances
+  network_interface_id      = azurerm_network_interface.nic.*.id[count.index]
+  network_security_group_id = azurerm_network_security_group.nsg.*.id[0]
+}
+
 resource "azurerm_linux_virtual_machine" "vm" {
   count                 = var.instances
   name                  = "${var.name}-${var.service}-${count.index}"
