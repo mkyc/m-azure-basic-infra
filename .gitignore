@@ -3,6 +3,8 @@
 *.swp
 *.swo
 **/shared/
+**/.terraform/
+**/vars.tfvars.json
 /service-principal.mk
 /tests/repot.xml
 /tests/tests.out

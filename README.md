@@ -50,3 +50,7 @@ or if you want to set different version number:
 ```
 make release VERSION=number_of_your_choice
 ```
+
+# Windows users
+
+This module is designed for Linux/Unix development/usage only. If you need to develop from Windows you can use the included [devcontainer setup for VScode](https://code.visualstudio.com/docs/remote/containers-tutorial) and run the examples the same way but then from then ```examples/basic_flow_devcontainer``` folder.
