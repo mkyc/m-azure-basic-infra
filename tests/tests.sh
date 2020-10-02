@@ -244,8 +244,9 @@ function cleanup-after-apply() {
 
 selfcheck
 
-TESTS_DIR=/tests-share
-MOUNT_DIR=/tmp/tests-share
+TESTS_DIR_TMP="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+TESTS_DIR=${AZBI_K8S_VOL:-${TESTS_DIR_TMP}}
+MOUNT_DIR=${AZBI_MOUNT:-${TESTS_DIR_TMP}}
 
 # shellcheck disable=SC1090
 source "$(dirname "$0")/suite.sh"
