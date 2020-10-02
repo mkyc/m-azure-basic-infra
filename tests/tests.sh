@@ -245,7 +245,7 @@ function cleanup-after-apply() {
 selfcheck
 
 TESTS_DIR=/tests-share
-MOUNT_DIR=/tmp-tests-share
+MOUNT_DIR=/tmp/tests-share
 
 # shellcheck disable=SC1090
 source "$(dirname "$0")/suite.sh"
