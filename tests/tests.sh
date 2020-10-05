@@ -247,11 +247,11 @@ selfcheck
 # AZBI_K8S_VOL and AZBI_MOUNT are variables to set up when kubernetes based build agents are in use ('docker in docker')
 # AZBI_K8S_VOL - volume's mount point
 # AZBI_MOUNT - shared folder location on kubernetes host
-AZBI_K8S_VOL=${AZBI_K8S_VOL:-""}
+AZBI_K8S_VOL=${AZBI_K8S_VOL:=""}
 AZBI_MOUNT=${AZBI_MOUNT:=""}
 TESTS_DIR_TMP="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-TESTS_DIR=${AZBI_K8S_VOL:-${TESTS_DIR_TMP}}
-MOUNT_DIR=${AZBI_MOUNT:-${TESTS_DIR_TMP}}
+TESTS_DIR=${AZBI_K8S_VOL:=${TESTS_DIR_TMP}}
+MOUNT_DIR=${AZBI_MOUNT:=${TESTS_DIR_TMP}}
 
 # Create folder structure inside volume
 if [[ $AZBI_K8S_VOL != "" ]]; then
