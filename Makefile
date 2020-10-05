@@ -46,6 +46,13 @@ test: build \
 	test-apply \
 	generate-report
 
+test-release: release \
+    test-default-config \
+	test-config-with-variables \
+	test-plan \
+	test-apply \
+	generate-report
+
 prepare-service-principal: guard-CLIENT_ID guard-CLIENT_SECRET guard-SUBSCRIPTION_ID guard-TENANT_ID
 	@echo "$$SERVICE_PRINCIPAL_CONTENT" > $(ROOT_DIR)/service-principal.mk
 
