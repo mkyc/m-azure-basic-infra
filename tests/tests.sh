@@ -254,8 +254,8 @@ TESTS_DIR=${AZBI_K8S_VOL:=${TESTS_DIR_TMP}}
 MOUNT_DIR=${AZBI_MOUNT:=${TESTS_DIR_TMP}}
 
 # Create folder structure inside volume
-if [ $AZBI_K8S_VOL == "\/*" ]; then
-  mkdir -p $AZBI_K8S_VOL/shared && cp -r tests/mocks/ $AZBI_K8S_VOL
+if [ "$AZBI_K8S_VOL" == "\/*" ]; then
+  mkdir -p "$AZBI_K8S_VOL"/shared && cp -r "$TESTS_DIR_TMP"/tests/mocks/ "$AZBI_K8S_VOL"
 fi
 
 # shellcheck disable=SC1090
