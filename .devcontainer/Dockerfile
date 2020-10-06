@@ -4,7 +4,7 @@ FROM mcr.microsoft.com/vscode/devcontainers/base:0-${VARIANT}
 ENV TERRAFORM_VERSION 0.13.2
 ENV YQ_VERSION=3.3.4
 
-# Install Terraform, yq, make
+# Install Terraform, yq, make, AzureCLI
 RUN wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip \
     && unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip \
     && mv terraform /usr/local/bin/ \
@@ -16,10 +16,4 @@ RUN wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform
     && apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends make \
 
-    && wget -O - https://aka.ms/InstallAzureCLIDeb | bash \
-
-    && AZ_REPO=$(lsb_release -cs) \
-    && echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" | tee /etc/apt/sources.list.d/azure-cli.list \
-    && apt-get update \
-    && apt-get install azure-cli
-    
+    && wget -O - https://aka.ms/InstallAzureCLIDeb | bash
