@@ -95,7 +95,7 @@ function test-apply-suite() {
 function init-default-config() {
   echo "#	will initialize config with \"docker run ... init\" command"
   docker run --rm \
-    -v "$TESTS_DIR"/shared:/shared \
+    -v "$MOUNT_DIR"/shared:/shared \
     -t "$1" \
     init
 }
@@ -110,7 +110,7 @@ function check-default-config-content() {
 function init-2-machines-no-public-ips-named() {
   echo "#	will initialize config with \"docker run ... init M_VMS_COUNT=2 M_PUBLIC_IPS=false M_NAME=azbi-module-tests M_VMS_RSA=test_vms_rsa command\""
   docker run --rm \
-    -v "$TESTS_DIR"/shared:/shared \
+    -v "$MOUNT_DIR"/shared:/shared \
     -t "$1" \
     init \
     M_VMS_COUNT=2 \
@@ -129,7 +129,7 @@ function check-2-machines-no-public-ips-named-rsa-config-content() {
 function plan-2-machines-no-public-ips-named() {
   echo "#	will plan with \"docker run ... plan M_ARM_CLIENT_ID=... M_ARM_CLIENT_SECRET=... M_ARM_SUBSCRIPTION_ID=... M_ARM_TENANT_ID=...\""
   docker run --rm \
-    -v "$TESTS_DIR"/shared:/shared \
+    -v "$MOUNT_DIR"/shared:/shared \
     -t "$1" \
     plan \
     M_ARM_CLIENT_ID="$2" \
@@ -153,7 +153,7 @@ function check-2-machines-no-public-ips-named-rsa-plan() {
 function apply-2-machines-no-public-ips-named() {
   echo "#	will apply with \"docker run ... apply M_ARM_CLIENT_ID=... M_ARM_CLIENT_SECRET=... M_ARM_SUBSCRIPTION_ID=... M_ARM_TENANT_ID=...\""
   docker run --rm \
-    -v "$TESTS_DIR"/shared:/shared \
+    -v "$MOUNT_DIR"/shared:/shared \
     -t "$1" \
     apply \
     M_ARM_CLIENT_ID="$2" \
@@ -179,7 +179,7 @@ function plan-2-machines-no-public-ips-enable-public-ips() {
   yq w --inplace "$TESTS_DIR"/shared/azbi/azbi-config.yml azbi.use_public_ip true
   echo "#	will plan with \"docker run ... plan M_ARM_CLIENT_ID=... M_ARM_CLIENT_SECRET=... M_ARM_SUBSCRIPTION_ID=... M_ARM_TENANT_ID=...\""
   docker run --rm \
-    -v "$TESTS_DIR"/shared:/shared \
+    -v "$MOUNT_DIR"/shared:/shared \
     -t "$1" \
     plan \
     M_ARM_CLIENT_ID="$2" \
@@ -191,7 +191,7 @@ function plan-2-machines-no-public-ips-enable-public-ips() {
 function apply-2-machines-no-public-ips-enable-public-ips() {
   echo "#	will apply with \"docker run ... apply M_ARM_CLIENT_ID=... M_ARM_CLIENT_SECRET=... M_ARM_SUBSCRIPTION_ID=... M_ARM_TENANT_ID=...\""
   docker run --rm \
-    -v "$TESTS_DIR"/shared:/shared \
+    -v "$MOUNT_DIR"/shared:/shared \
     -t "$1" \
     apply \
     M_ARM_CLIENT_ID="$2" \
@@ -224,7 +224,7 @@ function validate-ssh-connectivity() {
 function cleanup-after-apply() {
   echo "#	will apply with \"docker run ... plan-destroy M_ARM_CLIENT_ID=... M_ARM_CLIENT_SECRET=... M_ARM_SUBSCRIPTION_ID=... M_ARM_TENANT_ID=...\""
   docker run --rm \
-    -v "$TESTS_DIR"/shared:/shared \
+    -v "$MOUNT_DIR"/shared:/shared \
     -t "$1" \
     plan-destroy \
     M_ARM_CLIENT_ID="$2" \
@@ -233,7 +233,7 @@ function cleanup-after-apply() {
     M_ARM_TENANT_ID="$5"
   echo "#	will apply with \"docker run ... destroy M_ARM_CLIENT_ID=... M_ARM_CLIENT_SECRET=... M_ARM_SUBSCRIPTION_ID=... M_ARM_TENANT_ID=...\""
   docker run --rm \
-    -v "$TESTS_DIR"/shared:/shared \
+    -v "$MOUNT_DIR"/shared:/shared \
     -t "$1" \
     destroy \
     M_ARM_CLIENT_ID="$2" \
@@ -244,7 +244,19 @@ function cleanup-after-apply() {
 
 selfcheck
 
-TESTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+# AZBI_K8S_VOL and AZBI_MOUNT are variables to set up when kubernetes based build agents are in use ('docker in docker')
+# AZBI_K8S_VOL - volume's mount point
+# AZBI_MOUNT - shared folder location on kubernetes host
+AZBI_K8S_VOL=${AZBI_K8S_VOL:=""}
+AZBI_MOUNT=${AZBI_MOUNT:=""}
+TESTS_DIR_TMP="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+TESTS_DIR=${AZBI_K8S_VOL:=${TESTS_DIR_TMP}}
+MOUNT_DIR=${AZBI_MOUNT:=${TESTS_DIR_TMP}}
+
+# Create folder structure inside volume
+if [ "$AZBI_K8S_VOL" == "\/*" ]; then
+  mkdir -p "$AZBI_K8S_VOL"/shared && cp -r "$TESTS_DIR_TMP"/tests/mocks/ "$AZBI_K8S_VOL"
+fi
 
 # shellcheck disable=SC1090
 source "$(dirname "$0")/suite.sh"
