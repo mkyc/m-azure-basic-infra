@@ -40,10 +40,10 @@ build: guard-VERSION guard-IMAGE guard-USER
 #prepare service principal variables file before running this target using `CLIENT_ID=xxx CLIENT_SECRET=yyy SUBSCRIPTION_ID=zzz TENANT_ID=vvv make prepare-service-principal`
 #test targets are located in ./test.mk file
 test: build
-	go test
+	@ACI=$(ARM_CLIENT_ID) ACS=$(ARM_CLIENT_SECRET) ASI=$(ARM_SUBSCRIPTION_ID) ATI=$(ARM_TENANT_ID) go test
 
 test-release: release
-	go test
+	@ACI=$(ARM_CLIENT_ID) ACS=$(ARM_CLIENT_SECRET) ASI=$(ARM_SUBSCRIPTION_ID) ATI=$(ARM_TENANT_ID) go test
 
 prepare-service-principal: guard-CLIENT_ID guard-CLIENT_SECRET guard-SUBSCRIPTION_ID guard-TENANT_ID
 	@echo "$$SERVICE_PRINCIPAL_CONTENT" > $(ROOT_DIR)/service-principal.mk
