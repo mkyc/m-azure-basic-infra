@@ -39,19 +39,11 @@ build: guard-VERSION guard-IMAGE guard-USER
 
 #prepare service principal variables file before running this target using `CLIENT_ID=xxx CLIENT_SECRET=yyy SUBSCRIPTION_ID=zzz TENANT_ID=vvv make prepare-service-principal`
 #test targets are located in ./test.mk file
-test: build \
-	test-default-config \
-	test-config-with-variables \
-	test-plan \
-	test-apply \
-	generate-report
+test: build
+	go test
 
-test-release: release \
-    test-default-config \
-	test-config-with-variables \
-	test-plan \
-	test-apply \
-	generate-report
+test-release: release
+	go test
 
 prepare-service-principal: guard-CLIENT_ID guard-CLIENT_SECRET guard-SUBSCRIPTION_ID guard-TENANT_ID
 	@echo "$$SERVICE_PRINCIPAL_CONTENT" > $(ROOT_DIR)/service-principal.mk
