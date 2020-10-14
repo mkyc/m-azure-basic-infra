@@ -31,7 +31,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestInitDefaultConfig(t *testing.T) {
+func TestInit(t *testing.T) {
 	tests := []struct {
 		name            string
 		initParams      []string
@@ -66,6 +66,35 @@ azbi:
   address_space: ["10.0.0.0/16"]
   address_prefixes: ["10.0.1.0/24"]
   rsa_pub_path: "/shared/vms_rsa.pub"
+`,
+		},
+		{
+			name:       "init 2 machines no public ips and named rg",
+			initParams: []string{"M_VMS_COUNT=2", "M_PUBLIC_IPS=false", "M_NAME=azbi-module-tests", "M_VMS_RSA=test_vms_rsa"},
+			wantOutput: `#AzBI | setup | ensure required directories
+#AzBI | ensure-state-file | checks if state file exists
+#AzBI | template-config-file | will template config file (and backup previous if exists)
+#AzBI | initialize-state-file | will initialize state file
+#AzBI | display-config-file | config file content is:
+kind: azbi-config
+azbi:
+  size: 2
+  use_public_ip: false
+  location: "northeurope"
+  name: "azbi-module-tests"
+  address_space: ["10.0.0.0/16"]
+  address_prefixes: ["10.0.1.0/24"]
+  rsa_pub_path: "/shared/test_vms_rsa.pub"`,
+			wantFile: "azbi/azbi-config.yml",
+			wantFileContent: `kind: azbi-config
+azbi:
+  size: 2
+  use_public_ip: false
+  location: "northeurope"
+  name: "azbi-module-tests"
+  address_space: ["10.0.0.0/16"]
+  address_prefixes: ["10.0.1.0/24"]
+  rsa_pub_path: "/shared/test_vms_rsa.pub"
 `,
 		},
 	}
