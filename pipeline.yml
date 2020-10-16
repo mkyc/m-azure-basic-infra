@@ -1,0 +1,12 @@
+trigger:
+  - develop
+  - master
+pr:
+  - develop
+  - master
+
+pool:
+  name: 'Azure Epiphany cluster - epiphany-build-agents-v2'
+
+steps:
+  - script: echo 'Hello world'
