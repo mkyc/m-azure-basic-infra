@@ -17,7 +17,7 @@ steps:
     name: GoGet
     inputs:
       command: 'get'
-      arguments: '-d'
+      arguments: '-d ./...'
       workingDirectory: '$(System.DefaultWorkingDirectory)'
   - task: Go@0
     name: GoTest
