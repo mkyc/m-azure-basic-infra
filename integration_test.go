@@ -8,15 +8,16 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/resources/mgmt/resources"
-	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"io"
 	"io/ioutil"
 	"os"
 	"path"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/resources/mgmt/resources"
+	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"golang.org/x/crypto/ssh"
 
 	"github.com/go-test/deep"
@@ -109,11 +110,8 @@ azbi:
 			if v, ok := tt.initParams["M_NAME"]; ok {
 				name = v
 			}
-			sharedPath, _, _, subscriptionId, _, err := setup(rsaName, name)
-			if err != nil {
-				t.Fatalf("setup() failed with: %v", err)
-			}
-			defer cleanup(sharedPath, subscriptionId, name)
+			sharedPath, _, _, subscriptionId, _ := setup(t, rsaName, name)
+			defer cleanup(t, sharedPath, subscriptionId, name)
 
 			initCommand := []string{"init"}
 			for k, v := range tt.initParams {
@@ -182,11 +180,8 @@ azbi:
 			if v, ok := tt.initParams["M_NAME"]; ok {
 				name = v
 			}
-			sharedPath, clientId, clientSecret, subscriptionId, tenantId, err := setup(rsaName, name)
-			if err != nil {
-				t.Fatalf("setup() failed with: %v", err)
-			}
-			defer cleanup(sharedPath, subscriptionId, name)
+			sharedPath, clientId, clientSecret, subscriptionId, tenantId := setup(t, rsaName, name)
+			defer cleanup(t, sharedPath, subscriptionId, name)
 
 			initCommand := []string{"init"}
 			for k, v := range tt.initParams {
@@ -273,11 +268,8 @@ func TestApply(t *testing.T) {
 			if v, ok := tt.initParams["M_NAME"]; ok {
 				name = v
 			}
-			sharedPath, clientId, clientSecret, subscriptionId, tenantId, err := setup(rsaName, name)
-			if err != nil {
-				t.Fatalf("setup() failed with: %v", err)
-			}
-			defer cleanup(sharedPath, subscriptionId, name)
+			sharedPath, clientId, clientSecret, subscriptionId, tenantId := setup(t, rsaName, name)
+			defer cleanup(t, sharedPath, subscriptionId, name)
 
 			initCommand := []string{"init"}
 			for k, v := range tt.initParams {
@@ -341,58 +333,72 @@ func TestApply(t *testing.T) {
 	}
 }
 
-func setup(rsaName string, rgName string) (sharedPath string, armClientId string, armClientSecret string, armSubscriptionId string, armTenantId string, err error) {
+func setup(t *testing.T, rsaName string, rgName string) (sharedPath string, armClientId string, armClientSecret string, armSubscriptionId string, armTenantId string) {
 	wd, err := os.Getwd()
 	if err != nil {
-		return
+		t.Fatal(err)
 	}
 	sharedPath = path.Join(wd, "tests", "shared")
 	err = os.MkdirAll(sharedPath, os.ModePerm)
 	if err != nil {
-		return
+		t.Fatal(err)
 	}
-	err = generateRsaKeyPair(sharedPath, rsaName)
-	if err != nil {
-		return
-	}
-	armClientId, armClientSecret, armSubscriptionId, armTenantId, err = loadEnvironments()
-	if err != nil {
-		return
-	}
-	if isResourceGroupPresent(armSubscriptionId, rgName) {
-		err = removeResourceGroup(armSubscriptionId, rgName)
-		if err != nil {
-			return
-		}
+	generateRsaKeyPair(t, sharedPath, rsaName)
+	armClientId, armClientSecret, armSubscriptionId, armTenantId = loadEnvironments(t)
+	if isResourceGroupPresent(t, armSubscriptionId, rgName) {
+		removeResourceGroup(t, armSubscriptionId, rgName)
 	}
 	return
 }
 
-func removeResourceGroup(subscriptionId string, name string) error {
+func removeResourceGroup(t *testing.T, subscriptionId string, name string) {
+	t.Logf("Will prepare new az groups client")
 	ctx := context.TODO()
 	groupsClient := resources.NewGroupsClient(subscriptionId)
 	authorizer, err := auth.NewAuthorizerFromEnvironment()
 	if err != nil {
-		fmt.Println("error")
+		t.Fatal(err)
 	}
 	groupsClient.Authorizer = authorizer
 	rgName := fmt.Sprintf("%s-rg", name)
+	t.Logf("Will perform delete RG operation")
 	gdf, err := groupsClient.Delete(ctx, rgName)
 	if err != nil {
-		return err
+		t.Fatal(err)
 	}
-	err = gdf.Future.WaitForCompletionRef(ctx, groupsClient.BaseClient.Client)
-	if err != nil {
-		return err
+
+	done := make(chan struct{})
+	now := time.Now()
+
+	ticker := time.NewTicker(5 * time.Second)
+
+	go func() {
+		defer close(done)
+		t.Logf("Will start waiting for RG deletion finish.")
+		err = gdf.Future.WaitForCompletionRef(ctx, groupsClient.BaseClient.Client)
+		t.Logf("Finished RG deletion.")
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
+
+	for {
+		select {
+		case <-ticker.C:
+			t.Logf("Waiting for deletion to complate: %v", time.Since(now))
+		case <-done:
+			t.Logf("Finished waiting for RG deletion.")
+			ticker.Stop()
+			return
+		}
 	}
-	return nil
 }
 
-func isResourceGroupPresent(subscriptionId string, name string) bool {
+func isResourceGroupPresent(t *testing.T, subscriptionId string, name string) bool {
 	groupsClient := resources.NewGroupsClient(subscriptionId)
 	authorizer, err := auth.NewAuthorizerFromEnvironment()
 	if err != nil {
-		fmt.Println("error")
+		t.Error(err)
 	}
 	groupsClient.Authorizer = authorizer
 	rgName := fmt.Sprintf("%s-rg", name)
@@ -404,30 +410,34 @@ func isResourceGroupPresent(subscriptionId string, name string) bool {
 	}
 }
 
-func cleanup(sharedPath string, subscriptionId string, name string) {
+func cleanup(t *testing.T, sharedPath string, subscriptionId string, name string) {
+	t.Logf("cleanup()")
 	_ = os.RemoveAll(sharedPath)
-	_ = removeResourceGroup(subscriptionId, name)
+	removeResourceGroup(t, subscriptionId, name)
 }
 
-func generateRsaKeyPair(directory string, name string) error {
+func generateRsaKeyPair(t *testing.T, directory string, name string) {
 	privateRsaKey, err := rsa.GenerateKey(rand.Reader, 4096)
 	if err != nil {
-		return err
+		t.Fatal(err)
 	}
 	pemBlock := &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(privateRsaKey)}
 	privateKeyBytes := pem.EncodeToMemory(pemBlock)
 
 	publicRsaKey, err := ssh.NewPublicKey(&privateRsaKey.PublicKey)
 	if err != nil {
-		return err
+		t.Fatal(err)
 	}
 	publicKeyBytes := ssh.MarshalAuthorizedKey(publicRsaKey)
 
 	err = ioutil.WriteFile(path.Join(directory, name), privateKeyBytes, 0600)
 	if err != nil {
-		return err
+		t.Fatal(err)
 	}
-	return ioutil.WriteFile(path.Join(directory, fmt.Sprintf("%s.pub", name)), publicKeyBytes, 0644)
+	err = ioutil.WriteFile(path.Join(directory, fmt.Sprintf("%s.pub", name)), publicKeyBytes, 0644)
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func getLastLineFromMultilineSting(s string) (string, error) {
@@ -444,26 +454,22 @@ func getLastLineFromMultilineSting(s string) (string, error) {
 	}
 }
 
-func loadEnvironments() (armClientId string, armClientSecret string, armSubscriptionId string, armTenantId string, err error) {
+func loadEnvironments(t *testing.T) (armClientId string, armClientSecret string, armSubscriptionId string, armTenantId string) {
 	armClientId = os.Getenv("AZURE_CLIENT_ID")
 	if len(armClientId) == 0 {
-		err = fmt.Errorf("expected AZURE_CLIENT_ID environment variable")
-		return
+		t.Fatalf("expected AZURE_CLIENT_ID environment variable")
 	}
 	armClientSecret = os.Getenv("AZURE_CLIENT_SECRET")
 	if len(armClientSecret) == 0 {
-		err = fmt.Errorf("expected AZURE_CLIENT_SECRET environment variable")
-		return
+		t.Fatalf("expected AZURE_CLIENT_SECRET environment variable")
 	}
 	armSubscriptionId = os.Getenv("AZURE_SUBSCRIPTION_ID")
 	if len(armSubscriptionId) == 0 {
-		err = fmt.Errorf("expected AZURE_SUBSCRIPTION_ID environment variable")
-		return
+		t.Fatalf("expected AZURE_SUBSCRIPTION_ID environment variable")
 	}
 	armTenantId = os.Getenv("AZURE_TENANT_ID")
 	if len(armTenantId) == 0 {
-		err = fmt.Errorf("expected AZURE_TENANT_ID environment variable")
-		return
+		t.Fatalf("expected AZURE_TENANT_ID environment variable")
 	}
 	return
 }
