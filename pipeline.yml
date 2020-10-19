@@ -19,15 +19,14 @@ steps:
       command: 'get'
       arguments: '-d'
       workingDirectory: '$(System.DefaultWorkingDirectory)'
-  - task: DownloadSecureFile@1
-    name: servicePrincipalFile
-    displayName: 'Download Service Principal File'
+  - task: Go@0
+    name: GoTest
     inputs:
-      secureFile: service-principal-mk
-  - script: |
-      cp $(servicePrincipalFile.secureFilePath) $(System.DefaultWorkingDirectory)/service-principal.mk
-  - task: Bash@3
-    inputs:
-      targetType: 'inline'
-      script: make build
+      command: 'test'
+      arguments: '-v -timeout 30m'
       workingDirectory: '$(System.DefaultWorkingDirectory)'
+    env:
+      AZURE_CLIENT_ID: $(clientId)
+      AZURE_CLIENT_SECRET: $(clientSecret)
+      AZURE_SUBSCRIPTION_ID: $(subscriptionId)
+      AZURE_TENANT_ID: $(tenantId)
