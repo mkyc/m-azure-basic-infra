@@ -19,4 +19,16 @@ steps:
       command: 'get'
       arguments: '-d'
       workingDirectory: '$(System.DefaultWorkingDirectory)'
-      
+  - task: DownloadSecureFile@1
+    name: servicePrincipalFile
+    inputs:
+      secureFile: service-principal.mk
+  - task: Bash@3
+    inputs:
+      targetType: 'inline'
+      script: cp $(servicePrincipalFile.secureFilePath) $(System.DefaultWorkingDirectory)/service-principal.mk
+  - task: Bash@3
+    inputs:
+      targetType: 'inline'
+      script: make build
+      workingDirectory: '$(System.DefaultWorkingDirectory)'
