@@ -20,8 +20,8 @@ steps:
       arguments: '-v -timeout 30m'
       workingDirectory: '$(System.DefaultWorkingDirectory)'
     env:
-      AZURE_CLIENT_ID: $CLIENTID
-      AZURE_CLIENT_SECRET: $CLIENTSECRET
-      AZURE_SUBSCRIPTION_ID: $SUBSCRIPTIONID
-      AZURE_TENANT_ID: $TENANTID
+      AZURE_CLIENT_ID: $(CLIENTID)
+      AZURE_CLIENT_SECRET: $(CLIENTSECRET)
+      AZURE_SUBSCRIPTION_ID: $(SUBSCRIPTIONID)
+      AZURE_TENANT_ID: $(TENANTID)
       CGO_ENABLED: 0
