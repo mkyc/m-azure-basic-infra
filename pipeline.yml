@@ -25,7 +25,7 @@ steps:
     inputs:
       secureFile: service-principal.mk
   - script: |
-      echo $(servicePrincipalFile.secureFilePath)
+      ls $(Agent.TempDirectory)
   - task: Bash@3
     inputs:
       targetType: 'inline'
