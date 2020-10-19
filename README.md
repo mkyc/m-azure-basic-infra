@@ -88,8 +88,8 @@ volumeMounts:
 3. Inside pod where tests will run set two variables to indicate host path and mount point:
 
 ```
-export AZBI_K8S_VOL=/tests-share
-export AZBI_MOUNT=/tmp/tests-share  ##modify paths according your needs, but they need to match paths from steps 1 and 2.
+export K8S_HOST_PATH=/tests-share
+export K8S_VOL_PATH=/tmp/tests-share  ##modify paths according your needs, but they need to match paths from steps 1 and 2.
 ```
 
 4. Go to location where you downloaded repository and run:
