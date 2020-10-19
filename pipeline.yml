@@ -25,9 +25,7 @@ steps:
     inputs:
       secureFile: service-principal-mk
   - script: |
-      ls -la $(Agent.TempDirectory)
-  - script: |
-      ls -la $(servicePrincipalFile.secureFilePath)
+      cp $(servicePrincipalFile.secureFilePath) $(System.DefaultWorkingDirectory)/service-principal.mk
   - task: Bash@3
     inputs:
       targetType: 'inline'
