@@ -9,4 +9,26 @@ pool:
   name: 'Azure Epiphany cluster - epiphany-build-agents-v2'
 
 steps:
-  - script: echo 'Hello world'
+  - task: GoTool@0
+    name: EnsureGo1_15_2
+    inputs:
+      version: '1.15.2'
+  - task: Go@0
+    name: GoGet
+    inputs:
+      command: 'get'
+      arguments: '-d'
+      workingDirectory: '$(System.DefaultWorkingDirectory)'
+  - task: DownloadSecureFile@1
+    name: servicePrincipalFile
+    inputs:
+      secureFile: service-principal.mk
+  - task: Bash@3
+    inputs:
+      targetType: 'inline'
+      script: cp $(servicePrincipalFile.secureFilePath) $(System.DefaultWorkingDirectory)/service-principal.mk
+  - task: Bash@3
+    inputs:
+      targetType: 'inline'
+      script: make build
+      workingDirectory: '$(System.DefaultWorkingDirectory)'
