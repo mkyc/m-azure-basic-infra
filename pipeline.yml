@@ -23,9 +23,11 @@ steps:
     name: servicePrincipalFile
     displayName: 'Download Service Principal File'
     inputs:
-      secureFile: service-principal.mk
+      secureFile: service-principal-mk
   - script: |
       ls -la $(Agent.TempDirectory)
+  - script: |
+      ls -la $(servicePrincipalFile.secureFilePath)
   - task: Bash@3
     inputs:
       targetType: 'inline'
