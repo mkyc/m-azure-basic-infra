@@ -13,10 +13,22 @@ steps:
     name: EnsureGo1_15_2
     inputs:
       version: '1.15.2'
-  - task: Go@0
-    name: GoGet
+  - task: Bash@3
+    name: Prepare_ServicePrincipal
     inputs:
-      command: 'get'
-      arguments: '-d'
-      workingDirectory: '$(System.DefaultWorkingDirectory)'
-      
+      targetType: 'inline'
+      script: |
+        make prepare-service-principal
+      failOnStderr: true
+    env:
+      CLIENT_ID: $(clientId)
+      CLIENT_SECRET: $(clientSecret)
+      SUBSCRIPTION_ID: $(subscriptionId)
+      TENANT_ID: $(tenantId)
+  - task: Bash@3
+    name: Build
+    inputs:
+      targetType: 'inline'
+      script: |
+        make build
+      failOnStderr: true
