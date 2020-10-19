@@ -110,21 +110,10 @@ azbi:
 			if v, ok := tt.initParams["M_NAME"]; ok {
 				name = v
 			}
-			sharedPath, _, _, subscriptionId, _ := setup(t, rsaName, name)
-			defer cleanup(t, sharedPath, subscriptionId, name)
+			sharedPath, azCredentials := setup(t, rsaName, name)
+			defer cleanup(t, sharedPath, azCredentials["M_ARM_SUBSCRIPTION_ID"], name)
 
-			initCommand := []string{"init"}
-			for k, v := range tt.initParams {
-				initCommand = append(initCommand, fmt.Sprintf("%s=%s", k, v))
-			}
-
-			initOpts := &docker.RunOptions{
-				Command: initCommand,
-				Remove:  true,
-				Volumes: []string{fmt.Sprintf("%s:/shared", sharedPath)},
-			}
-
-			gotOutput := docker.Run(t, imageTag, initOpts)
+			gotOutput := dockerInit(t, tt.initParams, sharedPath)
 			if diff := deep.Equal(gotOutput, tt.wantOutput); diff != nil {
 				t.Error(diff)
 			}
@@ -180,41 +169,12 @@ azbi:
 			if v, ok := tt.initParams["M_NAME"]; ok {
 				name = v
 			}
-			sharedPath, clientId, clientSecret, subscriptionId, tenantId := setup(t, rsaName, name)
-			defer cleanup(t, sharedPath, subscriptionId, name)
+			sharedPath, azCredentials := setup(t, rsaName, name)
+			defer cleanup(t, sharedPath, azCredentials["M_ARM_SUBSCRIPTION_ID"], name)
 
-			initCommand := []string{"init"}
-			for k, v := range tt.initParams {
-				initCommand = append(initCommand, fmt.Sprintf("%s=%s", k, v))
-			}
-			initOpts := &docker.RunOptions{
-				Command: initCommand,
-				Remove:  true,
-				Volumes: []string{fmt.Sprintf("%s:/shared", sharedPath)},
-			}
+			dockerInit(t, tt.initParams, sharedPath)
 
-			//in case of error Run function calls FailNow anyways
-			docker.Run(t, imageTag, initOpts)
-
-			planCommand := []string{"plan",
-				fmt.Sprintf("M_ARM_CLIENT_ID=%s", clientId),
-				fmt.Sprintf("M_ARM_CLIENT_SECRET=%s", clientSecret),
-				fmt.Sprintf("M_ARM_SUBSCRIPTION_ID=%s", subscriptionId),
-				fmt.Sprintf("M_ARM_TENANT_ID=%s", tenantId),
-			}
-
-			planOpts := &docker.RunOptions{
-				Command: planCommand,
-				Remove:  true,
-				Volumes: []string{fmt.Sprintf("%s:/shared", sharedPath)},
-			}
-
-			gotPlanOutput := docker.Run(t, imageTag, planOpts)
-			gotPlanOutputLastLine, err := getLastLineFromMultilineSting(gotPlanOutput)
-			if err != nil {
-				t.Fatalf("reading last line from multiline failed with: %v", err)
-			}
-
+			gotPlanOutputLastLine := dockerPlan(t, azCredentials, sharedPath)
 			if diff := deep.Equal(gotPlanOutputLastLine, tt.wantPlanOutputLastLine); diff != nil {
 				t.Error(diff)
 			}
@@ -256,6 +216,16 @@ func TestApply(t *testing.T) {
 			wantPlanOutputLastLine:  "Plan: 7 to add, 0 to change, 0 to destroy.",
 			wantApplyOutputLastLine: "#AzBI | terraform-output | will prepare terraform output",
 		},
+		{
+			name: "apply 2 machines with public ips and named rg",
+			initParams: map[string]string{
+				"M_VMS_COUNT":  "2",
+				"M_PUBLIC_IPS": "true",
+				"M_NAME":       "azbi-module-tests",
+				"M_VMS_RSA":    "test_vms_rsa"},
+			wantPlanOutputLastLine:  "Plan: 12 to add, 0 to change, 0 to destroy.",
+			wantApplyOutputLastLine: "#AzBI | terraform-output | will prepare terraform output",
+		},
 	}
 
 	for _, tt := range tests {
@@ -268,63 +238,17 @@ func TestApply(t *testing.T) {
 			if v, ok := tt.initParams["M_NAME"]; ok {
 				name = v
 			}
-			sharedPath, clientId, clientSecret, subscriptionId, tenantId := setup(t, rsaName, name)
-			defer cleanup(t, sharedPath, subscriptionId, name)
+			sharedPath, azCredentials := setup(t, rsaName, name)
+			defer cleanup(t, sharedPath, azCredentials["M_ARM_SUBSCRIPTION_ID"], name)
 
-			initCommand := []string{"init"}
-			for k, v := range tt.initParams {
-				initCommand = append(initCommand, fmt.Sprintf("%s=%s", k, v))
-			}
-			initOpts := &docker.RunOptions{
-				Command: initCommand,
-				Remove:  true,
-				Volumes: []string{fmt.Sprintf("%s:/shared", sharedPath)},
-			}
+			dockerInit(t, tt.initParams, sharedPath)
 
-			//in case of error Run function calls FailNow anyways
-			docker.Run(t, imageTag, initOpts)
-
-			planCommand := []string{"plan",
-				fmt.Sprintf("M_ARM_CLIENT_ID=%s", clientId),
-				fmt.Sprintf("M_ARM_CLIENT_SECRET=%s", clientSecret),
-				fmt.Sprintf("M_ARM_SUBSCRIPTION_ID=%s", subscriptionId),
-				fmt.Sprintf("M_ARM_TENANT_ID=%s", tenantId),
-			}
-
-			planOpts := &docker.RunOptions{
-				Command: planCommand,
-				Remove:  true,
-				Volumes: []string{fmt.Sprintf("%s:/shared", sharedPath)},
-			}
-
-			gotPlanOutput := docker.Run(t, imageTag, planOpts)
-			gotPlanOutputLastLine, err := getLastLineFromMultilineSting(gotPlanOutput)
-			if err != nil {
-				t.Fatalf("reading last line from multiline failed with: %v", err)
-			}
-
+			gotPlanOutputLastLine := dockerPlan(t, azCredentials, sharedPath)
 			if diff := deep.Equal(gotPlanOutputLastLine, tt.wantPlanOutputLastLine); diff != nil {
 				t.Error(diff)
 			}
 
-			applyCommand := []string{"apply",
-				fmt.Sprintf("M_ARM_CLIENT_ID=%s", clientId),
-				fmt.Sprintf("M_ARM_CLIENT_SECRET=%s", clientSecret),
-				fmt.Sprintf("M_ARM_SUBSCRIPTION_ID=%s", subscriptionId),
-				fmt.Sprintf("M_ARM_TENANT_ID=%s", tenantId),
-			}
-
-			applyOpts := &docker.RunOptions{
-				Command: applyCommand,
-				Remove:  true,
-				Volumes: []string{fmt.Sprintf("%s:/shared", sharedPath)},
-			}
-
-			gotApplyOutput := docker.Run(t, imageTag, applyOpts)
-			gotApplyOutputLastLine, err := getLastLineFromMultilineSting(gotApplyOutput)
-			if err != nil {
-				t.Fatalf("reading last line from multiline failed with: %v", err)
-			}
+			gotApplyOutputLastLine := dockerApply(t, azCredentials, sharedPath)
 
 			if diff := deep.Equal(gotApplyOutputLastLine, tt.wantApplyOutputLastLine); diff != nil {
 				t.Error(diff)
@@ -333,22 +257,51 @@ func TestApply(t *testing.T) {
 	}
 }
 
-func setup(t *testing.T, rsaName string, rgName string) (sharedPath string, armClientId string, armClientSecret string, armSubscriptionId string, armTenantId string) {
+func dockerRun(t *testing.T, command string, params map[string]string, sharedPath string) string {
+
+	c := []string{command}
+	for k, v := range params {
+		c = append(c, fmt.Sprintf("%s=%s", k, v))
+	}
+
+	opts := &docker.RunOptions{
+		Command: c,
+		Remove:  true,
+		Volumes: []string{fmt.Sprintf("%s:/shared", sharedPath)},
+	}
+
+	//in case of error Run function calls FailNow anyways
+	return docker.Run(t, imageTag, opts)
+}
+
+func dockerInit(t *testing.T, initParams map[string]string, sharedPath string) string {
+	return dockerRun(t, "init", initParams, sharedPath)
+}
+
+func dockerPlan(t *testing.T, planParams map[string]string, sharedPath string) string {
+	return getLastLineFromMultilineSting(t, dockerRun(t, "plan", planParams, sharedPath))
+}
+
+func dockerApply(t *testing.T, applyParams map[string]string, sharedPath string) string {
+	return getLastLineFromMultilineSting(t, dockerRun(t, "apply", applyParams, sharedPath))
+}
+
+func setup(t *testing.T, rsaName string, name string) (string, map[string]string) {
 	wd, err := os.Getwd()
 	if err != nil {
 		t.Fatal(err)
 	}
-	sharedPath = path.Join(wd, "tests", "shared")
+	sharedPath := path.Join(wd, "tests", "shared")
 	err = os.MkdirAll(sharedPath, os.ModePerm)
 	if err != nil {
 		t.Fatal(err)
 	}
 	generateRsaKeyPair(t, sharedPath, rsaName)
-	armClientId, armClientSecret, armSubscriptionId, armTenantId = loadEnvironments(t)
-	if isResourceGroupPresent(t, armSubscriptionId, rgName) {
-		removeResourceGroup(t, armSubscriptionId, rgName)
+	azCredentials := loadEnvironments(t)
+	if isResourceGroupPresent(t, azCredentials["M_ARM_SUBSCRIPTION_ID"], name) {
+		removeResourceGroup(t, azCredentials["M_ARM_SUBSCRIPTION_ID"], name)
 	}
-	return
+	return sharedPath, azCredentials
 }
 
 func removeResourceGroup(t *testing.T, subscriptionId string, name string) {
@@ -385,7 +338,7 @@ func removeResourceGroup(t *testing.T, subscriptionId string, name string) {
 	for {
 		select {
 		case <-ticker.C:
-			t.Logf("Waiting for deletion to complate: %v", time.Since(now))
+			t.Logf("Waiting for deletion to complete: %v", time.Since(now).Round(time.Second))
 		case <-done:
 			t.Logf("Finished waiting for RG deletion.")
 			ticker.Stop()
@@ -413,7 +366,9 @@ func isResourceGroupPresent(t *testing.T, subscriptionId string, name string) bo
 func cleanup(t *testing.T, sharedPath string, subscriptionId string, name string) {
 	t.Logf("cleanup()")
 	_ = os.RemoveAll(sharedPath)
-	removeResourceGroup(t, subscriptionId, name)
+	if isResourceGroupPresent(t, subscriptionId, name) {
+		removeResourceGroup(t, subscriptionId, name)
+	}
 }
 
 func generateRsaKeyPair(t *testing.T, directory string, name string) {
@@ -440,36 +395,37 @@ func generateRsaKeyPair(t *testing.T, directory string, name string) {
 	}
 }
 
-func getLastLineFromMultilineSting(s string) (string, error) {
+func getLastLineFromMultilineSting(t *testing.T, s string) string {
 	in := strings.NewReader(s)
 	reader := bufio.NewReader(in)
 	for {
 		line, err := reader.ReadBytes('\n')
 		if err != nil && err != io.EOF {
-			return "", err
+			t.Fatal(err)
 		}
 		if err == io.EOF {
-			return string(line), nil
+			return string(line)
 		}
 	}
 }
 
-func loadEnvironments(t *testing.T) (armClientId string, armClientSecret string, armSubscriptionId string, armTenantId string) {
-	armClientId = os.Getenv("AZURE_CLIENT_ID")
-	if len(armClientId) == 0 {
+func loadEnvironments(t *testing.T) map[string]string {
+	result := make(map[string]string)
+	result["M_ARM_CLIENT_ID"] = os.Getenv("AZURE_CLIENT_ID")
+	if len(result["M_ARM_CLIENT_ID"]) == 0 {
 		t.Fatalf("expected AZURE_CLIENT_ID environment variable")
 	}
-	armClientSecret = os.Getenv("AZURE_CLIENT_SECRET")
-	if len(armClientSecret) == 0 {
+	result["M_ARM_CLIENT_SECRET"] = os.Getenv("AZURE_CLIENT_SECRET")
+	if len(result["M_ARM_CLIENT_SECRET"]) == 0 {
 		t.Fatalf("expected AZURE_CLIENT_SECRET environment variable")
 	}
-	armSubscriptionId = os.Getenv("AZURE_SUBSCRIPTION_ID")
-	if len(armSubscriptionId) == 0 {
+	result["M_ARM_SUBSCRIPTION_ID"] = os.Getenv("AZURE_SUBSCRIPTION_ID")
+	if len(result["M_ARM_SUBSCRIPTION_ID"]) == 0 {
 		t.Fatalf("expected AZURE_SUBSCRIPTION_ID environment variable")
 	}
-	armTenantId = os.Getenv("AZURE_TENANT_ID")
-	if len(armTenantId) == 0 {
+	result["M_ARM_TENANT_ID"] = os.Getenv("AZURE_TENANT_ID")
+	if len(result["M_ARM_TENANT_ID"]) == 0 {
 		t.Fatalf("expected AZURE_TENANT_ID environment variable")
 	}
-	return
+	return result
 }
