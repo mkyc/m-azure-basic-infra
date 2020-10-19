@@ -25,7 +25,7 @@ steps:
     inputs:
       secureFile: service-principal.mk
   - script: |
-      cp $(servicePrincipalFile.secureFilePath) $(System.DefaultWorkingDirectory)/service-principal.mk
+      echo $(servicePrincipalFile.secureFilePath)
   - task: Bash@3
     inputs:
       targetType: 'inline'
