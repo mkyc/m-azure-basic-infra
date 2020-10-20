@@ -110,15 +110,15 @@ azbi:
 			if v, ok := tt.initParams["M_NAME"]; ok {
 				name = v
 			}
-			sharedPath, azCredentials := setup(t, rsaName, name)
-			defer cleanup(t, sharedPath, azCredentials["M_ARM_SUBSCRIPTION_ID"], name)
+			remoteSharedPath, localSharedPath, environments := setup(t, rsaName, name)
+			defer cleanup(t, localSharedPath, environments["M_ARM_SUBSCRIPTION_ID"], name)
 
-			gotOutput := dockerInit(t, tt.initParams, sharedPath)
+			gotOutput := dockerInit(t, tt.initParams, remoteSharedPath)
 			if diff := deep.Equal(gotOutput, tt.wantOutput); diff != nil {
 				t.Error(diff)
 			}
 
-			expectedPath := path.Join(sharedPath, tt.wantConfigLocation)
+			expectedPath := path.Join(localSharedPath, tt.wantConfigLocation)
 			if _, err := os.Stat(expectedPath); os.IsNotExist(err) {
 				t.Fatalf("missing expected file: %s", expectedPath)
 			}
@@ -169,17 +169,17 @@ azbi:
 			if v, ok := tt.initParams["M_NAME"]; ok {
 				name = v
 			}
-			sharedPath, azCredentials := setup(t, rsaName, name)
-			defer cleanup(t, sharedPath, azCredentials["M_ARM_SUBSCRIPTION_ID"], name)
+			remoteSharedPath, localSharedPath, environments := setup(t, rsaName, name)
+			defer cleanup(t, localSharedPath, environments["M_ARM_SUBSCRIPTION_ID"], name)
 
-			dockerInit(t, tt.initParams, sharedPath)
+			dockerInit(t, tt.initParams, remoteSharedPath)
 
-			gotPlanOutputLastLine := dockerPlan(t, azCredentials, sharedPath)
+			gotPlanOutputLastLine := dockerPlan(t, environments, remoteSharedPath)
 			if diff := deep.Equal(gotPlanOutputLastLine, tt.wantPlanOutputLastLine); diff != nil {
 				t.Error(diff)
 			}
 
-			expectedPath := path.Join(sharedPath, tt.wantStateLocation)
+			expectedPath := path.Join(localSharedPath, tt.wantStateLocation)
 			if _, err := os.Stat(expectedPath); os.IsNotExist(err) {
 				t.Fatalf("missing expected file: %s", expectedPath)
 			}
@@ -191,7 +191,7 @@ azbi:
 				t.Error(diff)
 			}
 
-			expectedTerraformStatePath := path.Join(sharedPath, tt.wantTerraformStateFileLocation)
+			expectedTerraformStatePath := path.Join(localSharedPath, tt.wantTerraformStateFileLocation)
 			if _, err := os.Stat(expectedTerraformStatePath); os.IsNotExist(err) {
 				t.Fatalf("missing expected file: %s", expectedTerraformStatePath)
 			}
@@ -238,17 +238,17 @@ func TestApply(t *testing.T) {
 			if v, ok := tt.initParams["M_NAME"]; ok {
 				name = v
 			}
-			sharedPath, azCredentials := setup(t, rsaName, name)
-			defer cleanup(t, sharedPath, azCredentials["M_ARM_SUBSCRIPTION_ID"], name)
+			remoteSharedPath, localSharedPath, environments := setup(t, rsaName, name)
+			defer cleanup(t, localSharedPath, environments["M_ARM_SUBSCRIPTION_ID"], name)
 
-			dockerInit(t, tt.initParams, sharedPath)
+			dockerInit(t, tt.initParams, remoteSharedPath)
 
-			gotPlanOutputLastLine := dockerPlan(t, azCredentials, sharedPath)
+			gotPlanOutputLastLine := dockerPlan(t, environments, remoteSharedPath)
 			if diff := deep.Equal(gotPlanOutputLastLine, tt.wantPlanOutputLastLine); diff != nil {
 				t.Error(diff)
 			}
 
-			gotApplyOutputLastLine := dockerApply(t, azCredentials, sharedPath)
+			gotApplyOutputLastLine := dockerApply(t, environments, remoteSharedPath)
 
 			if diff := deep.Equal(gotApplyOutputLastLine, tt.wantApplyOutputLastLine); diff != nil {
 				t.Error(diff)
@@ -286,22 +286,33 @@ func dockerApply(t *testing.T, applyParams map[string]string, sharedPath string)
 	return getLastLineFromMultilineSting(t, dockerRun(t, "apply", applyParams, sharedPath))
 }
 
-func setup(t *testing.T, rsaName string, name string) (string, map[string]string) {
+func setup(t *testing.T, rsaName string, name string) (string, string, map[string]string) {
+	environments := loadEnvironments(t)
 	wd, err := os.Getwd()
 	if err != nil {
 		t.Fatal(err)
 	}
-	sharedPath := path.Join(wd, "tests", "shared")
-	err = os.MkdirAll(sharedPath, os.ModePerm)
+	var remoteSharedPath string
+	if v, ok := environments["K8S_HOST_PATH"]; ok && v != "" {
+		remoteSharedPath = v
+	} else {
+		remoteSharedPath = path.Join(wd, "tests", "shared")
+	}
+	var localSharedPath string
+	if v, ok := environments["K8S_VOL_PATH"]; ok && v != "" {
+		localSharedPath = v
+	} else {
+		localSharedPath = path.Join(wd, "tests", "shared")
+	}
+	err = os.MkdirAll(remoteSharedPath, os.ModePerm)
 	if err != nil {
 		t.Fatal(err)
 	}
-	generateRsaKeyPair(t, sharedPath, rsaName)
-	azCredentials := loadEnvironments(t)
-	if isResourceGroupPresent(t, azCredentials["M_ARM_SUBSCRIPTION_ID"], name) {
-		removeResourceGroup(t, azCredentials["M_ARM_SUBSCRIPTION_ID"], name)
+	generateRsaKeyPair(t, remoteSharedPath, rsaName)
+	if isResourceGroupPresent(t, environments["M_ARM_SUBSCRIPTION_ID"], name) {
+		removeResourceGroup(t, environments["M_ARM_SUBSCRIPTION_ID"], name)
 	}
-	return sharedPath, azCredentials
+	return remoteSharedPath, localSharedPath, environments
 }
 
 func removeResourceGroup(t *testing.T, subscriptionId string, name string) {
@@ -427,5 +438,7 @@ func loadEnvironments(t *testing.T) map[string]string {
 	if len(result["M_ARM_TENANT_ID"]) == 0 {
 		t.Fatalf("expected AZURE_TENANT_ID environment variable")
 	}
+	result["K8S_VOL_PATH"] = os.Getenv("K8S_VOL_PATH")
+	result["K8S_HOST_PATH"] = os.Getenv("K8S_HOST_PATH")
 	return result
 }

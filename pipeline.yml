@@ -32,3 +32,6 @@ steps:
       script: |
         make test
       failOnStderr: true
+    env:
+      K8S_VOL_PATH: '/tmp/tests-share'
+      K8S_HOST_PATH: '/tests-share'
