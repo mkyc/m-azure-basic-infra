@@ -304,11 +304,11 @@ func setup(t *testing.T, rsaName string, name string) (string, string, map[strin
 	} else {
 		localSharedPath = path.Join(wd, "tests", "shared")
 	}
-	err = os.MkdirAll(remoteSharedPath, os.ModePerm)
+	err = os.MkdirAll(localSharedPath, os.ModePerm)
 	if err != nil {
 		t.Fatal(err)
 	}
-	generateRsaKeyPair(t, remoteSharedPath, rsaName)
+	generateRsaKeyPair(t, localSharedPath, rsaName)
 	if isResourceGroupPresent(t, environments["M_ARM_SUBSCRIPTION_ID"], name) {
 		removeResourceGroup(t, environments["M_ARM_SUBSCRIPTION_ID"], name)
 	}
