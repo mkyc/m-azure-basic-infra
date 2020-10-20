@@ -30,5 +30,5 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
-        make build
+        make test
       failOnStderr: true
