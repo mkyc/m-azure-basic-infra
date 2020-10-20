@@ -18,13 +18,8 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
-        make prepare-service-principal
+        CLIENT_ID=$(clientId) CLIENT_SECRET=$(clientSecret) SUBSCRIPTION_ID=$(subscriptionId) TENANT_ID=$(tenantId) make prepare-service-principal
       failOnStderr: true
-    env:
-      CLIENT_ID: $(clientId)
-      CLIENT_SECRET: $(clientSecret)
-      SUBSCRIPTION_ID: $(subscriptionId)
-      TENANT_ID: $(tenantId)
   - task: Bash@3
     name: Build
     inputs:
