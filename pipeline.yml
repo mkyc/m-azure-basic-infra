@@ -14,7 +14,7 @@ steps:
     inputs:
       version: '1.15.2'
   - task: Bash@3
-    name: Prepare service-principal.mk
+    name: Prepare_ServicePrincipal
     inputs:
       targetType: 'inline'
       script: |
