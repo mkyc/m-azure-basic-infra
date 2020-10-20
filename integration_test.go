@@ -293,13 +293,13 @@ func setup(t *testing.T, rsaName string, name string) (string, string, map[strin
 		t.Fatal(err)
 	}
 	var remoteSharedPath string
-	if v, ok := environments["K8S_HOST_PATH"]; ok && v != "" {
+	if v, ok := environments["K8S_VOL_PATH"]; ok && v != "" {
 		remoteSharedPath = v
 	} else {
 		remoteSharedPath = path.Join(wd, "tests", "shared")
 	}
 	var localSharedPath string
-	if v, ok := environments["K8S_VOL_PATH"]; ok && v != "" {
+	if v, ok := environments["K8S_HOST_PATH"]; ok && v != "" {
 		localSharedPath = v
 	} else {
 		localSharedPath = path.Join(wd, "tests", "shared")
