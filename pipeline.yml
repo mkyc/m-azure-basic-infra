@@ -8,6 +8,13 @@ pr:
 pool:
   name: 'Azure Epiphany cluster - epiphany-build-agents-v2'
 
+variables:
+  AZURE_CLIENT_ID: $(clientId)
+  AZURE_CLIENT_SECRET: $(clientSecret)
+  AZURE_SUBSCRIPTION_ID: $(subscriptionId)
+  AZURE_TENANT_ID: $(tenantId)
+  CGO_ENABLED: 0
+
 steps:
   - task: GoTool@0
     name: EnsureGo1_15_2
@@ -19,9 +26,3 @@ steps:
       command: 'test'
       arguments: '-v -timeout 30m'
       workingDirectory: '$(System.DefaultWorkingDirectory)'
-    env:
-      AZURE_CLIENT_ID: $(CLIENTID)
-      AZURE_CLIENT_SECRET: $(CLIENTSECRET)
-      AZURE_SUBSCRIPTION_ID: $(SUBSCRIPTIONID)
-      AZURE_TENANT_ID: $(TENANTID)
-      CGO_ENABLED: 0
