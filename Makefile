@@ -25,7 +25,7 @@ HOST_GID := $(shell id -g)
 
 all: build
 
-.PHONY: build test test-on-azure-devops test-release release prepare-service-principal
+.PHONY: build test test-release release prepare-service-principal
 
 build: guard-VERSION guard-IMAGE guard-USER
 	docker build \
@@ -39,9 +39,6 @@ build: guard-VERSION guard-IMAGE guard-USER
 #test targets are located in ./test.mk file
 test: build
 	@AZURE_CLIENT_ID=$(ARM_CLIENT_ID) AZURE_CLIENT_SECRET=$(ARM_CLIENT_SECRET) AZURE_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID) AZURE_TENANT_ID=$(ARM_TENANT_ID) go test -v -timeout 30m
-
-test-on-azure-devops: build
-	@AZURE_CLIENT_ID=$(ARM_CLIENT_ID) AZURE_CLIENT_SECRET=$(ARM_CLIENT_SECRET) AZURE_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID) AZURE_TENANT_ID=$(ARM_TENANT_ID) CGO_ENABLED=0 go test -v -timeout 30m 2>&1 | go-junit-report > report.xml
 
 test-release: release
 	@AZURE_CLIENT_ID=$(ARM_CLIENT_ID) AZURE_CLIENT_SECRET=$(ARM_CLIENT_SECRET) AZURE_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID) AZURE_TENANT_ID=$(ARM_TENANT_ID) CGO_ENABLED=0 go test -v -timeout 30m
