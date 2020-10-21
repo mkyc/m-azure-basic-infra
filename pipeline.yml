@@ -13,13 +13,6 @@ steps:
     displayName: 'ensure Go 1.15.2'
     inputs:
       version: '1.15.2'
-      goPath: '/tools/go/1.15.2/x64/bin'
-      goBin: '/tools/go/1.15.2/x64/bin'
-  - task: Go@0
-    displayName: 'go get go-junit-report'
-    inputs:
-      command: get
-      arguments: '-u github.com/jstemmer/go-junit-report'
   - task: Bash@3
     displayName: 'prepare service-principal.mk'
     inputs:
@@ -33,9 +26,17 @@ steps:
       SUBSCRIPTION_ID: $(subscriptionId)
       TENANT_ID: $(tenantId)
   - task: Bash@3
+    displayName: 'OMG I WILL CRY'
     inputs:
+      targetType: 'inline'
       script: |
-        printenv
+        echo $PATH
+        echo $GOPATH
+        echo $GOBIN
+        echo "##vso[task.prependpath]$GOBIN"
+        echo $PATH
+        ls -la /tools/go/1.15.2/x64/bin
+      failOnStderr: true
   - task: Bash@3
     displayName: 'make test-on-azure-devops'
     inputs:
