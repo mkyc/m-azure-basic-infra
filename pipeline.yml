@@ -13,8 +13,6 @@ steps:
     displayName: 'ensure Go 1.15.2'
     inputs:
       version: '1.15.2'
-      goPath: '$(System.DefaultWorkingDirectory)/go15'
-      goBin: '$(System.DefaultWorkingDirectory)/go15/bin'
   - task: Go@0
     displayName: 'go get go-junit-report'
     inputs:
@@ -37,8 +35,6 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
-        SET_PATH=`echo $GOPATH:$GOBIN:$PATH`
-        echo "##vso[task.setvariable variable=PATH]$SET_PATH"
         echo $PATH
         make test-on-azure-devops
       failOnStderr: true
