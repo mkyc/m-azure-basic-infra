@@ -38,6 +38,11 @@ steps:
       targetType: 'inline'
       script: |
         echo $PATH
+        echo $GOPATH
+        echo $GOBIN
+        SET_PATH=`echo $GOPATH:$GOBIN:$PATH`
+        echo "##vso[task.setvariable variable=PATH]$SET_PATH"
+        echo $PATH
         make test-on-azure-devops
       failOnStderr: true
     env:
