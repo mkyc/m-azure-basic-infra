@@ -8,11 +8,15 @@ pr:
 pool:
   name: 'Azure Epiphany cluster - epiphany-build-agents-v2'
 
+variables:
+  GOPATH: '$(system.defaultWorkingDirectory)'
+
 steps:
   - task: GoTool@0
     displayName: 'ensure Go 1.15.2'
     inputs:
       version: '1.15.2'
+      goPath: '$(GOPATH)'
   - task: Go@0
     displayName: 'go get go-junit-report'
     inputs:
