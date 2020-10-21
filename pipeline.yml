@@ -14,11 +14,14 @@ steps:
     inputs:
       version: '1.15.2'
   - task: Bash@3
+    name: GoGetJUnitReport
+    inputs:
+      script: go get github.com/jstemmer/go-junit-report
+  - task: Bash@3
     name: Prepare_ServicePrincipal
     inputs:
       targetType: 'inline'
-      script: |
-        make prepare-service-principal
+      script: make prepare-service-principal
       failOnStderr: true
     env:
       CLIENT_ID: $(clientId)
@@ -26,12 +29,15 @@ steps:
       SUBSCRIPTION_ID: $(subscriptionId)
       TENANT_ID: $(tenantId)
   - task: Bash@3
-    name: Build
+    name: Test
     inputs:
       targetType: 'inline'
-      script: |
-        make test
+      script: make test-on-azure-devops
       failOnStderr: true
     env:
       K8S_VOL_PATH: '/tmp/tests-share'
       K8S_HOST_PATH: '/tests-share'
+  - task: PublishTestResults@2
+    inputs:
+      testRunner: JUnit
+      testResultsFiles: $(System.DefaultWorkingDirectory)/**/report.xml

@@ -40,7 +40,10 @@ build: guard-VERSION guard-IMAGE guard-USER
 #prepare service principal variables file before running this target using `CLIENT_ID=xxx CLIENT_SECRET=yyy SUBSCRIPTION_ID=zzz TENANT_ID=vvv make prepare-service-principal`
 #test targets are located in ./test.mk file
 test: build
-	@AZURE_CLIENT_ID=$(ARM_CLIENT_ID) AZURE_CLIENT_SECRET=$(ARM_CLIENT_SECRET) AZURE_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID) AZURE_TENANT_ID=$(ARM_TENANT_ID) CGO_ENABLED=0 go test -v -timeout 30m
+	@AZURE_CLIENT_ID=$(ARM_CLIENT_ID) AZURE_CLIENT_SECRET=$(ARM_CLIENT_SECRET) AZURE_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID) AZURE_TENANT_ID=$(ARM_TENANT_ID) go test -v -timeout 30m
+
+test-on-azure-devops: build
+	@AZURE_CLIENT_ID=$(ARM_CLIENT_ID) AZURE_CLIENT_SECRET=$(ARM_CLIENT_SECRET) AZURE_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID) AZURE_TENANT_ID=$(ARM_TENANT_ID) CGO_ENABLED=0 go test -v -timeout 30m 2>&1 | go-junit-report > report.xml
 
 test-release: release
 	@AZURE_CLIENT_ID=$(ARM_CLIENT_ID) AZURE_CLIENT_SECRET=$(ARM_CLIENT_SECRET) AZURE_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID) AZURE_TENANT_ID=$(ARM_TENANT_ID) CGO_ENABLED=0 go test -v -timeout 30m

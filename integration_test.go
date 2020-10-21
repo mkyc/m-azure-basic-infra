@@ -2,12 +2,14 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"gopkg.in/yaml.v3"
 	"io"
 	"io/ioutil"
 	"os"
@@ -102,18 +104,10 @@ azbi:
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			rsaName := "vms_rsa"
-			if v, ok := tt.initParams["M_VMS_RSA"]; ok {
-				rsaName = v
-			}
-			name := "epiphany"
-			if v, ok := tt.initParams["M_NAME"]; ok {
-				name = v
-			}
-			remoteSharedPath, localSharedPath, environments := setup(t, rsaName, name)
+			name, remoteSharedPath, localSharedPath, environments, _ := setup(t, tt.initParams)
 			defer cleanup(t, localSharedPath, environments["M_ARM_SUBSCRIPTION_ID"], name)
 
-			gotOutput := dockerInit(t, tt.initParams, remoteSharedPath)
+			gotOutput := dockerRun(t, "init", tt.initParams, remoteSharedPath)
 			if diff := deep.Equal(gotOutput, tt.wantOutput); diff != nil {
 				t.Error(diff)
 			}
@@ -122,6 +116,7 @@ azbi:
 			if _, err := os.Stat(expectedPath); os.IsNotExist(err) {
 				t.Fatalf("missing expected file: %s", expectedPath)
 			}
+
 			gotFileContent, err := ioutil.ReadFile(expectedPath)
 			if err != nil {
 				t.Errorf("wasnt able to read form output file: %v", err)
@@ -161,20 +156,12 @@ azbi:
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			rsaName := "vms_rsa"
-			if v, ok := tt.initParams["M_VMS_RSA"]; ok {
-				rsaName = v
-			}
-			name := "epiphany-rg"
-			if v, ok := tt.initParams["M_NAME"]; ok {
-				name = v
-			}
-			remoteSharedPath, localSharedPath, environments := setup(t, rsaName, name)
+			name, remoteSharedPath, localSharedPath, environments, _ := setup(t, tt.initParams)
 			defer cleanup(t, localSharedPath, environments["M_ARM_SUBSCRIPTION_ID"], name)
 
-			dockerInit(t, tt.initParams, remoteSharedPath)
+			dockerRun(t, "init", tt.initParams, remoteSharedPath)
 
-			gotPlanOutputLastLine := dockerPlan(t, environments, remoteSharedPath)
+			gotPlanOutputLastLine := getLastLineFromMultilineSting(t, dockerRun(t, "plan", environments, remoteSharedPath))
 			if diff := deep.Equal(gotPlanOutputLastLine, tt.wantPlanOutputLastLine); diff != nil {
 				t.Error(diff)
 			}
@@ -183,11 +170,12 @@ azbi:
 			if _, err := os.Stat(expectedPath); os.IsNotExist(err) {
 				t.Fatalf("missing expected file: %s", expectedPath)
 			}
-			gotFileContent, err := ioutil.ReadFile(expectedPath)
+
+			gotStateContent, err := ioutil.ReadFile(expectedPath)
 			if err != nil {
 				t.Errorf("wasnt able to read form output file: %v", err)
 			}
-			if diff := deep.Equal(string(gotFileContent), tt.wantStateContent); diff != nil {
+			if diff := deep.Equal(string(gotStateContent), tt.wantStateContent); diff != nil {
 				t.Error(diff)
 			}
 
@@ -230,35 +218,43 @@ func TestApply(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			rsaName := "vms_rsa"
-			if v, ok := tt.initParams["M_VMS_RSA"]; ok {
-				rsaName = v
-			}
-			name := "epiphany-rg"
-			if v, ok := tt.initParams["M_NAME"]; ok {
-				name = v
-			}
-			remoteSharedPath, localSharedPath, environments := setup(t, rsaName, name)
+			name, remoteSharedPath, localSharedPath, environments, privateKey := setup(t, tt.initParams)
 			defer cleanup(t, localSharedPath, environments["M_ARM_SUBSCRIPTION_ID"], name)
 
-			dockerInit(t, tt.initParams, remoteSharedPath)
+			dockerRun(t, "init", tt.initParams, remoteSharedPath)
 
-			gotPlanOutputLastLine := dockerPlan(t, environments, remoteSharedPath)
+			gotPlanOutputLastLine := getLastLineFromMultilineSting(t, dockerRun(t, "plan", environments, remoteSharedPath))
 			if diff := deep.Equal(gotPlanOutputLastLine, tt.wantPlanOutputLastLine); diff != nil {
 				t.Error(diff)
 			}
 
-			gotApplyOutputLastLine := dockerApply(t, environments, remoteSharedPath)
+			gotApplyOutputLastLine := getLastLineFromMultilineSting(t, dockerRun(t, "apply", environments, remoteSharedPath))
 
 			if diff := deep.Equal(gotApplyOutputLastLine, tt.wantApplyOutputLastLine); diff != nil {
 				t.Error(diff)
+			}
+
+			if v, ok := tt.initParams["M_PUBLIC_IPS"]; ok && v == "true" {
+				data, err := ioutil.ReadFile(path.Join(localSharedPath, "state.yml"))
+				if err != nil {
+					t.Fatal(err)
+				}
+				m := make(map[interface{}]interface{})
+				err = yaml.Unmarshal(data, &m)
+				if err != nil {
+					t.Fatal(err)
+				}
+				publicIPs := m["azbi"].(map[string]interface{})["output"].(map[string]interface{})["public_ips.value"].([]interface{})
+				for _, p := range publicIPs {
+					s := p.(string)
+					validateSshConnectivity(t, privateKey, s)
+				}
 			}
 		})
 	}
 }
 
 func dockerRun(t *testing.T, command string, params map[string]string, sharedPath string) string {
-
 	c := []string{command}
 	for k, v := range params {
 		c = append(c, fmt.Sprintf("%s=%s", k, v))
@@ -269,29 +265,26 @@ func dockerRun(t *testing.T, command string, params map[string]string, sharedPat
 		Remove:  true,
 		Volumes: []string{fmt.Sprintf("%s:/shared", sharedPath)},
 	}
-
 	//in case of error Run function calls FailNow anyways
 	return docker.Run(t, imageTag, opts)
 }
 
-func dockerInit(t *testing.T, initParams map[string]string, sharedPath string) string {
-	return dockerRun(t, "init", initParams, sharedPath)
-}
+func setup(t *testing.T, initParams map[string]string) (string, string, string, map[string]string, ssh.Signer) {
+	rsaName := "vms_rsa"
+	if v, ok := initParams["M_VMS_RSA"]; ok {
+		rsaName = v
+	}
+	name := "epiphany-rg"
+	if v, ok := initParams["M_NAME"]; ok {
+		name = v
+	}
 
-func dockerPlan(t *testing.T, planParams map[string]string, sharedPath string) string {
-	return getLastLineFromMultilineSting(t, dockerRun(t, "plan", planParams, sharedPath))
-}
-
-func dockerApply(t *testing.T, applyParams map[string]string, sharedPath string) string {
-	return getLastLineFromMultilineSting(t, dockerRun(t, "apply", applyParams, sharedPath))
-}
-
-func setup(t *testing.T, rsaName string, name string) (string, string, map[string]string) {
 	environments := loadEnvironments(t)
 	wd, err := os.Getwd()
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	var remoteSharedPath string
 	if v, ok := environments["K8S_VOL_PATH"]; ok && v != "" {
 		remoteSharedPath = v
@@ -308,11 +301,36 @@ func setup(t *testing.T, rsaName string, name string) (string, string, map[strin
 	if err != nil {
 		t.Fatal(err)
 	}
-	generateRsaKeyPair(t, localSharedPath, rsaName)
+
+	privateKey := generateRsaKeyPair(t, localSharedPath, rsaName)
 	if isResourceGroupPresent(t, environments["M_ARM_SUBSCRIPTION_ID"], name) {
 		removeResourceGroup(t, environments["M_ARM_SUBSCRIPTION_ID"], name)
 	}
-	return remoteSharedPath, localSharedPath, environments
+	return name, remoteSharedPath, localSharedPath, environments, privateKey
+}
+
+func cleanup(t *testing.T, sharedPath string, subscriptionId string, name string) {
+	t.Logf("cleanup()")
+	_ = os.RemoveAll(sharedPath)
+	if isResourceGroupPresent(t, subscriptionId, name) {
+		removeResourceGroup(t, subscriptionId, name)
+	}
+}
+
+func isResourceGroupPresent(t *testing.T, subscriptionId string, name string) bool {
+	groupsClient := resources.NewGroupsClient(subscriptionId)
+	authorizer, err := auth.NewAuthorizerFromEnvironment()
+	if err != nil {
+		t.Error(err)
+	}
+	groupsClient.Authorizer = authorizer
+	rgName := fmt.Sprintf("%s-rg", name)
+	_, err = groupsClient.Get(context.TODO(), rgName)
+	if err != nil {
+		return false
+	} else {
+		return true
+	}
 }
 
 func removeResourceGroup(t *testing.T, subscriptionId string, name string) {
@@ -358,31 +376,7 @@ func removeResourceGroup(t *testing.T, subscriptionId string, name string) {
 	}
 }
 
-func isResourceGroupPresent(t *testing.T, subscriptionId string, name string) bool {
-	groupsClient := resources.NewGroupsClient(subscriptionId)
-	authorizer, err := auth.NewAuthorizerFromEnvironment()
-	if err != nil {
-		t.Error(err)
-	}
-	groupsClient.Authorizer = authorizer
-	rgName := fmt.Sprintf("%s-rg", name)
-	_, err = groupsClient.Get(context.TODO(), rgName)
-	if err != nil {
-		return false
-	} else {
-		return true
-	}
-}
-
-func cleanup(t *testing.T, sharedPath string, subscriptionId string, name string) {
-	t.Logf("cleanup()")
-	_ = os.RemoveAll(sharedPath)
-	if isResourceGroupPresent(t, subscriptionId, name) {
-		removeResourceGroup(t, subscriptionId, name)
-	}
-}
-
-func generateRsaKeyPair(t *testing.T, directory string, name string) {
+func generateRsaKeyPair(t *testing.T, directory string, name string) ssh.Signer {
 	privateRsaKey, err := rsa.GenerateKey(rand.Reader, 4096)
 	if err != nil {
 		t.Fatal(err)
@@ -404,6 +398,35 @@ func generateRsaKeyPair(t *testing.T, directory string, name string) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	signer, err := ssh.ParsePrivateKey(privateKeyBytes)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return signer
+}
+
+func validateSshConnectivity(t *testing.T, privateKey ssh.Signer, ipString string) {
+	sshConfig := &ssh.ClientConfig{
+		User:            "operations",
+		Auth:            []ssh.AuthMethod{ssh.PublicKeys(privateKey)},
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+	}
+	connection, err := ssh.Dial("tcp", fmt.Sprintf("%s:22", ipString), sshConfig)
+	if err != nil {
+		t.Error(err)
+	}
+	session, err := connection.NewSession()
+	if err != nil {
+		t.Error(err)
+	}
+	defer session.Close()
+	var b bytes.Buffer
+	session.Stdout = &b
+	err = session.Run("uname -a")
+	if err != nil {
+		t.Error()
+	}
+	t.Logf("ssh connectivity test result: %s", b.String())
 }
 
 func getLastLineFromMultilineSting(t *testing.T, s string) string {
