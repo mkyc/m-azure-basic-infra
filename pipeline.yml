@@ -13,6 +13,8 @@ steps:
     displayName: 'ensure Go 1.15.2'
     inputs:
       version: '1.15.2'
+      goPath: '/root/go'
+      goBin: '/root/go/bin'
   - task: Go@0
     displayName: 'go get go-junit-report'
     inputs:
