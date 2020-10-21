@@ -33,7 +33,7 @@ steps:
         echo $PATH
         echo $GOPATH
         echo $GOBIN
-        echo "##vso[task.prependpath]$GOBIN"
+        echo "##vso[task.prependpath]/tools/go/1.15.2/x64/bin"
         echo $PATH
         ls -la /tools/go/1.15.2/x64/bin
       failOnStderr: true
