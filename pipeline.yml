@@ -10,16 +10,16 @@ pool:
 
 steps:
   - task: GoTool@0
-    name: 'ensure Go 1.15.2'
+    displayName: 'ensure Go 1.15.2'
     inputs:
       version: '1.15.2'
   - task: Go@0
-    name: 'go get go-junit-report'
+    displayName: 'go get go-junit-report'
     inputs:
       command: get
       arguments: 'github.com/jstemmer/go-junit-report'
   - task: Bash@3
-    name: 'prepare service-principal.mk'
+    displayName: 'prepare service-principal.mk'
     inputs:
       targetType: 'inline'
       script: |
@@ -31,7 +31,7 @@ steps:
       SUBSCRIPTION_ID: $(subscriptionId)
       TENANT_ID: $(tenantId)
   - task: Bash@3
-    name: 'make test-on-azure-devops'
+    displayName: 'make test-on-azure-devops'
     inputs:
       targetType: 'inline'
       script: |
