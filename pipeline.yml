@@ -33,6 +33,10 @@ steps:
       SUBSCRIPTION_ID: $(subscriptionId)
       TENANT_ID: $(tenantId)
   - task: Bash@3
+    inputs:
+      script: |
+        echo "##vso[task.prependpath]$GOBIN"
+  - task: Bash@3
     displayName: 'make test-on-azure-devops'
     inputs:
       targetType: 'inline'
