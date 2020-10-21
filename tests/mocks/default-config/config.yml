@@ -1,9 +1,0 @@
-kind: azbi-config
-azbi:
-  size: 3
-  use_public_ip: true
-  location: "northeurope"
-  name: "epiphany"
-  address_space: ["10.0.0.0/16"]
-  address_prefixes: ["10.0.1.0/24"]
-  rsa_pub_path: "/shared/vms_rsa.pub"

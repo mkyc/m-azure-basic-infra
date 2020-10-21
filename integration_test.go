@@ -289,13 +289,13 @@ func setup(t *testing.T, initParams map[string]string) (string, string, string, 
 	if v, ok := environments["K8S_VOL_PATH"]; ok && v != "" {
 		remoteSharedPath = v
 	} else {
-		remoteSharedPath = path.Join(wd, "tests", "shared")
+		remoteSharedPath = path.Join(wd, "shared")
 	}
 	var localSharedPath string
 	if v, ok := environments["K8S_HOST_PATH"]; ok && v != "" {
 		localSharedPath = v
 	} else {
-		localSharedPath = path.Join(wd, "tests", "shared")
+		localSharedPath = path.Join(wd, "shared")
 	}
 	err = os.MkdirAll(localSharedPath, os.ModePerm)
 	if err != nil {

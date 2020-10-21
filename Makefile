@@ -25,9 +25,7 @@ HOST_GID := $(shell id -g)
 
 all: build
 
-include ./test.mk
-
-.PHONY: build test release prepare-service-principal
+.PHONY: build test test-on-azure-devops test-release release prepare-service-principal
 
 build: guard-VERSION guard-IMAGE guard-USER
 	docker build \
