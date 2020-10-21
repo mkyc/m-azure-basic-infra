@@ -13,8 +13,8 @@ steps:
     displayName: 'ensure Go 1.15.2'
     inputs:
       version: '1.15.2'
-      goPath: '/root/go'
-      goBin: '/root/go/bin'
+      goPath: '/tools/go/1.15.2/x64/bin'
+      goBin: '/tools/go/1.15.2/x64/bin'
   - task: Go@0
     displayName: 'go get go-junit-report'
     inputs:
@@ -35,7 +35,7 @@ steps:
   - task: Bash@3
     inputs:
       script: |
-        echo "##vso[task.prependpath]$GOBIN"
+        printenv
   - task: Bash@3
     displayName: 'make test-on-azure-devops'
     inputs:
