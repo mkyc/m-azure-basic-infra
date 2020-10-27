@@ -45,3 +45,4 @@ steps:
     inputs:
       testRunner: JUnit
       testResultsFiles: $(System.DefaultWorkingDirectory)/**/report.xml
+      failTaskOnFailedTests: true
