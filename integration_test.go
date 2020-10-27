@@ -254,6 +254,7 @@ func TestApply(t *testing.T) {
 	}
 }
 
+// dockerRun function wraps docker run operation and returns `docker run` output.
 func dockerRun(t *testing.T, command string, params map[string]string, sharedPath string) string {
 	c := []string{command}
 	for k, v := range params {
@@ -269,6 +270,7 @@ func dockerRun(t *testing.T, command string, params map[string]string, sharedPat
 	return docker.Run(t, imageTag, opts)
 }
 
+// setup function ensures that all prerequisites for tests are in place.
 func setup(t *testing.T, initParams map[string]string) (string, string, string, map[string]string, ssh.Signer) {
 	rsaName := "vms_rsa"
 	if v, ok := initParams["M_VMS_RSA"]; ok {
@@ -279,7 +281,7 @@ func setup(t *testing.T, initParams map[string]string) (string, string, string, 
 		name = v
 	}
 
-	environments := loadEnvironments(t)
+	environments := loadEnvironmentVariables(t)
 	wd, err := os.Getwd()
 	if err != nil {
 		t.Fatal(err)
@@ -309,6 +311,8 @@ func setup(t *testing.T, initParams map[string]string) (string, string, string, 
 	return name, remoteSharedPath, localSharedPath, environments, privateKey
 }
 
+// cleanup function removes directories created during test and ensures that resource
+// group gets removed if it was created.
 func cleanup(t *testing.T, sharedPath string, subscriptionId string, name string) {
 	t.Logf("cleanup()")
 	_ = os.RemoveAll(sharedPath)
@@ -317,6 +321,7 @@ func cleanup(t *testing.T, sharedPath string, subscriptionId string, name string
 	}
 }
 
+// isResourceGroupPresent function checks if resource group with given name exists.
 func isResourceGroupPresent(t *testing.T, subscriptionId string, name string) bool {
 	groupsClient := resources.NewGroupsClient(subscriptionId)
 	authorizer, err := auth.NewAuthorizerFromEnvironment()
@@ -333,6 +338,8 @@ func isResourceGroupPresent(t *testing.T, subscriptionId string, name string) bo
 	}
 }
 
+// removeResourceGroup function invokes Delete operation on provided resource
+// group name and waits for operation completion.
 func removeResourceGroup(t *testing.T, subscriptionId string, name string) {
 	t.Logf("Will prepare new az groups client")
 	ctx := context.TODO()
@@ -376,6 +383,8 @@ func removeResourceGroup(t *testing.T, subscriptionId string, name string) {
 	}
 }
 
+// generateRsaKeyPair function generates RSA public and private keys and returns
+// ssh.Signer that can create signatures that verify against a public key.
 func generateRsaKeyPair(t *testing.T, directory string, name string) ssh.Signer {
 	privateRsaKey, err := rsa.GenerateKey(rand.Reader, 4096)
 	if err != nil {
@@ -405,10 +414,13 @@ func generateRsaKeyPair(t *testing.T, directory string, name string) ssh.Signer 
 	return signer
 }
 
-func validateSshConnectivity(t *testing.T, privateKey ssh.Signer, ipString string) {
+// validateSshConnectivity function checks possibility to connect to provided IP
+// address and run `uname -a` command. In case of failed connection attempt or error
+// while running command test will fail.
+func validateSshConnectivity(t *testing.T, signer ssh.Signer, ipString string) {
 	sshConfig := &ssh.ClientConfig{
 		User:            "operations",
-		Auth:            []ssh.AuthMethod{ssh.PublicKeys(privateKey)},
+		Auth:            []ssh.AuthMethod{ssh.PublicKeys(signer)},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 	connection, err := ssh.Dial("tcp", fmt.Sprintf("%s:22", ipString), sshConfig)
@@ -429,6 +441,8 @@ func validateSshConnectivity(t *testing.T, privateKey ssh.Signer, ipString strin
 	t.Logf("ssh connectivity test result: %s", b.String())
 }
 
+// getLastLineFromMultilineSting is helper function to extract just last line
+// from multiline string.
 func getLastLineFromMultilineSting(t *testing.T, s string) string {
 	in := strings.NewReader(s)
 	reader := bufio.NewReader(in)
@@ -443,7 +457,12 @@ func getLastLineFromMultilineSting(t *testing.T, s string) string {
 	}
 }
 
-func loadEnvironments(t *testing.T) map[string]string {
+// loadEnvironmentVariables obtains 6 variables from environment.
+// Two of them (K8S_VOL_PATH and K8S_HOST_PATH) are optional and
+// are not checked but another four (AZURE_CLIENT_ID, AZURE_CLIENT_SECRET
+// AZURE_SUBSCRIPTION_ID and AZURE_TENANT_ID) are required and if missing
+// will cause test to fail.
+func loadEnvironmentVariables(t *testing.T) map[string]string {
 	result := make(map[string]string)
 	result["M_ARM_CLIENT_ID"] = os.Getenv("AZURE_CLIENT_ID")
 	if len(result["M_ARM_CLIENT_ID"]) == 0 {
