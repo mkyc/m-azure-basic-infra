@@ -1,3 +1,12 @@
+FROM golang:1.15.2 as builder
+ARG ARG_GO_MODULE_NAME="github.com/epiphany-platform/m-azure-basic-infrastructure"
+ENV GO_MODULE_NAME=$ARG_GO_MODULE_NAME
+RUN mkdir -p $GOPATH/src/$GO_MODULE_NAME
+COPY . $GOPATH/src/$GO_MODULE_NAME
+WORKDIR $GOPATH/src/$GO_MODULE_NAME
+RUN go get -d -v ./...
+RUN CGO_ENABLED=0 GOOS=linux go build -x -o /runner $GO_MODULE_NAME
+
 FROM hashicorp/terraform:0.13.2 as initializer
 
 COPY resources /resources
@@ -21,6 +30,7 @@ ENV M_VERSION=$ARG_M_VERSION
 
 COPY --from=initializer /resources/ /resources/
 COPY workdir /workdir
+COPY --from=builder /runner /workdir
 
 ARG ARG_HOST_UID=1000
 ARG ARG_HOST_GID=1000
