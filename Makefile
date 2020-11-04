@@ -46,7 +46,7 @@ test-release: release
 prepare-service-principal: guard-CLIENT_ID guard-CLIENT_SECRET guard-SUBSCRIPTION_ID guard-TENANT_ID
 	@echo "$$SERVICE_PRINCIPAL_CONTENT" > $(ROOT_DIR)/service-principal.mk
 
-release: guard-VERSION guard-IMAGE guard-USER
+release: guard-VERSION guard-IMAGE_NAME
 	docker build \
 		--build-arg ARG_M_VERSION=$(VERSION) \
 		-t $(IMAGE_NAME) \
