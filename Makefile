@@ -1,6 +1,6 @@
 ROOT_DIR := $(patsubst %/,%,$(dir $(abspath $(firstword $(MAKEFILE_LIST)))))
 
-VERSION ?= 0.0.1
+VERSION ?= dev
 USER := epiphanyplatform
 IMAGE := azbi
 

@@ -1,14 +1,3 @@
-define M_METADATA_CONTENT
-labels:
-  version: $(M_VERSION)
-  name: Azure Basic Infrastructure
-  short: $(M_MODULE_SHORT)
-  kind: infrastructure
-  provider: azure
-  provides-vms: true
-  provides-pubips: true
-endef
-
 define M_CONFIG_CONTENT
 kind: $(M_MODULE_SHORT)-config
 $(M_MODULE_SHORT):

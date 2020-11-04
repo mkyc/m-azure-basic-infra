@@ -7,7 +7,7 @@ export
 #medatada method is printing static metadata information about module
 metadata: guard-M_RESOURCES
 	#AzBI | metadata | should print component metadata
-	@echo "$$M_METADATA_CONTENT"
+	@./runner metadata
 
 #init method is used to initialize module configuration and check if state is providing strong (and weak) dependencies
 #TODO should also validate state if strong requirements are met

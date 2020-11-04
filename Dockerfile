@@ -1,11 +1,15 @@
 FROM golang:1.15.2 as builder
 ARG ARG_GO_MODULE_NAME="github.com/epiphany-platform/m-azure-basic-infrastructure"
 ENV GO_MODULE_NAME=$ARG_GO_MODULE_NAME
+ARG ARG_M_VERSION="unknown"
+ENV M_VERSION=$ARG_M_VERSION
+
 RUN mkdir -p $GOPATH/src/$GO_MODULE_NAME
 COPY . $GOPATH/src/$GO_MODULE_NAME
 WORKDIR $GOPATH/src/$GO_MODULE_NAME
 RUN go get -d -v ./...
-RUN CGO_ENABLED=0 GOOS=linux go build -x -o /runner $GO_MODULE_NAME
+RUN go get github.com/ahmetb/govvv
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="$(govvv -flags -pkg $GO_MODULE_NAME/cmd -version $M_VERSION)" -x -o /runner $GO_MODULE_NAME
 
 FROM hashicorp/terraform:0.13.2 as initializer
 

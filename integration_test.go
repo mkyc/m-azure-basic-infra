@@ -9,6 +9,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"github.com/epiphany-platform/m-azure-basic-infrastructure/cmd"
 	"gopkg.in/yaml.v3"
 	"io"
 	"io/ioutil"
@@ -27,8 +28,37 @@ import (
 )
 
 const (
-	imageTag = "epiphanyplatform/azbi:0.0.1"
+	imageTag = "epiphanyplatform/azbi"
 )
+
+func TestMetadata(t *testing.T) {
+	tests := []struct {
+		name               string
+		wantOutputTemplate string
+	}{
+		{
+			name: "default metadata",
+			wantOutputTemplate: `#AzBI | metadata | should print component metadata
+labels:
+  version: %s
+  name: Azure Basic Infrastructure
+  short: azbi
+  kind: infrastructure
+  provider: azure
+  provides-vms: true
+  provides-pubips: true`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotOutput := dockerRun(t, "metadata", nil, "")
+			if diff := deep.Equal(gotOutput, fmt.Sprintf(tt.wantOutputTemplate, cmd.Version)); diff != nil {
+				t.Error(diff)
+			}
+		})
+	}
+}
 
 func TestInit(t *testing.T) {
 	tests := []struct {
@@ -261,13 +291,22 @@ func dockerRun(t *testing.T, command string, params map[string]string, sharedPat
 		c = append(c, fmt.Sprintf("%s=%s", k, v))
 	}
 
-	opts := &docker.RunOptions{
-		Command: c,
-		Remove:  true,
-		Volumes: []string{fmt.Sprintf("%s:/shared", sharedPath)},
+	var opts *docker.RunOptions
+	if sharedPath != "" {
+		opts = &docker.RunOptions{
+			Command: c,
+			Remove:  true,
+			Volumes: []string{fmt.Sprintf("%s:/shared", sharedPath)},
+		}
+	} else {
+		opts = &docker.RunOptions{
+			Command: c,
+			Remove:  true,
+		}
 	}
+
 	//in case of error Run function calls FailNow anyways
-	return docker.Run(t, imageTag, opts)
+	return docker.Run(t, fmt.Sprintf("%s:%s", imageTag, cmd.Version), opts)
 }
 
 // setup function ensures that all prerequisites for tests are in place.
