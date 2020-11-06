@@ -9,9 +9,12 @@ metadata: guard-M_RESOURCES
 	#AzBI | metadata | should print component metadata
 	@./runner metadata
 
+new-init:
+	@./runner init
+
 #init method is used to initialize module configuration and check if state is providing strong (and weak) dependencies
 #TODO should also validate state if strong requirements are met
-init: guard-M_RESOURCES guard-M_SHARED setup ensure-state-file template-config-file initialize-state-file display-config-file
+init: guard-M_RESOURCES guard-M_SHARED new-init ensure-state-file template-config-file initialize-state-file display-config-file
 
 #plan method would get config file and environment state file and compare them and calculate what would be done o apply stage
 plan: guard-M_RESOURCES guard-M_SHARED setup validate-config validate-state template-tfvars module-plan terraform-plan

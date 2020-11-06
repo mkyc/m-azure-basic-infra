@@ -9,7 +9,16 @@ import (
 	"github.com/spf13/viper"
 )
 
-var cfgFile string
+const (
+	moduleShortName = "azbi" //TODO move to main.consts file
+	configFileName  = "azbi-config.yml"
+	stateFileName   = "state.yml"
+)
+
+var (
+	cfgFile string
+	Version string
+)
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{

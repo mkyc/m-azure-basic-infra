@@ -6,10 +6,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	Version string
-)
-
 // metadataCmd represents the metadata command
 var metadataCmd = &cobra.Command{
 	Use:   "metadata",
@@ -21,6 +17,7 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("metadata called")
 		fmt.Println(printMetadata())
 	},
 }
@@ -43,9 +40,9 @@ func printMetadata() string {
 	return fmt.Sprintf(`labels:
   version: %s
   name: Azure Basic Infrastructure
-  short: azbi
+  short: %s
   kind: infrastructure
   provider: azure
   provides-vms: true
-  provides-pubips: true`, Version)
+  provides-pubips: true`, Version, moduleShortName)
 }
