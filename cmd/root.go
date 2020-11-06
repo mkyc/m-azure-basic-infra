@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"os"
 
 	"github.com/mitchellh/go-homedir"
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
@@ -16,8 +16,9 @@ const (
 )
 
 var (
-	cfgFile string
-	Version string
+	cfgFile         string
+	Version         string
+	SharedDirectory string
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -46,13 +47,12 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
-
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.m-azure-basic-infrastructure.yaml)")
-
+	rootCmd.PersistentFlags().StringVar(&SharedDirectory, "shared", "/shared", "Shared directory location (default is `/shared`")
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")

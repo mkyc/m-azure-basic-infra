@@ -7,7 +7,7 @@ ENV M_VERSION=$ARG_M_VERSION
 RUN mkdir -p $GOPATH/src/$GO_MODULE_NAME
 COPY . $GOPATH/src/$GO_MODULE_NAME
 WORKDIR $GOPATH/src/$GO_MODULE_NAME
-RUN go get -d -v ./...
+RUN go get -v
 RUN go get github.com/ahmetb/govvv
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="$(govvv -flags -pkg $GO_MODULE_NAME/cmd -version $M_VERSION)" -x -o /runner $GO_MODULE_NAME
 

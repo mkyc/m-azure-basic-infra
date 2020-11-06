@@ -10,7 +10,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"github.com/epiphany-platform/m-azure-basic-infrastructure/cmd"
-	"gopkg.in/yaml.v3"
+	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
 	"os"
@@ -71,30 +71,27 @@ func TestInit(t *testing.T) {
 		{
 			name:       "default init",
 			initParams: nil,
-			wantOutput: `#AzBI | setup | ensure required directories
-#AzBI | ensure-state-file | checks if state file exists
-#AzBI | template-config-file | will template config file (and backup previous if exists)
-#AzBI | initialize-state-file | will initialize state file
+			wantOutput: `#AzBI | initialize-state-file | will initialize state file
 #AzBI | display-config-file | config file content is:
 kind: azbi-config
 azbi:
   size: 3
   use_public_ip: true
-  location: "northeurope"
-  name: "epiphany"
-  address_space: ["10.0.0.0/16"]
-  address_prefixes: ["10.0.1.0/24"]
-  rsa_pub_path: "/shared/vms_rsa.pub"`,
+  location: northeurope
+  name: epiphany
+  address_space: [10.0.0.0/16]
+  address_prefixes: [10.0.1.0/24]
+  rsa_pub_path: /shared/vms_rsa.pub`,
 			wantConfigLocation: "azbi/azbi-config.yml",
 			wantConfigContent: `kind: azbi-config
 azbi:
   size: 3
   use_public_ip: true
-  location: "northeurope"
-  name: "epiphany"
-  address_space: ["10.0.0.0/16"]
-  address_prefixes: ["10.0.1.0/24"]
-  rsa_pub_path: "/shared/vms_rsa.pub"
+  location: northeurope
+  name: epiphany
+  address_space: [10.0.0.0/16]
+  address_prefixes: [10.0.1.0/24]
+  rsa_pub_path: /shared/vms_rsa.pub
 `,
 		},
 		{
@@ -104,30 +101,27 @@ azbi:
 				"M_PUBLIC_IPS": "false",
 				"M_NAME":       "azbi-module-tests",
 				"M_VMS_RSA":    "test_vms_rsa"},
-			wantOutput: `#AzBI | setup | ensure required directories
-#AzBI | ensure-state-file | checks if state file exists
-#AzBI | template-config-file | will template config file (and backup previous if exists)
-#AzBI | initialize-state-file | will initialize state file
+			wantOutput: `#AzBI | initialize-state-file | will initialize state file
 #AzBI | display-config-file | config file content is:
 kind: azbi-config
 azbi:
   size: 2
   use_public_ip: false
-  location: "northeurope"
-  name: "azbi-module-tests"
-  address_space: ["10.0.0.0/16"]
-  address_prefixes: ["10.0.1.0/24"]
-  rsa_pub_path: "/shared/test_vms_rsa.pub"`,
+  location: northeurope
+  name: azbi-module-tests
+  address_space: [10.0.0.0/16]
+  address_prefixes: [10.0.1.0/24]
+  rsa_pub_path: /shared/test_vms_rsa.pub`,
 			wantConfigLocation: "azbi/azbi-config.yml",
 			wantConfigContent: `kind: azbi-config
 azbi:
   size: 2
   use_public_ip: false
-  location: "northeurope"
-  name: "azbi-module-tests"
-  address_space: ["10.0.0.0/16"]
-  address_prefixes: ["10.0.1.0/24"]
-  rsa_pub_path: "/shared/test_vms_rsa.pub"
+  location: northeurope
+  name: azbi-module-tests
+  address_space: [10.0.0.0/16]
+  address_prefixes: [10.0.1.0/24]
+  rsa_pub_path: /shared/test_vms_rsa.pub
 `,
 		},
 	}
@@ -274,7 +268,7 @@ func TestApply(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				publicIPs := m["azbi"].(map[string]interface{})["output"].(map[string]interface{})["public_ips.value"].([]interface{})
+				publicIPs := m["azbi"].(map[interface{}]interface{})["output"].(map[interface{}]interface{})["public_ips.value"].([]interface{})
 				for _, p := range publicIPs {
 					s := p.(string)
 					validateSshConnectivity(t, privateKey, s)

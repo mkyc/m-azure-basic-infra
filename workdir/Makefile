@@ -10,11 +10,11 @@ metadata: guard-M_RESOURCES
 	@./runner metadata
 
 new-init:
-	@./runner init
+	@./runner init --shared=$(M_SHARED) --vms_count=$(M_VMS_COUNT) --public_ips=$(M_PUBLIC_IPS) --name=$(M_NAME) --vms_rsa=$(M_VMS_RSA)
 
 #init method is used to initialize module configuration and check if state is providing strong (and weak) dependencies
 #TODO should also validate state if strong requirements are met
-init: guard-M_RESOURCES guard-M_SHARED new-init ensure-state-file template-config-file initialize-state-file display-config-file
+init: guard-M_RESOURCES guard-M_SHARED new-init initialize-state-file display-config-file
 
 #plan method would get config file and environment state file and compare them and calculate what would be done o apply stage
 plan: guard-M_RESOURCES guard-M_SHARED setup validate-config validate-state template-tfvars module-plan terraform-plan
@@ -126,11 +126,6 @@ setup: $(M_SHARED)/$(M_MODULE_SHORT)
 template-tfvars:
 	#AzBI | template-tfvars | will template .tfvars.json file
 	@yq read -jP $(M_SHARED)/$(M_MODULE_SHORT)/$(M_CONFIG_NAME) '$(M_MODULE_SHORT)*' > $(M_RESOURCES)/terraform/vars.tfvars.json
-
-template-config-file:
-	#AzBI | template-config-file | will template config file (and backup previous if exists)
-	@if test -f $(M_SHARED)/$(M_MODULE_SHORT)/$(M_CONFIG_NAME); then mv $(M_SHARED)/$(M_MODULE_SHORT)/$(M_CONFIG_NAME) $(M_SHARED)/$(M_MODULE_SHORT)/$(M_CONFIG_NAME).backup ; fi
-	@echo "$$M_CONFIG_CONTENT" > $(M_SHARED)/$(M_MODULE_SHORT)/$(M_CONFIG_NAME)
 
 display-config-file:
 	#AzBI | display-config-file | config file content is:
