@@ -14,7 +14,7 @@ new-init:
 
 #init method is used to initialize module configuration and check if state is providing strong (and weak) dependencies
 #TODO should also validate state if strong requirements are met
-init: guard-M_RESOURCES guard-M_SHARED new-init initialize-state-file display-config-file
+init: guard-M_RESOURCES guard-M_SHARED new-init display-config-file
 
 #plan method would get config file and environment state file and compare them and calculate what would be done o apply stage
 plan: guard-M_RESOURCES guard-M_SHARED setup validate-config validate-state template-tfvars module-plan terraform-plan
@@ -131,15 +131,6 @@ display-config-file:
 	#AzBI | display-config-file | config file content is:
 	@cat $(M_SHARED)/$(M_MODULE_SHORT)/$(M_CONFIG_NAME)
 
-ensure-state-file: $(M_SHARED)/$(M_STATE_FILE_NAME)
-	#AzBI | ensure-state-file | checks if state file exists
-
-initialize-state-file:
-	#AzBI | initialize-state-file | will initialize state file
-	@echo "$$M_STATE_INITIAL" > $(M_SHARED)/$(M_MODULE_SHORT)/azbi-state.tmp
-	@yq m -i -x $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/$(M_MODULE_SHORT)/azbi-state.tmp
-	@rm $(M_SHARED)/$(M_MODULE_SHORT)/azbi-state.tmp
-
 update-state-after-apply:
 	#AzBI | update-state-after-apply | will update state file after apply
 	@cp $(M_SHARED)/$(M_MODULE_SHORT)/$(M_CONFIG_NAME) $(M_SHARED)/$(M_MODULE_SHORT)/azbi-config.tmp.yml
@@ -180,10 +171,6 @@ guard-%:
 		echo "Environment variable $* not set"; \
 		exit 1; \
 	fi
-
-$(M_SHARED)/$(M_STATE_FILE_NAME):
-	@mkdir -p $(dir $@)
-	@touch $@
 
 $(M_SHARED)/$(M_MODULE_SHORT):
 	@mkdir -p $@

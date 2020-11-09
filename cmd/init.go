@@ -22,9 +22,8 @@ type AzBIParams struct {
 }
 
 type AzBIConfig struct {
-	Kind    string     `yaml:"kind"`
-	Params  AzBIParams `yaml:"azbi"`
-	version string     `yaml:"version"`
+	Kind   string     `yaml:"kind"`
+	Params AzBIParams `yaml:"azbi"`
 }
 
 var (
@@ -48,6 +47,7 @@ to quickly create a Cobra application.`,
 		ensureSharedDir()
 		ensureStateFile()
 		initializeConfigFile()
+		initializeStateFile()
 	},
 }
 
@@ -82,7 +82,7 @@ func initializeConfigFile() {
 	configFilePath := filepath.Join(SharedDirectory, moduleShortName, configFileName)
 	backupConfigFilePath := fmt.Sprintf("%s.backup", configFilePath)
 	_, err := os.Stat(configFilePath)
-	if err == nil {
+	if err == nil || os.IsExist(err) {
 		err = os.Rename(configFilePath, backupConfigFilePath)
 		if err != nil {
 			log.Fatal(err)
@@ -98,6 +98,46 @@ func initializeConfigFile() {
 	}
 	defer f.Close()
 	err = ioutil.WriteFile(configFilePath, b, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func initializeStateFile() {
+	//TODO join with ensureStateFile()
+	stateFilePath := filepath.Join(SharedDirectory, stateFileName)
+	backupStateFilePath := fmt.Sprintf("%s.backup", stateFilePath)
+	m := make(map[interface{}]interface{})
+	m["kind"] = "state"
+	m[moduleShortName] = make(map[interface{}]interface{})
+	m[moduleShortName].(map[interface{}]interface{})["status"] = "initialized"
+	_, err := os.Stat(stateFilePath)
+	if err == nil || os.IsExist(err) {
+		err = os.Rename(stateFilePath, backupStateFilePath)
+		if err != nil {
+			log.Fatal(err)
+		}
+		bytes, err := ioutil.ReadFile(backupStateFilePath)
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = yaml.Unmarshal(bytes, &m)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		log.Print(err)
+	}
+	b, err := yaml.Marshal(m)
+	if err != nil {
+		log.Fatal(err)
+	}
+	f, err := os.OpenFile(stateFilePath, os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+	err = ioutil.WriteFile(stateFilePath, b, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
