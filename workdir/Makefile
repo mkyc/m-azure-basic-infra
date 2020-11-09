@@ -13,8 +13,11 @@ metadata: guard-M_RESOURCES
 init: guard-M_RESOURCES guard-M_SHARED
 	@./runner init --shared=$(M_SHARED) --vms_count=$(M_VMS_COUNT) --public_ips=$(M_PUBLIC_IPS) --name=$(M_NAME) --vms_rsa=$(M_VMS_RSA)
 
+new-plan:
+	@./runner plan --shared=$(M_SHARED)
+
 #plan method would get config file and environment state file and compare them and calculate what would be done o apply stage
-plan: guard-M_RESOURCES guard-M_SHARED setup validate-config validate-state template-tfvars module-plan terraform-plan
+plan: guard-M_RESOURCES guard-M_SHARED new-plan setup validate-config validate-state template-tfvars module-plan terraform-plan
 
 #apply method runs module provider logic using config file
 apply: guard-M_RESOURCES guard-M_SHARED setup module-plan terraform-apply update-state-after-apply terraform-output
