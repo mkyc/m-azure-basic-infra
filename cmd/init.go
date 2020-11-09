@@ -48,6 +48,7 @@ to quickly create a Cobra application.`,
 		ensureStateFile()
 		initializeConfigFile()
 		initializeStateFile()
+		displayCurrentConfigFile()
 	},
 }
 
@@ -141,6 +142,15 @@ func initializeStateFile() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func displayCurrentConfigFile() {
+	configFilePath := filepath.Join(SharedDirectory, moduleShortName, configFileName)
+	bytes, err := ioutil.ReadFile(configFilePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Print(string(bytes))
 }
 
 func NewAzBIConfig() *AzBIConfig {

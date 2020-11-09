@@ -71,9 +71,7 @@ func TestInit(t *testing.T) {
 		{
 			name:       "default init",
 			initParams: nil,
-			wantOutput: `#AzBI | initialize-state-file | will initialize state file
-#AzBI | display-config-file | config file content is:
-kind: azbi-config
+			wantOutput: `kind: azbi-config
 azbi:
   size: 3
   use_public_ip: true
@@ -101,9 +99,7 @@ azbi:
 				"M_PUBLIC_IPS": "false",
 				"M_NAME":       "azbi-module-tests",
 				"M_VMS_RSA":    "test_vms_rsa"},
-			wantOutput: `#AzBI | initialize-state-file | will initialize state file
-#AzBI | display-config-file | config file content is:
-kind: azbi-config
+			wantOutput: `kind: azbi-config
 azbi:
   size: 2
   use_public_ip: false
