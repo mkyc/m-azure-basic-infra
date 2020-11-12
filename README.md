@@ -12,7 +12,7 @@ Requirements are listed in a separate [document](docs/REQUIREMENTS.md).
 
 ## Build image
 
-In main directory run:
+In main directory, run:
 
   ```shell
   make build
@@ -60,23 +60,22 @@ or directly using Docker:
 
 ## Run module with provided example
 
-* Create an environment
+### Prepare config file
+
+Prepare your own variables in azure.mk file to use in the building process.
+Sample file (examples/basic_flow/azure.mk.sample):
 
   ```shell
-  cd examples/basic_flow
-  ARM_CLIENT_ID="appId field" ARM_CLIENT_SECRET="password field" ARM_SUBSCRIPTION_ID="id field" ARM_TENANT_ID="tenant field" make all
-  ```
-
-  Or use config file with credentials:
-
-  ```shell
-  cd examples/basic_flow
-  cat >azure.mk <<'EOF'
   ARM_CLIENT_ID ?= "appId field"
   ARM_CLIENT_SECRET ?= "password field"
   ARM_SUBSCRIPTION_ID ?= "id field"
   ARM_TENANT_ID ?= "tenant field"
-  EOF
+  ```
+
+* Create an environment
+
+  ```shell
+  cd examples/basic_flow
   make all
   ```
 
@@ -100,12 +99,6 @@ or if you want to set different version number:
   ```
 
 ## Run tests
-
-  ```shell
-  make test
-  ```
-
-## Run tests in Kubernetes based build system
 
 Tests are described in a separate [document](docs/TESTS.md).
 
