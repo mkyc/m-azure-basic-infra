@@ -10,7 +10,7 @@
 |Azure service principal client secret
 
 |M_ARM_SUBSCRIPTION_ID |string |unset |yes |plan, apply, plan-destroy, destroy, test
-|AZure subscription id
+|Azure subscription id
 
 |M_ARM_TENANT_ID |string |unset |yes |plan, apply, plan-destroy, destroy, test
 |Azure subscription tenant id
