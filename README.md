@@ -27,7 +27,7 @@ or directly using Docker:
   docker build --tag epiphanyplatform/azbi:latest .
   ```
 
-Note: Re-run the above commands will overwrite your docker image. To bypass that, specify a different tag name or VERSION variable.
+Note: Re-run the above commands will overwrite your existing docker image (if exists). To bypass that, specify a different tag name
 
 ## Run module
 
@@ -49,6 +49,8 @@ Note: Re-run the above commands will overwrite your docker image. To bypass that
 
   ```shell
   docker run --rm -v /tmp/shared:/shared -t epiphanyplatform/azbi:latest init M_VMS_COUNT=2 M_PUBLIC_IPS=true M_NAME=epiphany-modules-test
+  
+Note: Use image's tag according to tag generated in build step.
   ```
 
   This command will create configuration file of AzBI module in /tmp/shared/azbi/azbi-config.yml. You can investigate what is stored in that file. Available parameters are listed in the [inputs](docs/INPUTS.adoc) document.
