@@ -18,12 +18,16 @@ In main directory, run:
   make build
   ```
 
+  Note: This command uses the default VERSION variable.
+
 or directly using Docker:
 
   ```shell
   cd m-azure-basic-infrastructure/
   docker build --tag epiphanyplatform/azbi:latest .
   ```
+
+Note: Re-run the above commands will overwrite your docker image. To bypass that, specify a different tag name or VERSION variable.
 
 ## Run module
 
@@ -48,6 +52,8 @@ or directly using Docker:
   ```
 
   This command will create configuration file of AzBI module in /tmp/shared/azbi/azbi-config.yml. You can investigate what is stored in that file. Available parameters are listed in the [inputs](docs/INPUTS.adoc) document.
+
+  Note: Pay attention to the docker image tag you are using. `make build` command uses a specific version tag eg. epiphanyplatrofm/azbi:0.0.1.
 
 * Plan and apply AzBI module:
 
