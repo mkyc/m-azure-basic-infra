@@ -14,10 +14,10 @@ init: guard-M_RESOURCES guard-M_SHARED
 	@./runner init --shared=$(M_SHARED) --vms_count=$(M_VMS_COUNT) --public_ips=$(M_PUBLIC_IPS) --name=$(M_NAME) --vms_rsa=$(M_VMS_RSA)
 
 new-plan:
-	@./runner plan --shared=$(M_SHARED)
+	@./runner plan --shared=$(M_SHARED) --resources=$(M_RESOURCES)
 
 #plan method would get config file and environment state file and compare them and calculate what would be done o apply stage
-plan: guard-M_RESOURCES guard-M_SHARED new-plan setup validate-config validate-state template-tfvars module-plan terraform-plan
+plan: guard-M_RESOURCES guard-M_SHARED new-plan module-plan terraform-plan
 
 #apply method runs module provider logic using config file
 apply: guard-M_RESOURCES guard-M_SHARED setup module-plan terraform-apply update-state-after-apply terraform-output
@@ -139,21 +139,6 @@ update-state-after-destroy:
 	#AzBI | update-state-after-destroy | will clean state file after destroy
 	@yq d -i $(M_SHARED)/$(M_STATE_FILE_NAME) '$(M_MODULE_SHORT)'
 	@yq w -i $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_MODULE_SHORT).status destroyed
-
-#TODO check if there is state file
-#TODO check if there is config
-assert-init-completed:
-	#AzBI | assert-init-completed | will check if all initialization steps are completed
-
-#TODO validate if config is correct
-#TODO consider https://github.com/santhosh-tekuri/jsonschema as it's small
-validate-config:
-	#AzBI | validate-config | will perform config validation
-
-#TODO validate if state file is correct
-#TODO consider https://github.com/santhosh-tekuri/jsonschema as it's small
-validate-state:
-	#AzBI | validate-state | will perform state file validation
 
 module-plan:
 	#AzBI | module-plan | will perform module plan

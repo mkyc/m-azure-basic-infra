@@ -9,18 +9,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-const (
-	moduleShortName = "azbi" //TODO move to main.consts file
-	configFileName  = "azbi-config.yml"
-	stateFileName   = "state.yml"
-)
-
-var (
-	cfgFile         string
-	Version         string
-	SharedDirectory string
-)
-
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "m-azure-basic-infrastructure",
@@ -53,6 +41,7 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.m-azure-basic-infrastructure.yaml)")
 	rootCmd.PersistentFlags().StringVar(&SharedDirectory, "shared", "/shared", "Shared directory location (default is `/shared`")
+	rootCmd.PersistentFlags().StringVar(&ResourcesDirectory, "resources", "/resources", "Resources directory location (default is `/resources`")
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")

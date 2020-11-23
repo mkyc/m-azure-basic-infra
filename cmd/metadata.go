@@ -34,14 +34,3 @@ func init() {
 	// is called directly, e.g.:
 	// metadataCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
-
-func printMetadata() string {
-	return fmt.Sprintf(`labels:
-  version: %s
-  name: Azure Basic Infrastructure
-  short: %s
-  kind: infrastructure
-  provider: azure
-  provides-vms: true
-  provides-pubips: true`, Version, moduleShortName)
-}
