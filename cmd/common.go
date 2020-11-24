@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	terra "github.com/mkyc/go-terraform"
 	"io/ioutil"
 	"log"
 	"os"
@@ -12,17 +13,34 @@ import (
 )
 
 const (
-	moduleShortName    = "azbi" //TODO move to main.consts file
-	configFileName     = "azbi-config.yml"
-	stateFileName      = "state.yml"
-	tfVarsFileLocation = "terraform/vars.tfvars.json"
+	moduleShortName = "azbi" //TODO move to main.consts file
+	configFileName  = "azbi-config.yml"
+	stateFileName   = "state.yml"
+	terraformDir    = "terraform"
+	tfVarsFile      = "vars.tfvars.json"
+	tfStateFile     = "terraform.tfstate"
+	applyTfPlanFile = "terraform-apply.tfplan"
 )
 
 var (
-	cfgFile            string
-	Version            string
+	cfgFile string
+
+	Version string
+
 	SharedDirectory    string
 	ResourcesDirectory string
+
+	//init variables
+	vmsCount     int
+	usePublicIPs bool
+	name         string
+	vmsRsaPath   string
+
+	//plan variables
+	clientId       string
+	clientSecret   string
+	subscriptionId string
+	tenantId       string
 )
 
 type AzBIParams struct {
@@ -225,8 +243,43 @@ func templateTfVars() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	tfVarsFile := filepath.Join(ResourcesDirectory, tfVarsFileLocation)
+	tfVarsFile := filepath.Join(ResourcesDirectory, terraformDir, tfVarsFile)
 	err = marshalConfigParams(c, tfVarsFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+//TODO make State a receiver
+func showModulePlan() {
+	log.Println("showModulePlan")
+	//#AzBI | module-plan | will perform module plan
+	//@yq m -x $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/$(M_MODULE_SHORT)/$(M_CONFIG_NAME) > $(M_SHARED)/$(M_MODULE_SHORT)/azbi-future-state.tmp
+	//@yq w -i $(M_SHARED)/$(M_MODULE_SHORT)/azbi-future-state.tmp kind state
+	//@- yq compare $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/$(M_MODULE_SHORT)/azbi-future-state.tmp
+	//@rm $(M_SHARED)/$(M_MODULE_SHORT)/azbi-future-state.tmp
+}
+
+//TODO make State a receiver
+func terraformPlan() {
+	log.Println("terraformPlan")
+	options, err := terra.WithDefaultRetryableErrors(&terra.Options{
+		TerraformDir: filepath.Join(ResourcesDirectory, terraformDir),
+		VarFiles:     []string{filepath.Join(ResourcesDirectory, terraformDir, tfVarsFile)},
+		EnvVars: map[string]string{
+			"TF_IN_AUTOMATION":    "true",
+			"ARM_CLIENT_ID":       clientId,
+			"ARM_CLIENT_SECRET":   clientSecret,
+			"ARM_SUBSCRIPTION_ID": subscriptionId,
+			"ARM_TENANT_ID":       tenantId,
+		},
+		PlanFilePath:  filepath.Join(SharedDirectory, moduleShortName, applyTfPlanFile),
+		StateFilePath: filepath.Join(SharedDirectory, moduleShortName, tfStateFile),
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err = terra.Plan(options)
 	if err != nil {
 		log.Fatal(err)
 	}

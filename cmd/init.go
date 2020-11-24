@@ -4,13 +4,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	vmsCount     int
-	usePublicIPs bool
-	name         string
-	vmsRsaPath   string
-)
-
 // initCmd represents the init command
 var initCmd = &cobra.Command{
 	Use:   "init",

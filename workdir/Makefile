@@ -5,7 +5,6 @@ export
 
 #medatada method is printing static metadata information about module
 metadata: guard-M_RESOURCES
-	#AzBI | metadata | should print component metadata
 	@./runner metadata
 
 #init method is used to initialize module configuration and check if state is providing strong (and weak) dependencies
@@ -13,11 +12,9 @@ metadata: guard-M_RESOURCES
 init: guard-M_RESOURCES guard-M_SHARED
 	@./runner init --shared=$(M_SHARED) --vms_count=$(M_VMS_COUNT) --public_ips=$(M_PUBLIC_IPS) --name=$(M_NAME) --vms_rsa=$(M_VMS_RSA)
 
-new-plan:
-	@./runner plan --shared=$(M_SHARED) --resources=$(M_RESOURCES)
-
 #plan method would get config file and environment state file and compare them and calculate what would be done o apply stage
-plan: guard-M_RESOURCES guard-M_SHARED new-plan module-plan terraform-plan
+plan:
+	@./runner plan --shared=$(M_SHARED) --resources=$(M_RESOURCES) --client_id=$(M_ARM_CLIENT_ID)  --client_secret=$(M_ARM_CLIENT_SECRET) --subscription_id=$(M_ARM_SUBSCRIPTION_ID) --tenant_id=$(M_ARM_TENANT_ID)
 
 #apply method runs module provider logic using config file
 apply: guard-M_RESOURCES guard-M_SHARED setup module-plan terraform-apply update-state-after-apply terraform-output
@@ -32,23 +29,6 @@ destroy: template-tfvars terraform-destroy update-state-after-destroy
 plan-destroy: template-tfvars terraform-plan-destroy
 
 output: terraform-output
-
-#TODO consider parsing terraform plan output
-terraform-plan:
-	#AzBI | terraform-plan | will run plan
-	@cd $(M_RESOURCES)/terraform ; \
-	TF_IN_AUTOMATION=true \
-	ARM_CLIENT_ID=$(M_ARM_CLIENT_ID) \
-	ARM_CLIENT_SECRET=$(M_ARM_CLIENT_SECRET) \
-	ARM_SUBSCRIPTION_ID=$(M_ARM_SUBSCRIPTION_ID) \
-	ARM_TENANT_ID=$(M_ARM_TENANT_ID) \
-		terraform plan \
-		-no-color \
-		-input=false \
-		-var-file=$(M_RESOURCES)/terraform/vars.tfvars.json \
-		-state=$(M_SHARED)/$(M_MODULE_SHORT)/terraform.tfstate \
-		-out=$(M_SHARED)/$(M_MODULE_SHORT)/terraform-apply.tfplan \
-		$(M_RESOURCES)/terraform
 
 terraform-plan-json:
 	#AzBI | terraform-plan-json | will show plan in json

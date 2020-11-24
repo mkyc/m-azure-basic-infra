@@ -5,11 +5,13 @@ go 1.15
 require (
 	github.com/Azure/azure-sdk-for-go v48.0.0+incompatible
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.3
+	//github.com/epiphany-platform/e-structures v0.0.1
 	github.com/go-test/deep v1.0.7
 	github.com/gruntwork-io/terratest v0.30.19
 	github.com/magiconair/properties v1.8.4 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
+	github.com/mkyc/go-terraform v0.0.3
 	github.com/pelletier/go-toml v1.8.1 // indirect
 	github.com/spf13/afero v1.4.1 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
@@ -22,3 +24,5 @@ require (
 	gopkg.in/ini.v1 v1.62.0 // indirect
 	gopkg.in/yaml.v2 v2.3.0
 )
+
+//replace github.com/epiphany-platform/e-structures => ../../epiphany-platform/e-structures
