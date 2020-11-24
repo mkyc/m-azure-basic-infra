@@ -263,6 +263,7 @@ func showModulePlan() {
 //TODO make State a receiver
 func terraformPlan() {
 	log.Println("terraformPlan")
+
 	options, err := terra.WithDefaultRetryableErrors(&terra.Options{
 		TerraformDir: filepath.Join(ResourcesDirectory, terraformDir),
 		VarFiles:     []string{filepath.Join(ResourcesDirectory, terraformDir, tfVarsFile)},
@@ -275,11 +276,37 @@ func terraformPlan() {
 		},
 		PlanFilePath:  filepath.Join(SharedDirectory, moduleShortName, applyTfPlanFile),
 		StateFilePath: filepath.Join(SharedDirectory, moduleShortName, tfStateFile),
+		NoColor:       true,
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
 	_, err = terra.Plan(options)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func terraformApply() {
+	log.Println("terraformApply")
+
+	options, err := terra.WithDefaultRetryableErrors(&terra.Options{
+		TerraformDir: filepath.Join(ResourcesDirectory, terraformDir),
+		EnvVars: map[string]string{
+			"TF_IN_AUTOMATION":    "true",
+			"ARM_CLIENT_ID":       clientId,
+			"ARM_CLIENT_SECRET":   clientSecret,
+			"ARM_SUBSCRIPTION_ID": subscriptionId,
+			"ARM_TENANT_ID":       tenantId,
+		},
+		PlanFilePath:  filepath.Join(SharedDirectory, moduleShortName, applyTfPlanFile),
+		StateFilePath: filepath.Join(SharedDirectory, moduleShortName, tfStateFile),
+		NoColor:       true,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err = terra.Apply(options)
 	if err != nil {
 		log.Fatal(err)
 	}

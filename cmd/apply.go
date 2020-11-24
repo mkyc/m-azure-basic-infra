@@ -20,11 +20,17 @@ to quickly create a Cobra application.`,
 		fmt.Println("apply called")
 		ensureSharedDir()
 		showModulePlan()
+		terraformApply()
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(applyCmd)
+
+	applyCmd.Flags().StringVar(&clientId, "client_id", "", "Azure client identifier")
+	applyCmd.Flags().StringVar(&clientSecret, "client_secret", "", "Azure client secret")
+	applyCmd.Flags().StringVar(&subscriptionId, "subscription_id", "", "Azure subscription identifier")
+	applyCmd.Flags().StringVar(&tenantId, "tenant_id", "", "Azure tenant identifier")
 
 	// Here you will define your flags and configuration settings.
 

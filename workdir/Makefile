@@ -16,12 +16,11 @@ init: guard-M_RESOURCES guard-M_SHARED
 plan:
 	@./runner plan --shared=$(M_SHARED) --resources=$(M_RESOURCES) --client_id=$(M_ARM_CLIENT_ID)  --client_secret=$(M_ARM_CLIENT_SECRET) --subscription_id=$(M_ARM_SUBSCRIPTION_ID) --tenant_id=$(M_ARM_TENANT_ID)
 
-
 new-apply:
 	@./runner apply --shared=$(M_SHARED) --resources=$(M_RESOURCES) --client_id=$(M_ARM_CLIENT_ID)  --client_secret=$(M_ARM_CLIENT_SECRET) --subscription_id=$(M_ARM_SUBSCRIPTION_ID) --tenant_id=$(M_ARM_TENANT_ID)
 
 #apply method runs module provider logic using config file
-apply: guard-M_RESOURCES guard-M_SHARED new-apply terraform-apply update-state-after-apply terraform-output
+apply: guard-M_RESOURCES guard-M_SHARED new-apply update-state-after-apply terraform-output
 
 #audit method should call logic to check if remote components are in "known" state
 #TODO implement validation if remote resources are as expected, possibly with terraform plan
@@ -41,21 +40,6 @@ terraform-plan-json:
 		terraform show \
 		-no-color \
 		-json \
-		$(M_SHARED)/$(M_MODULE_SHORT)/terraform-apply.tfplan
-
-terraform-apply:
-	#AzBI | terraform-apply | will run terraform apply
-	@cd $(M_RESOURCES)/terraform ; \
-	TF_IN_AUTOMATION=true \
-	ARM_CLIENT_ID=$(M_ARM_CLIENT_ID) \
-	ARM_CLIENT_SECRET=$(M_ARM_CLIENT_SECRET) \
-	ARM_SUBSCRIPTION_ID=$(M_ARM_SUBSCRIPTION_ID) \
-	ARM_TENANT_ID=$(M_ARM_TENANT_ID) \
-		terraform apply \
-		-no-color \
-		-input=false \
-		-auto-approve \
-		-state=$(M_SHARED)/$(M_MODULE_SHORT)/terraform.tfstate \
 		$(M_SHARED)/$(M_MODULE_SHORT)/terraform-apply.tfplan
 
 terraform-plan-destroy:
@@ -104,9 +88,6 @@ terraform-output:
 	@yq m -x -i $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/$(M_MODULE_SHORT)/output.tmp.yml
 	@rm $(M_SHARED)/$(M_MODULE_SHORT)/output.tmp.json $(M_SHARED)/$(M_MODULE_SHORT)/output.tmp.yml
 
-setup: $(M_SHARED)/$(M_MODULE_SHORT)
-	#AzBI | setup | ensure required directories
-
 template-tfvars:
 	#AzBI | template-tfvars | will template .tfvars.json file
 	@yq read -jP $(M_SHARED)/$(M_MODULE_SHORT)/$(M_CONFIG_NAME) '$(M_MODULE_SHORT)*' > $(M_RESOURCES)/terraform/vars.tfvars.json
@@ -123,13 +104,6 @@ update-state-after-destroy:
 	#AzBI | update-state-after-destroy | will clean state file after destroy
 	@yq d -i $(M_SHARED)/$(M_STATE_FILE_NAME) '$(M_MODULE_SHORT)'
 	@yq w -i $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_MODULE_SHORT).status destroyed
-
-module-plan:
-	#AzBI | module-plan | will perform module plan
-	@yq m -x $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/$(M_MODULE_SHORT)/$(M_CONFIG_NAME) > $(M_SHARED)/$(M_MODULE_SHORT)/azbi-future-state.tmp
-	@yq w -i $(M_SHARED)/$(M_MODULE_SHORT)/azbi-future-state.tmp kind state
-	@- yq compare $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/$(M_MODULE_SHORT)/azbi-future-state.tmp
-	@rm $(M_SHARED)/$(M_MODULE_SHORT)/azbi-future-state.tmp
 
 guard-%:
 	@if [ "${${*}}" = "" ]; then \
