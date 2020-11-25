@@ -29,7 +29,8 @@ destroy: template-tfvars terraform-destroy update-state-after-destroy
 
 plan-destroy: template-tfvars terraform-plan-destroy
 
-output: terraform-output
+output:
+	@./runner output --shared=$(M_SHARED) --resources=$(M_RESOURCES)
 
 terraform-plan-json:
 	#AzBI | terraform-plan-json | will show plan in json
@@ -72,19 +73,6 @@ terraform-destroy:
 		-auto-approve \
 		-state=$(M_SHARED)/$(M_MODULE_SHORT)/terraform.tfstate \
 		$(M_SHARED)/$(M_MODULE_SHORT)/terraform-destroy.tfplan
-
-terraform-output:
-	#AzBI | terraform-output | will prepare terraform output
-	@cd $(M_RESOURCES)/terraform ; \
-	TF_IN_AUTOMATION=true \
-		terraform output \
-		-no-color \
-		-json \
-		-state=$(M_SHARED)/$(M_MODULE_SHORT)/terraform.tfstate > $(M_SHARED)/$(M_MODULE_SHORT)/output.tmp.json
-	@yq r --prettyPrint $(M_SHARED)/$(M_MODULE_SHORT)/output.tmp.json | yq r - --printMode pv '*.value' > $(M_SHARED)/$(M_MODULE_SHORT)/output.tmp.yml
-	@yq p -i $(M_SHARED)/$(M_MODULE_SHORT)/output.tmp.yml $(M_MODULE_SHORT).output
-	@yq m -x -i $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/$(M_MODULE_SHORT)/output.tmp.yml
-	@rm $(M_SHARED)/$(M_MODULE_SHORT)/output.tmp.json $(M_SHARED)/$(M_MODULE_SHORT)/output.tmp.yml
 
 template-tfvars:
 	#AzBI | template-tfvars | will template .tfvars.json file
