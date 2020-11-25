@@ -16,11 +16,9 @@ init: guard-M_RESOURCES guard-M_SHARED
 plan:
 	@./runner plan --shared=$(M_SHARED) --resources=$(M_RESOURCES) --client_id=$(M_ARM_CLIENT_ID)  --client_secret=$(M_ARM_CLIENT_SECRET) --subscription_id=$(M_ARM_SUBSCRIPTION_ID) --tenant_id=$(M_ARM_TENANT_ID)
 
-new-apply:
-	@./runner apply --shared=$(M_SHARED) --resources=$(M_RESOURCES) --client_id=$(M_ARM_CLIENT_ID)  --client_secret=$(M_ARM_CLIENT_SECRET) --subscription_id=$(M_ARM_SUBSCRIPTION_ID) --tenant_id=$(M_ARM_TENANT_ID)
-
 #apply method runs module provider logic using config file
-apply: guard-M_RESOURCES guard-M_SHARED new-apply update-state-after-apply terraform-output
+apply:
+	@./runner apply --shared=$(M_SHARED) --resources=$(M_RESOURCES) --client_id=$(M_ARM_CLIENT_ID)  --client_secret=$(M_ARM_CLIENT_SECRET) --subscription_id=$(M_ARM_SUBSCRIPTION_ID) --tenant_id=$(M_ARM_TENANT_ID)
 
 #audit method should call logic to check if remote components are in "known" state
 #TODO implement validation if remote resources are as expected, possibly with terraform plan
@@ -91,14 +89,6 @@ terraform-output:
 template-tfvars:
 	#AzBI | template-tfvars | will template .tfvars.json file
 	@yq read -jP $(M_SHARED)/$(M_MODULE_SHORT)/$(M_CONFIG_NAME) '$(M_MODULE_SHORT)*' > $(M_RESOURCES)/terraform/vars.tfvars.json
-
-update-state-after-apply:
-	#AzBI | update-state-after-apply | will update state file after apply
-	@cp $(M_SHARED)/$(M_MODULE_SHORT)/$(M_CONFIG_NAME) $(M_SHARED)/$(M_MODULE_SHORT)/azbi-config.tmp.yml
-	@yq d -i $(M_SHARED)/$(M_MODULE_SHORT)/azbi-config.tmp.yml kind
-	@yq m -x -i $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/$(M_MODULE_SHORT)/azbi-config.tmp.yml
-	@yq w -i $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_MODULE_SHORT).status applied
-	@rm $(M_SHARED)/$(M_MODULE_SHORT)/azbi-config.tmp.yml
 
 update-state-after-destroy:
 	#AzBI | update-state-after-destroy | will clean state file after destroy

@@ -311,3 +311,33 @@ func terraformApply() {
 		log.Fatal(err)
 	}
 }
+
+func updateStateAfterApply() {
+	log.Println("updateStateAfterApply")
+	//#AzBI | update-state-after-apply | will update state file after apply
+	//@cp $(M_SHARED)/$(M_MODULE_SHORT)/$(M_CONFIG_NAME) $(M_SHARED)/$(M_MODULE_SHORT)/azbi-config.tmp.yml
+	//@yq d -i $(M_SHARED)/$(M_MODULE_SHORT)/azbi-config.tmp.yml kind
+	//@yq m -x -i $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/$(M_MODULE_SHORT)/azbi-config.tmp.yml
+	//@yq w -i $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_MODULE_SHORT).status applied
+	//@rm $(M_SHARED)/$(M_MODULE_SHORT)/azbi-config.tmp.yml
+}
+
+func terraformOutput() {
+	log.Println("terraformOutput")
+	options, err := terra.WithDefaultRetryableErrors(&terra.Options{
+		TerraformDir: filepath.Join(ResourcesDirectory, terraformDir),
+		EnvVars: map[string]string{
+			"TF_IN_AUTOMATION": "true",
+		},
+		StateFilePath: filepath.Join(SharedDirectory, moduleShortName, tfStateFile),
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	m, err := terra.OutputAll(options)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("%v\n", m)
+	//TODO add m to state output
+}

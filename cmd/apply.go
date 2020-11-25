@@ -21,6 +21,8 @@ to quickly create a Cobra application.`,
 		ensureSharedDir()
 		showModulePlan()
 		terraformApply()
+		updateStateAfterApply()
+		terraformOutput()
 	},
 }
 
