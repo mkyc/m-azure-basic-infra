@@ -23,7 +23,7 @@ apply:
 #audit method should call logic to check if remote components are in "known" state
 #TODO implement validation if remote resources are as expected, possibly with terraform plan
 audit:
-	#AzBI | audit | should output current state of remote components
+	@./runner audit
 
 destroy: template-tfvars terraform-destroy update-state-after-destroy
 
