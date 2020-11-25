@@ -27,7 +27,8 @@ audit:
 
 destroy: template-tfvars terraform-destroy update-state-after-destroy
 
-plan-destroy: template-tfvars terraform-plan-destroy
+plan-destroy:
+	@./runner plan --destroy --shared=$(M_SHARED) --resources=$(M_RESOURCES) --client_id=$(M_ARM_CLIENT_ID)  --client_secret=$(M_ARM_CLIENT_SECRET) --subscription_id=$(M_ARM_SUBSCRIPTION_ID) --tenant_id=$(M_ARM_TENANT_ID)
 
 output:
 	@./runner output --shared=$(M_SHARED) --resources=$(M_RESOURCES)
@@ -40,23 +41,6 @@ terraform-plan-json:
 		-no-color \
 		-json \
 		$(M_SHARED)/$(M_MODULE_SHORT)/terraform-apply.tfplan
-
-terraform-plan-destroy:
-	#AzBI | terraform-plan-destroy | will prepare plan of destruction
-	@cd $(M_RESOURCES)/terraform ; \
-	TF_IN_AUTOMATION=true \
-	ARM_CLIENT_ID=$(M_ARM_CLIENT_ID) \
-	ARM_CLIENT_SECRET=$(M_ARM_CLIENT_SECRET) \
-	ARM_SUBSCRIPTION_ID=$(M_ARM_SUBSCRIPTION_ID) \
-	ARM_TENANT_ID=$(M_ARM_TENANT_ID) \
-		terraform plan \
-		-destroy \
-		-no-color \
-		-input=false \
-		-var-file=$(M_RESOURCES)/terraform/vars.tfvars.json \
-		-state=$(M_SHARED)/$(M_MODULE_SHORT)/terraform.tfstate \
-		-out=$(M_SHARED)/$(M_MODULE_SHORT)/terraform-destroy.tfplan \
-		$(M_RESOURCES)/terraform
 
 terraform-destroy:
 	#AzBI | terraform-destroy | will destroy using plan of destruction

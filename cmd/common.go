@@ -13,13 +13,14 @@ import (
 )
 
 const (
-	moduleShortName = "azbi" //TODO move to main.consts file
-	configFileName  = "azbi-config.yml"
-	stateFileName   = "state.yml"
-	terraformDir    = "terraform"
-	tfVarsFile      = "vars.tfvars.json"
-	tfStateFile     = "terraform.tfstate"
-	applyTfPlanFile = "terraform-apply.tfplan"
+	moduleShortName   = "azbi" //TODO move to main.consts file
+	configFileName    = "azbi-config.yml"
+	stateFileName     = "state.yml"
+	terraformDir      = "terraform"
+	tfVarsFile        = "vars.tfvars.json"
+	tfStateFile       = "terraform.tfstate"
+	applyTfPlanFile   = "terraform-apply.tfplan"
+	destroyTfPlanFile = "terraform-destroy.tfplan"
 )
 
 var (
@@ -41,6 +42,7 @@ var (
 	clientSecret   string
 	subscriptionId string
 	tenantId       string
+	destroy        bool
 )
 
 type AzBIParams struct {
@@ -287,6 +289,34 @@ func terraformPlan() {
 	}
 }
 
+//TODO make State a receiver
+func terraformPlanDestroy() {
+	log.Println("terraformPlanDestroy")
+
+	options, err := terra.WithDefaultRetryableErrors(&terra.Options{
+		TerraformDir: filepath.Join(ResourcesDirectory, terraformDir),
+		VarFiles:     []string{filepath.Join(ResourcesDirectory, terraformDir, tfVarsFile)},
+		EnvVars: map[string]string{
+			"TF_IN_AUTOMATION":    "true",
+			"ARM_CLIENT_ID":       clientId,
+			"ARM_CLIENT_SECRET":   clientSecret,
+			"ARM_SUBSCRIPTION_ID": subscriptionId,
+			"ARM_TENANT_ID":       tenantId,
+		},
+		PlanFilePath:  filepath.Join(SharedDirectory, moduleShortName, destroyTfPlanFile),
+		StateFilePath: filepath.Join(SharedDirectory, moduleShortName, tfStateFile),
+		NoColor:       true,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err = terra.PlanDestroy(options)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+//TODO make State a receiver
 func terraformApply() {
 	log.Println("terraformApply")
 
@@ -312,6 +342,7 @@ func terraformApply() {
 	}
 }
 
+//TODO make State a receiver
 func updateStateAfterApply() {
 	log.Println("updateStateAfterApply")
 	//#AzBI | update-state-after-apply | will update state file after apply
@@ -322,6 +353,7 @@ func updateStateAfterApply() {
 	//@rm $(M_SHARED)/$(M_MODULE_SHORT)/azbi-config.tmp.yml
 }
 
+//TODO make State a receiver
 func terraformOutput() {
 	log.Println("terraformOutput")
 	options, err := terra.WithDefaultRetryableErrors(&terra.Options{

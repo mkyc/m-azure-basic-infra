@@ -17,12 +17,18 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("plan called")
-		ensureSharedDir()
-		validateConfig()
-		validateState()
-		templateTfVars()
-		showModulePlan()
-		terraformPlan()
+		//TODO ensure clientId, clientSecret, subscriptionId, tenantId
+		if !destroy {
+			ensureSharedDir()
+			validateConfig()
+			validateState()
+			templateTfVars()
+			showModulePlan()
+			terraformPlan()
+		} else {
+			templateTfVars()
+			terraformPlanDestroy()
+		}
 	},
 }
 
@@ -33,6 +39,7 @@ func init() {
 	planCmd.Flags().StringVar(&clientSecret, "client_secret", "", "Azure client secret")
 	planCmd.Flags().StringVar(&subscriptionId, "subscription_id", "", "Azure subscription identifier")
 	planCmd.Flags().StringVar(&tenantId, "tenant_id", "", "Azure tenant identifier")
+	planCmd.Flags().BoolVar(&destroy, "destroy", false, "make plan for destroy")
 
 	// Here you will define your flags and configuration settings.
 
