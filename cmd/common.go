@@ -373,3 +373,37 @@ func terraformOutput() {
 	log.Printf("%v\n", m)
 	//TODO add m to state output
 }
+
+//TODO make State a receiver
+func terraformDestroy() {
+	log.Println("terraformDestroy")
+
+	options, err := terra.WithDefaultRetryableErrors(&terra.Options{
+		TerraformDir: filepath.Join(ResourcesDirectory, terraformDir),
+		EnvVars: map[string]string{
+			"TF_IN_AUTOMATION":      "true",
+			"TF_WARN_OUTPUT_ERRORS": "1",
+			"ARM_CLIENT_ID":         clientId,
+			"ARM_CLIENT_SECRET":     clientSecret,
+			"ARM_SUBSCRIPTION_ID":   subscriptionId,
+			"ARM_TENANT_ID":         tenantId,
+		},
+		PlanFilePath:  filepath.Join(SharedDirectory, moduleShortName, destroyTfPlanFile),
+		StateFilePath: filepath.Join(SharedDirectory, moduleShortName, tfStateFile),
+		NoColor:       true,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err = terra.Apply(options)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func updateStateAfterDestroy() {
+	log.Println("updateStateAfterDestroy")
+	//#AzBI | update-state-after-destroy | will clean state file after destroy
+	//@yq d -i $(M_SHARED)/$(M_STATE_FILE_NAME) '$(M_MODULE_SHORT)'
+	//@yq w -i $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_MODULE_SHORT).status destroyed
+}

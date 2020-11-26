@@ -40,6 +40,8 @@ func init() {
 	// will be global for your application.
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.m-azure-basic-infrastructure.yaml)")
+
+	//TODO guard for both directories to be not empty
 	rootCmd.PersistentFlags().StringVar(&SharedDirectory, "shared", "/shared", "Shared directory location (default is `/shared`")
 	rootCmd.PersistentFlags().StringVar(&ResourcesDirectory, "resources", "/resources", "Resources directory location (default is `/resources`")
 	// Cobra also supports local flags, which will only run
