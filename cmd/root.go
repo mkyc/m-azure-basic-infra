@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/mitchellh/go-homedir"
@@ -19,9 +20,19 @@ examples and usage of using your application. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		log.Println("PersistentPreRun")
+
+		err := viper.BindPFlags(cmd.PersistentFlags())
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		SharedDirectory = viper.GetString("shared")
+		ResourcesDirectory = viper.GetString("resources")
+	},
 	//	Run: func(cmd *cobra.Command, args []string) { },
+	Version: Version,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -42,11 +53,8 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.m-azure-basic-infrastructure.yaml)")
 
 	//TODO guard for both directories to be not empty
-	rootCmd.PersistentFlags().StringVar(&SharedDirectory, "shared", "/shared", "Shared directory location (default is `/shared`")
-	rootCmd.PersistentFlags().StringVar(&ResourcesDirectory, "resources", "/resources", "Resources directory location (default is `/resources`")
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().String("shared", "/shared", "Shared directory location (default is `/shared`")
+	rootCmd.PersistentFlags().String("resources", "/resources", "Resources directory location (default is `/resources`")
 }
 
 // initConfig reads in config file and ENV variables if set.

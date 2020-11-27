@@ -1,8 +1,9 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"log"
 )
 
 // planCmd represents the plan command
@@ -15,8 +16,22 @@ and usage of using your command. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
+	PreRun: func(cmd *cobra.Command, args []string) {
+		log.Println("PreRun")
+
+		err := viper.BindPFlags(cmd.Flags())
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		clientId = viper.GetString("client_id")
+		clientSecret = viper.GetString("client_secret")
+		subscriptionId = viper.GetString("subscription_id")
+		tenantId = viper.GetString("tenant_id")
+		destroy = viper.GetBool("destroy")
+	},
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("plan called")
+		log.Println("plan called")
 		//TODO ensure clientId, clientSecret, subscriptionId, tenantId
 		if !destroy {
 			ensureSharedDir()
@@ -35,19 +50,9 @@ to quickly create a Cobra application.`,
 func init() {
 	rootCmd.AddCommand(planCmd)
 
-	planCmd.Flags().StringVar(&clientId, "client_id", "", "Azure client identifier")
-	planCmd.Flags().StringVar(&clientSecret, "client_secret", "", "Azure client secret")
-	planCmd.Flags().StringVar(&subscriptionId, "subscription_id", "", "Azure subscription identifier")
-	planCmd.Flags().StringVar(&tenantId, "tenant_id", "", "Azure tenant identifier")
-	planCmd.Flags().BoolVar(&destroy, "destroy", false, "make plan for destroy")
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// planCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// planCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	planCmd.Flags().String("client_id", "", "Azure client identifier")
+	planCmd.Flags().String("client_secret", "", "Azure client secret")
+	planCmd.Flags().String("subscription_id", "", "Azure subscription identifier")
+	planCmd.Flags().String("tenant_id", "", "Azure tenant identifier")
+	planCmd.Flags().Bool("destroy", false, "make plan for destroy")
 }

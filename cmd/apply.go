@@ -1,7 +1,8 @@
 package cmd
 
 import (
-	"fmt"
+	"github.com/spf13/viper"
+	"log"
 
 	"github.com/spf13/cobra"
 )
@@ -16,8 +17,21 @@ and usage of using your command. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
+	PreRun: func(cmd *cobra.Command, args []string) {
+		log.Println("PreRun")
+
+		err := viper.BindPFlags(cmd.Flags())
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		clientId = viper.GetString("client_id")
+		clientSecret = viper.GetString("client_secret")
+		subscriptionId = viper.GetString("subscription_id")
+		tenantId = viper.GetString("tenant_id")
+	},
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("apply called")
+		log.Println("apply called")
 		ensureSharedDir()
 		showModulePlan()
 		terraformApply()
@@ -29,18 +43,8 @@ to quickly create a Cobra application.`,
 func init() {
 	rootCmd.AddCommand(applyCmd)
 
-	applyCmd.Flags().StringVar(&clientId, "client_id", "", "Azure client identifier")
-	applyCmd.Flags().StringVar(&clientSecret, "client_secret", "", "Azure client secret")
-	applyCmd.Flags().StringVar(&subscriptionId, "subscription_id", "", "Azure subscription identifier")
-	applyCmd.Flags().StringVar(&tenantId, "tenant_id", "", "Azure tenant identifier")
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// applyCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// applyCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	applyCmd.Flags().String("client_id", "", "Azure client identifier")
+	applyCmd.Flags().String("client_secret", "", "Azure client secret")
+	applyCmd.Flags().String("subscription_id", "", "Azure subscription identifier")
+	applyCmd.Flags().String("tenant_id", "", "Azure tenant identifier")
 }
