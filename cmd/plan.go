@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"
+	"path/filepath"
 )
 
 // planCmd represents the plan command
@@ -33,7 +34,12 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("plan called")
 		//TODO ensure clientId, clientSecret, subscriptionId, tenantId
-		c, _ := checkStateAndConfigExistenceAndLoadThem()
+		configFilePath := filepath.Join(SharedDirectory, moduleShortName, configFileName)
+		stateFilePath := filepath.Join(SharedDirectory, stateFileName)
+		c, _, err := checkAndLoad(stateFilePath, configFilePath)
+		if err != nil {
+			log.Fatal(err)
+		}
 		if !destroy {
 			templateTfVars(c)
 			showModulePlan()

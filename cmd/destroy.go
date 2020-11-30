@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/spf13/viper"
 	"log"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
@@ -32,7 +33,12 @@ to quickly create a Cobra application.`,
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("destroy called")
-		c, _ := checkStateAndConfigExistenceAndLoadThem()
+		configFilePath := filepath.Join(SharedDirectory, moduleShortName, configFileName)
+		stateFilePath := filepath.Join(SharedDirectory, stateFileName)
+		c, _, err := checkAndLoad(stateFilePath, configFilePath)
+		if err != nil {
+			log.Fatal(err)
+		}
 		templateTfVars(c)
 		terraformDestroy()
 		updateStateAfterDestroy()

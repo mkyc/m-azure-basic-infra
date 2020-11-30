@@ -2,13 +2,9 @@ package cmd
 
 import (
 	"encoding/json"
-	"fmt"
 	azbi "github.com/epiphany-platform/e-structures/azbi/v0"
-	state "github.com/epiphany-platform/e-structures/state/v0"
-	"github.com/epiphany-platform/e-structures/utils/to"
 	"io/ioutil"
 	"log"
-	"os"
 	"path/filepath"
 
 	terra "github.com/mkyc/go-terraform"
@@ -50,107 +46,6 @@ var (
 	//if output should be in json
 	outputInJson bool
 )
-
-func backupOrAndInitializeFiles(vmsCount int, usePublicIPs bool, name string, rsaPath string) (*azbi.Config, *state.State) {
-	//TODO change to debug log
-	log.Println("backupOrAndInitializeFiles")
-	err := os.MkdirAll(filepath.Join(SharedDirectory, moduleShortName), os.ModePerm)
-	if err != nil {
-		log.Fatal(err)
-	}
-	configFilePath := filepath.Join(SharedDirectory, moduleShortName, configFileName)
-	if _, err := os.Stat(configFilePath); !os.IsNotExist(err) {
-		backupConfigFilePath := fmt.Sprintf("%s.backup", configFilePath)
-		err = os.Rename(configFilePath, backupConfigFilePath)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-	c := azbi.NewConfig()
-	c.Params.VmsCount = to.IntPtr(vmsCount)
-	c.Params.UsePublicIP = to.BooPtr(usePublicIPs)
-	c.Params.Name = to.StrPtr(name)
-	c.Params.RsaPublicKeyPath = to.StrPtr(filepath.Join(SharedDirectory, fmt.Sprintf("%s.pub", rsaPath)))
-	b, err := c.Save()
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = ioutil.WriteFile(configFilePath, b, 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	s := &state.State{}
-	stateFilePath := filepath.Join(SharedDirectory, stateFileName)
-	if _, err := os.Stat(stateFilePath); os.IsNotExist(err) {
-		s = state.NewState()
-	} else {
-		b, err := ioutil.ReadFile(stateFilePath)
-		if err != nil {
-			log.Fatal(err)
-		}
-		err = s.Load(b)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		backupStateFilePath := fmt.Sprintf("%s.backup", stateFilePath)
-		err = os.Rename(stateFilePath, backupStateFilePath)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-	s.AzBI.Status = state.Initialized
-	s.AzBI.Config = c
-
-	b, err = s.Save()
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = ioutil.WriteFile(stateFilePath, b, 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return c, s
-}
-
-func checkStateAndConfigExistenceAndLoadThem() (*azbi.Config, *state.State) {
-	//TODO move to debug
-	log.Println("checkStateAndConfigExistenceAndLoadThem")
-	stateFilePath := filepath.Join(SharedDirectory, stateFileName)
-	configFilePath := filepath.Join(SharedDirectory, moduleShortName, configFileName)
-	if _, err := os.Stat(stateFilePath); os.IsNotExist(err) {
-		log.Fatal("state file does not exist, please run init first")
-	}
-	if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
-		log.Fatal("config file does not exist, please run init first")
-	}
-
-	s := &state.State{}
-	b, err := ioutil.ReadFile(stateFilePath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = s.Load(b)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	c := &azbi.Config{}
-	b, err = ioutil.ReadFile(configFilePath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = c.Load(b)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	//TODO consider checking that config and state.azbi.Config are the same ...?
-
-	return c, s
-}
 
 //TODO make config a receiver
 func marshalConfigParams(config *azbi.Config, tfVarsPath string) error {
