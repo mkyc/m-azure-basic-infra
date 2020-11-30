@@ -34,7 +34,7 @@ to quickly create a Cobra application.`,
 		log.Println("plan called")
 		//TODO ensure clientId, clientSecret, subscriptionId, tenantId
 		if !destroy {
-			ensureSharedDir()
+			checkStateAndConfigExistence()
 			validateConfig()
 			validateState()
 			templateTfVars()

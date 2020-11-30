@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"
@@ -31,11 +32,12 @@ to quickly create a Cobra application.`,
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("init called")
-		ensureSharedDir()
-		ensureStateFile()
-		initializeConfigFile()
-		initializeStateFile()
-		displayCurrentConfigFile()
+		c := backupOrAndInitializeFiles(vmsCount, usePublicIPs, name, vmsRsaPath)
+		b, err := c.Save()
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(string(b))
 	},
 }
 

@@ -3,6 +3,9 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	azbi "github.com/epiphany-platform/e-structures/azbi/v0"
+	state "github.com/epiphany-platform/e-structures/state/v0"
+	"github.com/epiphany-platform/e-structures/utils/to"
 	"io/ioutil"
 	"log"
 	"os"
@@ -64,125 +67,80 @@ type AzBIConfig struct {
 	Params AzBIParams `yaml:"azbi"`
 }
 
-func ensureSharedDir() {
-	//TODO move to debug
-	log.Println("ensureSharedDir")
+func backupOrAndInitializeFiles(vmsCount int, usePublicIPs bool, name string, rsaPath string) *azbi.Config {
+	//TODO change to debug log
+	log.Println("backupOrAndInitializeFiles")
 	err := os.MkdirAll(filepath.Join(SharedDirectory, moduleShortName), os.ModePerm)
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-func ensureStateFile() {
-	//TODO change to debug log
-	log.Println("ensureStateFile")
-	file, err := os.OpenFile(filepath.Join(SharedDirectory, stateFileName), os.O_RDONLY|os.O_CREATE, 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = file.Close()
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func initializeConfigFile() {
-	//TODO change to debug log
-	log.Println("initializeConfigFile")
 	configFilePath := filepath.Join(SharedDirectory, moduleShortName, configFileName)
-	backupConfigFilePath := fmt.Sprintf("%s.backup", configFilePath)
-	_, err := os.Stat(configFilePath)
-	if err == nil || os.IsExist(err) {
+	if _, err := os.Stat(configFilePath); !os.IsNotExist(err) {
+		backupConfigFilePath := fmt.Sprintf("%s.backup", configFilePath)
 		err = os.Rename(configFilePath, backupConfigFilePath)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
-	b, err := yaml.Marshal(NewAzBIConfig())
+	c := azbi.NewConfig()
+	c.Params.VmsCount = to.IntPtr(vmsCount)
+	c.Params.UsePublicIP = to.BooPtr(usePublicIPs)
+	c.Params.Name = to.StrPtr(name)
+	c.Params.RsaPublicKeyPath = to.StrPtr(filepath.Join(SharedDirectory, fmt.Sprintf("%s.pub", rsaPath)))
+	b, err := c.Save()
 	if err != nil {
 		log.Fatal(err)
 	}
-	f, err := os.OpenFile(configFilePath, os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
 	err = ioutil.WriteFile(configFilePath, b, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
-}
 
-//TODO make State a receiver
-func initializeStateFile() {
-	//TODO change to debug log
-	log.Println("initializeStateFile")
-	//TODO join with ensureStateFile()
+	s := &state.State{}
 	stateFilePath := filepath.Join(SharedDirectory, stateFileName)
-	backupStateFilePath := fmt.Sprintf("%s.backup", stateFilePath)
-	m := make(map[interface{}]interface{})
-	m["kind"] = "state"
-	m[moduleShortName] = make(map[interface{}]interface{})
-	m[moduleShortName].(map[interface{}]interface{})["status"] = "initialized"
-	_, err := os.Stat(stateFilePath)
-	if err == nil || os.IsExist(err) {
+	if _, err := os.Stat(stateFilePath); os.IsNotExist(err) {
+		s = state.NewState()
+	} else {
+		b, err := ioutil.ReadFile(stateFilePath)
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = s.Load(b)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		backupStateFilePath := fmt.Sprintf("%s.backup", stateFilePath)
 		err = os.Rename(stateFilePath, backupStateFilePath)
 		if err != nil {
 			log.Fatal(err)
 		}
-		bytes, err := ioutil.ReadFile(backupStateFilePath)
-		if err != nil {
-			log.Fatal(err)
-		}
-		err = yaml.Unmarshal(bytes, &m)
-		if err != nil {
-			log.Fatal(err)
-		}
-	} else {
-		log.Print(err)
 	}
-	b, err := yaml.Marshal(m)
+	s.AzBI.Status = state.Initialized
+	s.AzBI.Config = c
+
+	b, err = s.Save()
 	if err != nil {
 		log.Fatal(err)
 	}
-	f, err := os.OpenFile(stateFilePath, os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
 	err = ioutil.WriteFile(stateFilePath, b, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	return c
 }
 
-//TODO Config implement Stringer
-func displayCurrentConfigFile() {
-	//TODO change to debug log
-	log.Println("displayCurrentConfigFile")
+func checkStateAndConfigExistence() {
+	//TODO move to debug
+	log.Println("checkStateAndConfigExistence")
+	stateFilePath := filepath.Join(SharedDirectory, stateFileName)
 	configFilePath := filepath.Join(SharedDirectory, moduleShortName, configFileName)
-	bytes, err := ioutil.ReadFile(configFilePath)
-	if err != nil {
-		log.Fatal(err)
+	if _, err := os.Stat(stateFilePath); os.IsNotExist(err) {
+		log.Fatal("state file does not exist, please run init first")
 	}
-	fmt.Print(string(bytes))
-}
-
-//TODO possibly remove because it's part of shared library
-func NewAzBIConfig() *AzBIConfig {
-	//TODO change to debug log
-	log.Println("NewAzBIConfig")
-	return &AzBIConfig{
-		Kind: fmt.Sprintf("%s-config", moduleShortName),
-		Params: AzBIParams{
-			VmsCount:         vmsCount,
-			UsePublicIP:      usePublicIPs,
-			Location:         "northeurope",
-			Name:             name,
-			AddressSpace:     []string{"10.0.0.0/16"},
-			AddressPrefixes:  []string{"10.0.1.0/24"},
-			RsaPublicKeyPath: filepath.Join(SharedDirectory, fmt.Sprintf("%s.pub", vmsRsaPath)),
-		},
+	if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
+		log.Fatal("config file does not exist, please run init first")
 	}
 }
 
