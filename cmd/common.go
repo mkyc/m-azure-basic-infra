@@ -65,7 +65,7 @@ type AzBIConfig struct {
 }
 
 func ensureSharedDir() {
-	//TODO change to debug log
+	//TODO move to debug
 	log.Println("ensureSharedDir")
 	err := os.MkdirAll(filepath.Join(SharedDirectory, moduleShortName), os.ModePerm)
 	if err != nil {
