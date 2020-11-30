@@ -12,7 +12,6 @@ import (
 	"path/filepath"
 
 	terra "github.com/mkyc/go-terraform"
-	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -52,22 +51,7 @@ var (
 	outputInJson bool
 )
 
-type AzBIParams struct {
-	VmsCount         int      `yaml:"size" json:"size"`
-	UsePublicIP      bool     `yaml:"use_public_ip" json:"use_public_ip"`
-	Location         string   `yaml:"location" json:"location"`
-	Name             string   `yaml:"name" json:"name"`
-	AddressSpace     []string `yaml:"address_space,flow" json:"address_space"`
-	AddressPrefixes  []string `yaml:"address_prefixes,flow" json:"address_prefixes"`
-	RsaPublicKeyPath string   `yaml:"rsa_pub_path" json:"rsa_pub_path"`
-}
-
-type AzBIConfig struct {
-	Kind   string     `yaml:"kind"`
-	Params AzBIParams `yaml:"azbi"`
-}
-
-func backupOrAndInitializeFiles(vmsCount int, usePublicIPs bool, name string, rsaPath string) *azbi.Config {
+func backupOrAndInitializeFiles(vmsCount int, usePublicIPs bool, name string, rsaPath string) (*azbi.Config, *state.State) {
 	//TODO change to debug log
 	log.Println("backupOrAndInitializeFiles")
 	err := os.MkdirAll(filepath.Join(SharedDirectory, moduleShortName), os.ModePerm)
@@ -128,12 +112,12 @@ func backupOrAndInitializeFiles(vmsCount int, usePublicIPs bool, name string, rs
 		log.Fatal(err)
 	}
 
-	return c
+	return c, s
 }
 
-func checkStateAndConfigExistence() {
+func checkStateAndConfigExistenceAndLoadThem() (*azbi.Config, *state.State) {
 	//TODO move to debug
-	log.Println("checkStateAndConfigExistence")
+	log.Println("checkStateAndConfigExistenceAndLoadThem")
 	stateFilePath := filepath.Join(SharedDirectory, stateFileName)
 	configFilePath := filepath.Join(SharedDirectory, moduleShortName, configFileName)
 	if _, err := os.Stat(stateFilePath); os.IsNotExist(err) {
@@ -142,39 +126,34 @@ func checkStateAndConfigExistence() {
 	if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
 		log.Fatal("config file does not exist, please run init first")
 	}
-}
 
-//TODO possibly remove because it's part of shared library
-func validateConfig() {
-	//TODO change to debug log
-	log.Println("validateConfig")
-}
-
-//TODO possibly remove because it's part of shared library
-func validateState() {
-	//TODO change to debug log
-	log.Println("validateState")
-}
-
-//TODO possibly remove because it's part of shared library
-func loadConfig() (*AzBIConfig, error) {
-	//TODO change to debug log
-	log.Println("loadConfig")
-	configFilePath := filepath.Join(SharedDirectory, moduleShortName, configFileName)
-	b, err := ioutil.ReadFile(configFilePath)
+	s := &state.State{}
+	b, err := ioutil.ReadFile(stateFilePath)
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
 	}
-	var result AzBIConfig
-	err = yaml.Unmarshal(b, &result)
+	err = s.Load(b)
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
 	}
-	return &result, nil
+
+	c := &azbi.Config{}
+	b, err = ioutil.ReadFile(configFilePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = c.Load(b)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//TODO consider checking that config and state.azbi.Config are the same ...?
+
+	return c, s
 }
 
 //TODO make config a receiver
-func marshalConfigParams(config *AzBIConfig, tfVarsPath string) error {
+func marshalConfigParams(config *azbi.Config, tfVarsPath string) error {
 	//TODO change to debug log
 	log.Println("marshalConfigParams")
 	params := config.Params
@@ -187,15 +166,11 @@ func marshalConfigParams(config *AzBIConfig, tfVarsPath string) error {
 }
 
 //TODO make Params a receiver
-func templateTfVars() {
+func templateTfVars(c *azbi.Config) {
 	//TODO change to debug log
 	log.Println("templateTfVars")
-	c, err := loadConfig()
-	if err != nil {
-		log.Fatal(err)
-	}
 	tfVarsFile := filepath.Join(ResourcesDirectory, terraformDir, tfVarsFile)
-	err = marshalConfigParams(c, tfVarsFile)
+	err := marshalConfigParams(c, tfVarsFile)
 	if err != nil {
 		log.Fatal(err)
 	}

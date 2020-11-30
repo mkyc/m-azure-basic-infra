@@ -32,7 +32,7 @@ to quickly create a Cobra application.`,
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("init called")
-		c := backupOrAndInitializeFiles(vmsCount, usePublicIPs, name, vmsRsaPath)
+		c, _ := backupOrAndInitializeFiles(vmsCount, usePublicIPs, name, vmsRsaPath)
 		b, err := c.Save()
 		if err != nil {
 			log.Fatal(err)

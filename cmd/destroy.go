@@ -32,7 +32,8 @@ to quickly create a Cobra application.`,
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("destroy called")
-		templateTfVars()
+		c, _ := checkStateAndConfigExistenceAndLoadThem()
+		templateTfVars(c)
 		terraformDestroy()
 		updateStateAfterDestroy()
 	},

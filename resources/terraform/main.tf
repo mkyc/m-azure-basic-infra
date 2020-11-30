@@ -6,7 +6,7 @@ resource "azurerm_resource_group" "rg" {
 module "vms" {
   source = "./modules/vms"
 
-  instances     = var.size
+  instances     = var.vms_count
   name          = var.name
   rg_name       = azurerm_resource_group.rg.name
   vnet_id       = azurerm_virtual_network.vnet.id

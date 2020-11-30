@@ -33,15 +33,13 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("plan called")
 		//TODO ensure clientId, clientSecret, subscriptionId, tenantId
+		c, _ := checkStateAndConfigExistenceAndLoadThem()
 		if !destroy {
-			checkStateAndConfigExistence()
-			validateConfig()
-			validateState()
-			templateTfVars()
+			templateTfVars(c)
 			showModulePlan()
 			terraformPlan()
 		} else {
-			templateTfVars()
+			templateTfVars(c)
 			terraformPlanDestroy()
 		}
 	},

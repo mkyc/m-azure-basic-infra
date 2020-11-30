@@ -32,7 +32,7 @@ to quickly create a Cobra application.`,
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("apply called")
-		checkStateAndConfigExistence()
+		checkStateAndConfigExistenceAndLoadThem()
 		showModulePlan()
 		terraformApply()
 		updateStateAfterApply()

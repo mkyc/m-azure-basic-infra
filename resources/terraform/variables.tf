@@ -1,4 +1,4 @@
-variable "size" {
+variable "vms_count" {
   type = number
 }
 
