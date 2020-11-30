@@ -3,12 +3,12 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	terra "github.com/mkyc/go-terraform"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 
+	terra "github.com/mkyc/go-terraform"
 	"gopkg.in/yaml.v2"
 )
 
@@ -23,6 +23,7 @@ const (
 	destroyTfPlanFile = "terraform-destroy.tfplan"
 )
 
+//TODO consider moving those variables nearer functions
 var (
 	cfgFile string
 
@@ -43,6 +44,9 @@ var (
 	subscriptionId string
 	tenantId       string
 	destroy        bool
+
+	//if output should be in json
+	outputInJson bool
 )
 
 type AzBIParams struct {
@@ -58,19 +62,6 @@ type AzBIParams struct {
 type AzBIConfig struct {
 	Kind   string     `yaml:"kind"`
 	Params AzBIParams `yaml:"azbi"`
-}
-
-func printMetadata() string {
-	//TODO change to debug log
-	log.Println("printMetadata")
-	return fmt.Sprintf(`labels:
-  version: %s
-  name: Azure Basic Infrastructure
-  short: %s
-  kind: infrastructure
-  provider: azure
-  provides-vms: true
-  provides-pubips: true`, Version, moduleShortName)
 }
 
 func ensureSharedDir() {
