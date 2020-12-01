@@ -3,6 +3,9 @@ package cmd
 import (
 	"encoding/json"
 	azbi "github.com/epiphany-platform/e-structures/azbi/v0"
+	state "github.com/epiphany-platform/e-structures/state/v0"
+	"github.com/google/go-cmp/cmp"
+	"github.com/jinzhu/copier"
 	"io/ioutil"
 	"log"
 	"path/filepath"
@@ -47,38 +50,42 @@ var (
 	outputInJson bool
 )
 
-//TODO make config a receiver
-func marshalConfigParams(config *azbi.Config, tfVarsPath string) error {
+//TODO consider making Params a receiver
+func templateTfVars(c *azbi.Config) error {
 	//TODO change to debug log
-	log.Println("marshalConfigParams")
-	params := config.Params
+	log.Println("templateTfVars")
+	tfVarsFile := filepath.Join(ResourcesDirectory, terraformDir, tfVarsFile)
+	params := c.Params
 	b, err := json.Marshal(&params)
 	if err != nil {
 		return err
 	}
+	//TODO move to debug
 	log.Println(string(b))
-	return ioutil.WriteFile(tfVarsPath, b, 0644)
-}
-
-//TODO make Params a receiver
-func templateTfVars(c *azbi.Config) {
-	//TODO change to debug log
-	log.Println("templateTfVars")
-	tfVarsFile := filepath.Join(ResourcesDirectory, terraformDir, tfVarsFile)
-	err := marshalConfigParams(c, tfVarsFile)
+	err = ioutil.WriteFile(tfVarsFile, b, 0644)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+	return nil
 }
 
 //TODO make State a receiver
-func showModulePlan() {
+func showModulePlan(c *azbi.Config, s *state.State) error {
 	log.Println("showModulePlan")
-	//#AzBI | module-plan | will perform module plan
-	//@yq m -x $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/$(M_MODULE_SHORT)/$(M_CONFIG_NAME) > $(M_SHARED)/$(M_MODULE_SHORT)/azbi-future-state.tmp
-	//@yq w -i $(M_SHARED)/$(M_MODULE_SHORT)/azbi-future-state.tmp kind state
-	//@- yq compare $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/$(M_MODULE_SHORT)/azbi-future-state.tmp
-	//@rm $(M_SHARED)/$(M_MODULE_SHORT)/azbi-future-state.tmp
+	futureState := &state.State{}
+	err := copier.Copy(futureState, s)
+	if err != nil {
+		return err
+	}
+	futureState.AzBI.Config = c
+	futureState.AzBI.Status = state.Applied
+	diff := cmp.Diff(s, futureState)
+	if diff != "" {
+		log.Println(diff)
+	} else {
+		log.Println("no changes predicted")
+	}
+	return nil
 }
 
 //TODO make State a receiver

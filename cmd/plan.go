@@ -36,16 +36,21 @@ to quickly create a Cobra application.`,
 		//TODO ensure clientId, clientSecret, subscriptionId, tenantId
 		configFilePath := filepath.Join(SharedDirectory, moduleShortName, configFileName)
 		stateFilePath := filepath.Join(SharedDirectory, stateFileName)
-		c, _, err := checkAndLoad(stateFilePath, configFilePath)
+		c, s, err := checkAndLoad(stateFilePath, configFilePath)
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = templateTfVars(c)
 		if err != nil {
 			log.Fatal(err)
 		}
 		if !destroy {
-			templateTfVars(c)
-			showModulePlan()
+			err = showModulePlan(c, s)
+			if err != nil {
+				log.Fatal(err)
+			}
 			terraformPlan()
 		} else {
-			templateTfVars(c)
 			terraformPlanDestroy()
 		}
 	},

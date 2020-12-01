@@ -35,11 +35,14 @@ to quickly create a Cobra application.`,
 		log.Println("apply called")
 		configFilePath := filepath.Join(SharedDirectory, moduleShortName, configFileName)
 		stateFilePath := filepath.Join(SharedDirectory, stateFileName)
-		_, _, err := checkAndLoad(stateFilePath, configFilePath)
+		c, s, err := checkAndLoad(stateFilePath, configFilePath)
 		if err != nil {
 			log.Fatal(err)
 		}
-		showModulePlan()
+		err = showModulePlan(c, s)
+		if err != nil {
+			log.Fatal(err)
+		}
 		terraformApply()
 		updateStateAfterApply()
 		terraformOutput()

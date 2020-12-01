@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/viper"
 	"log"
 	"path/filepath"
+	"reflect"
 )
 
 // initCmd represents the init command
@@ -54,7 +55,7 @@ to quickly create a Cobra application.`,
 			log.Fatal(err)
 		}
 
-		if s.AzBI.Status != state.Initialized && s.AzBI.Status != state.Destroyed {
+		if !reflect.DeepEqual(s.AzBI, &state.AzBIState{}) && s.AzBI.Status != state.Initialized && s.AzBI.Status != state.Destroyed {
 			log.Fatal("impossibru state")
 		}
 
