@@ -4,6 +4,7 @@ import (
 	"errors"
 	azbi "github.com/epiphany-platform/e-structures/azbi/v0"
 	state "github.com/epiphany-platform/e-structures/state/v0"
+	"github.com/epiphany-platform/e-structures/utils/to"
 	"io/ioutil"
 	"os"
 )
@@ -102,4 +103,21 @@ func backupFile(path string) error {
 		backupPath := path + ".backup"
 		return os.Rename(path, backupPath)
 	}
+}
+
+func produceOutput(m map[string]interface{}) *azbi.Output {
+	o := &azbi.Output{
+		RgName:   to.StrPtr(m["rg_name"].(string)),
+		VnetName: to.StrPtr(m["vnet_name"].(string)),
+	}
+	for _, i := range m["private_ips"].([]interface{}) {
+		o.PrivateIps = append(o.PrivateIps, i.(string))
+	}
+	for _, i := range m["public_ips"].([]interface{}) {
+		o.PublicIps = append(o.PublicIps, i.(string))
+	}
+	for _, i := range m["vm_names"].([]interface{}) {
+		o.VmNames = append(o.VmNames, i.(string))
+	}
+	return o
 }

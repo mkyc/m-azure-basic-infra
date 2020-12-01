@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	state "github.com/epiphany-platform/e-structures/state/v0"
 	"github.com/spf13/viper"
 	"log"
 	"path/filepath"
@@ -33,6 +34,9 @@ to quickly create a Cobra application.`,
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("apply called")
+
+		//TODO check if not applied already
+
 		configFilePath := filepath.Join(SharedDirectory, moduleShortName, configFileName)
 		stateFilePath := filepath.Join(SharedDirectory, stateFileName)
 		c, s, err := checkAndLoad(stateFilePath, configFilePath)
@@ -43,9 +47,41 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			log.Fatal(err)
 		}
-		terraformApply()
-		updateStateAfterApply()
-		terraformOutput()
+		err = terraformApply()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		s.AzBI.Config = c
+		s.AzBI.Status = state.Applied
+
+		log.Println("backup state file")
+		err = backupFile(stateFilePath)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println("save state")
+		err = saveState(stateFilePath, s)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		m, err := getTerraformOutput()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		s.AzBI.Output = produceOutput(m)
+		err = saveState(stateFilePath, s)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		b, err := s.Marshall()
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println(string(b))
 	},
 }
 

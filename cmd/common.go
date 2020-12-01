@@ -143,7 +143,7 @@ func terraformPlanDestroy() {
 }
 
 //TODO make State a receiver
-func terraformApply() {
+func terraformApply() error {
 	log.Println("terraformApply")
 
 	options, err := terra.WithDefaultRetryableErrors(&terra.Options{
@@ -160,28 +160,18 @@ func terraformApply() {
 		NoColor:       true,
 	})
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	_, err = terra.Apply(options)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+	return nil
 }
 
 //TODO make State a receiver
-func updateStateAfterApply() {
-	log.Println("updateStateAfterApply")
-	//#AzBI | update-state-after-apply | will update state file after apply
-	//@cp $(M_SHARED)/$(M_MODULE_SHORT)/$(M_CONFIG_NAME) $(M_SHARED)/$(M_MODULE_SHORT)/azbi-config.tmp.yml
-	//@yq d -i $(M_SHARED)/$(M_MODULE_SHORT)/azbi-config.tmp.yml kind
-	//@yq m -x -i $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_SHARED)/$(M_MODULE_SHORT)/azbi-config.tmp.yml
-	//@yq w -i $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_MODULE_SHORT).status applied
-	//@rm $(M_SHARED)/$(M_MODULE_SHORT)/azbi-config.tmp.yml
-}
-
-//TODO make State a receiver
-func terraformOutput() {
-	log.Println("terraformOutput")
+func getTerraformOutput() (map[string]interface{}, error) {
+	log.Println("getTerraformOutput")
 	options, err := terra.WithDefaultRetryableErrors(&terra.Options{
 		TerraformDir: filepath.Join(ResourcesDirectory, terraformDir),
 		EnvVars: map[string]string{
@@ -190,14 +180,13 @@ func terraformOutput() {
 		StateFilePath: filepath.Join(SharedDirectory, moduleShortName, tfStateFile),
 	})
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	m, err := terra.OutputAll(options)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	log.Printf("%v\n", m)
-	//TODO add m to state output
+	return m, nil
 }
 
 //TODO make State a receiver

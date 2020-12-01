@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"log"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
@@ -18,7 +19,28 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("output called")
-		terraformOutput()
+		configFilePath := filepath.Join(SharedDirectory, moduleShortName, configFileName)
+		stateFilePath := filepath.Join(SharedDirectory, stateFileName)
+		_, s, err := checkAndLoad(stateFilePath, configFilePath)
+		if err != nil {
+			log.Fatal(err)
+		}
+		m, err := getTerraformOutput()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		s.AzBI.Output = produceOutput(m)
+		err = saveState(stateFilePath, s)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		b, err := s.Marshall()
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println(string(b))
 	},
 }
 
