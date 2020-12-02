@@ -1,0 +1,32 @@
+== Input parameters
+
+[width="100%",cols="7%,1%,25%a,1%,20%,50%a",options="header",]
+|===
+|Name |Type |Default value |Required |Steps |Description
+|M_ARM_CLIENT_ID |string |unset |yes |plan, apply, plan-destroy, destroy, test
+|Azure service principal client id
+
+|M_ARM_CLIENT_SECRET |string |unset |yes |plan, apply, plan-destroy, destroy, test
+|Azure service principal client secret
+
+|M_ARM_SUBSCRIPTION_ID |string |unset |yes |plan, apply, plan-destroy, destroy, test
+|Azure subscription id
+
+|M_ARM_TENANT_ID |string |unset |yes |plan, apply, plan-destroy, destroy, test
+|Azure subscription tenant id
+
+|M_VMS_COUNT |number |3 |no |init |Number of instances to launch
+
+|M_PUBLIC_IPS |bool |true |no |init |If true, the instance
+will have associated public IP address
+
+|M_NAME |string |epiphany |no |init |Name to be used on all resources
+as a prefix
+
+|M_VMS_RSA |string |vms_rsa |no |init |SSH key name, should be located in
+shared directory
+
+|M_LOCATION |string |northeurope |no |init |Region to launch
+module in
+
+|===
