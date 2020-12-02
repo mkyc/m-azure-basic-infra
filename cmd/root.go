@@ -13,8 +13,8 @@ import (
 
 const (
 	moduleShortName   = "azbi"
-	configFileName    = "azbi-config.yml"
-	stateFileName     = "state.yml"
+	configFileName    = "azbi-config.json"
+	stateFileName     = "state.json"
 	terraformDir      = "terraform"
 	tfVarsFile        = "vars.tfvars.json"
 	tfStateFile       = "terraform.tfstate"

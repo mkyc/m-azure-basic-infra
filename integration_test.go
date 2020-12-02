@@ -9,8 +9,8 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	state "github.com/epiphany-platform/e-structures/state/v0"
 	"github.com/epiphany-platform/m-azure-basic-infrastructure/cmd"
-	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
 	"os"
@@ -38,15 +38,15 @@ func TestMetadata(t *testing.T) {
 	}{
 		{
 			name: "default metadata",
-			wantOutputTemplate: `#AzBI | metadata | should print component metadata
-labels:
-  version: %s
-  name: Azure Basic Infrastructure
-  short: azbi
+			wantOutputTemplate: `labels:
   kind: infrastructure
+  name: Azure Basic Infrastructure
   provider: azure
+  provides-pubips: true
   provides-vms: true
-  provides-pubips: true`,
+  short: azbi
+  version: dev
+`,
 		},
 	}
 
@@ -71,26 +71,42 @@ func TestInit(t *testing.T) {
 		{
 			name:       "default init",
 			initParams: nil,
-			wantOutput: `kind: azbi-config
-azbi:
-  size: 3
-  use_public_ip: true
-  location: northeurope
-  name: epiphany
-  address_space: [10.0.0.0/16]
-  address_prefixes: [10.0.1.0/24]
-  rsa_pub_path: /shared/vms_rsa.pub`,
-			wantConfigLocation: "azbi/azbi-config.yml",
-			wantConfigContent: `kind: azbi-config
-azbi:
-  size: 3
-  use_public_ip: true
-  location: northeurope
-  name: epiphany
-  address_space: [10.0.0.0/16]
-  address_prefixes: [10.0.1.0/24]
-  rsa_pub_path: /shared/vms_rsa.pub
-`,
+			wantOutput: `Initialized config: 
+{
+	"kind": "azbi",
+	"version": "v0.0.1",
+	"params": {
+		"name": "epiphany",
+		"vms_count": 3,
+		"use_public_ip": true,
+		"location": "northeurope",
+		"address_space": [
+			"10.0.0.0/16"
+		],
+		"address_prefixes": [
+			"10.0.1.0/24"
+		],
+		"rsa_pub_path": "/shared/vms_rsa.pub"
+	}
+}`,
+			wantConfigLocation: "azbi/azbi-config.json",
+			wantConfigContent: `{
+	"kind": "azbi",
+	"version": "v0.0.1",
+	"params": {
+		"name": "epiphany",
+		"vms_count": 3,
+		"use_public_ip": true,
+		"location": "northeurope",
+		"address_space": [
+			"10.0.0.0/16"
+		],
+		"address_prefixes": [
+			"10.0.1.0/24"
+		],
+		"rsa_pub_path": "/shared/vms_rsa.pub"
+	}
+}`,
 		},
 		{
 			name: "init 2 machines no public ips and named rg",
@@ -99,26 +115,42 @@ azbi:
 				"--public_ips": "false",
 				"--name":       "azbi-module-tests",
 				"--vms_rsa":    "test_vms_rsa"},
-			wantOutput: `kind: azbi-config
-azbi:
-  size: 2
-  use_public_ip: false
-  location: northeurope
-  name: azbi-module-tests
-  address_space: [10.0.0.0/16]
-  address_prefixes: [10.0.1.0/24]
-  rsa_pub_path: /shared/test_vms_rsa.pub`,
-			wantConfigLocation: "azbi/azbi-config.yml",
-			wantConfigContent: `kind: azbi-config
-azbi:
-  size: 2
-  use_public_ip: false
-  location: northeurope
-  name: azbi-module-tests
-  address_space: [10.0.0.0/16]
-  address_prefixes: [10.0.1.0/24]
-  rsa_pub_path: /shared/test_vms_rsa.pub
-`,
+			wantOutput: `Initialized config: 
+{
+	"kind": "azbi",
+	"version": "v0.0.1",
+	"params": {
+		"name": "azbi-module-tests",
+		"vms_count": 2,
+		"use_public_ip": false,
+		"location": "northeurope",
+		"address_space": [
+			"10.0.0.0/16"
+		],
+		"address_prefixes": [
+			"10.0.1.0/24"
+		],
+		"rsa_pub_path": "/shared/test_vms_rsa.pub"
+	}
+}`,
+			wantConfigLocation: "azbi/azbi-config.json",
+			wantConfigContent: `{
+	"kind": "azbi",
+	"version": "v0.0.1",
+	"params": {
+		"name": "azbi-module-tests",
+		"vms_count": 2,
+		"use_public_ip": false,
+		"location": "northeurope",
+		"address_space": [
+			"10.0.0.0/16"
+		],
+		"address_prefixes": [
+			"10.0.1.0/24"
+		],
+		"rsa_pub_path": "/shared/test_vms_rsa.pub"
+	}
+}`,
 		},
 	}
 
@@ -164,12 +196,17 @@ func TestPlan(t *testing.T) {
 				"--public_ips": "false",
 				"--name":       "azbi-module-tests",
 				"--vms_rsa":    "test_vms_rsa"},
-			wantPlanOutputLastLine: "Plan: 7 to add, 0 to change, 0 to destroy.",
-			wantStateLocation:      "state.yml",
-			wantStateContent: `kind: state
-azbi:
-  status: initialized
-`,
+			wantPlanOutputLastLine: "\tAdd: 7, Change: 0, Destroy: 0",
+			wantStateLocation:      "state.json",
+			wantStateContent: `{
+	"kind": "state",
+	"version": "v0.0.1",
+	"azbi": {
+		"status": "initialized",
+		"config": null,
+		"output": null
+	}
+}`,
 			wantTerraformStateFileLocation: "azbi/terraform-apply.tfplan",
 		},
 	}
@@ -221,8 +258,8 @@ func TestApply(t *testing.T) {
 				"--public_ips": "false",
 				"--name":       "azbi-module-tests",
 				"--vms_rsa":    "test_vms_rsa"},
-			wantPlanOutputLastLine:  "Plan: 7 to add, 0 to change, 0 to destroy.",
-			wantApplyOutputLastLine: "#AzBI | terraform-output | will prepare terraform output",
+			wantPlanOutputLastLine:  "\tAdd: 7, Change: 0, Destroy: 0",
+			wantApplyOutputLastLine: "TODO", //TODO make last line smarter
 		},
 		{
 			name: "apply 2 machines with public ips and named rg",
@@ -231,8 +268,8 @@ func TestApply(t *testing.T) {
 				"--public_ips": "true",
 				"--name":       "azbi-module-tests",
 				"--vms_rsa":    "test_vms_rsa"},
-			wantPlanOutputLastLine:  "Plan: 12 to add, 0 to change, 0 to destroy.",
-			wantApplyOutputLastLine: "#AzBI | terraform-output | will prepare terraform output",
+			wantPlanOutputLastLine:  "\tAdd: 12, Change: 0, Destroy: 0",
+			wantApplyOutputLastLine: "TODO", //TODO make last line smarter
 		},
 	}
 
@@ -255,19 +292,18 @@ func TestApply(t *testing.T) {
 			}
 
 			if v, ok := tt.initParams["--public_ips"]; ok && v == "true" {
-				data, err := ioutil.ReadFile(path.Join(localSharedPath, "state.yml"))
+				data, err := ioutil.ReadFile(path.Join(localSharedPath, "state.json"))
 				if err != nil {
 					t.Fatal(err)
 				}
-				m := make(map[interface{}]interface{})
-				err = yaml.Unmarshal(data, &m)
+				s := &state.State{}
+				err = s.Unmarshall(data)
 				if err != nil {
 					t.Fatal(err)
 				}
-				publicIPs := m["azbi"].(map[interface{}]interface{})["output"].(map[interface{}]interface{})["public_ips.value"].([]interface{})
+				publicIPs := s.AzBI.Output.PublicIps
 				for _, p := range publicIPs {
-					s := p.(string)
-					validateSshConnectivity(t, privateKey, s)
+					validateSshConnectivity(t, privateKey, p)
 				}
 			}
 		})
