@@ -101,7 +101,17 @@ func backupFile(path string) error {
 		return nil
 	} else {
 		backupPath := path + ".backup"
-		return os.Rename(path, backupPath)
+
+		input, err := ioutil.ReadFile(path)
+		if err != nil {
+			return err
+		}
+
+		err = ioutil.WriteFile(backupPath, input, 0644)
+		if err != nil {
+			return err
+		}
+		return nil
 	}
 }
 
