@@ -57,7 +57,6 @@ func templateTfVars(c *azbi.Config) error {
 	return nil
 }
 
-//TODO make State a receiver
 func showModulePlan(c *azbi.Config, s *state.State) error {
 	log.Println("showModulePlan")
 	futureState := &state.State{}
@@ -79,7 +78,6 @@ func showModulePlan(c *azbi.Config, s *state.State) error {
 	return nil
 }
 
-//TODO make State a receiver
 func terraformPlan() {
 	log.Println("terraformPlan")
 
@@ -106,7 +104,6 @@ func terraformPlan() {
 	}
 }
 
-//TODO make State a receiver
 func terraformPlanDestroy() {
 	log.Println("terraformPlanDestroy")
 
@@ -133,7 +130,6 @@ func terraformPlanDestroy() {
 	}
 }
 
-//TODO make State a receiver
 func terraformApply() error {
 	log.Println("terraformApply")
 
