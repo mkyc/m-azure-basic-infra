@@ -21,6 +21,20 @@ const (
 	destroyTfPlanFile = "terraform-destroy.tfplan"
 )
 
+var (
+	cfgFile string
+
+	Version string
+
+	SharedDirectory    string
+	ResourcesDirectory string
+
+	clientId       string
+	clientSecret   string
+	subscriptionId string
+	tenantId       string
+)
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "m-azure-basic-infrastructure",

@@ -10,6 +10,10 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+var (
+	inJson bool
+)
+
 // metadataCmd represents the metadata command
 var metadataCmd = &cobra.Command{
 	Use:   "metadata",
@@ -29,7 +33,7 @@ to quickly create a Cobra application.`,
 			log.Fatal(err)
 		}
 
-		outputInJson = viper.GetBool("json")
+		inJson = viper.GetBool("json")
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		//TODO move to debug
@@ -63,7 +67,7 @@ func printMetadata() string {
 	}}
 	var b []byte
 	var err error
-	if outputInJson {
+	if inJson {
 		b, err = json.Marshal(l)
 	} else {
 		b, err = yaml.Marshal(l)

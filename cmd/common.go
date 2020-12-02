@@ -13,32 +13,6 @@ import (
 	terra "github.com/mkyc/go-terraform"
 )
 
-//TODO consider moving those variables nearer functions
-var (
-	cfgFile string
-
-	Version string
-
-	SharedDirectory    string
-	ResourcesDirectory string
-
-	//init variables
-	vmsCount     int
-	usePublicIPs bool
-	name         string
-	vmsRsaPath   string
-
-	//plan variables
-	clientId       string
-	clientSecret   string
-	subscriptionId string
-	tenantId       string
-	destroy        bool
-
-	//if output should be in json
-	outputInJson bool
-)
-
 func templateTfVars(c *azbi.Config) error {
 	//TODO change to debug log
 	log.Println("templateTfVars")

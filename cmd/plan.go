@@ -7,6 +7,10 @@ import (
 	"path/filepath"
 )
 
+var (
+	doDestroy bool
+)
+
 // planCmd represents the plan command
 var planCmd = &cobra.Command{
 	Use:   "plan",
@@ -29,7 +33,7 @@ to quickly create a Cobra application.`,
 		clientSecret = viper.GetString("client_secret")
 		subscriptionId = viper.GetString("subscription_id")
 		tenantId = viper.GetString("tenant_id")
-		destroy = viper.GetBool("destroy")
+		doDestroy = viper.GetBool("destroy")
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("plan called")
@@ -44,7 +48,7 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			log.Fatal(err)
 		}
-		if !destroy {
+		if !doDestroy {
 			err = showModulePlan(c, s)
 			if err != nil {
 				log.Fatal(err)
