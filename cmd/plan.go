@@ -1,9 +1,9 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"log"
 	"path/filepath"
 )
 
@@ -22,11 +22,11 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	PreRun: func(cmd *cobra.Command, args []string) {
-		log.Println("PreRun")
+		logger.Debug().Msg("PreRun")
 
 		err := viper.BindPFlags(cmd.Flags())
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal().Err(err)
 		}
 
 		clientId = viper.GetString("client_id")
@@ -36,26 +36,36 @@ to quickly create a Cobra application.`,
 		doDestroy = viper.GetBool("destroy")
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		log.Println("plan called")
+		logger.Debug().Msg("plan called")
 		configFilePath := filepath.Join(SharedDirectory, moduleShortName, configFileName)
 		stateFilePath := filepath.Join(SharedDirectory, stateFileName)
 		c, s, err := checkAndLoad(stateFilePath, configFilePath)
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal().Err(err)
 		}
 
 		err = templateTfVars(c)
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal().Err(err)
 		}
 		if !doDestroy {
 			err = showModulePlan(c, s)
 			if err != nil {
-				log.Fatal(err)
+				logger.Fatal().Err(err)
 			}
-			terraformPlan()
+			msg, err := count(terraformPlan())
+			if err != nil {
+				logger.Fatal().Err(err)
+			}
+			logger.Info().Msg("Will perform following changes: " + msg)
+			fmt.Println("Will perform following changes: \n\t" + msg)
 		} else {
-			terraformPlanDestroy()
+			msg, err := count(terraformPlanDestroy())
+			if err != nil {
+				logger.Fatal().Err(err)
+			}
+			logger.Info().Msg("Will perform following changes: " + msg)
+			fmt.Println("Will perform following changes: \n\t" + msg)
 		}
 	},
 }

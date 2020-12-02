@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	state "github.com/epiphany-platform/e-structures/state/v0"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"log"
 	"path/filepath"
 	"reflect"
 )
@@ -21,11 +21,11 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	PreRun: func(cmd *cobra.Command, args []string) {
-		log.Println("PreRun")
+		logger.Debug().Msg("PreRun")
 
 		err := viper.BindPFlags(cmd.Flags())
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal().Err(err)
 		}
 
 		clientId = viper.GetString("client_id")
@@ -34,58 +34,66 @@ to quickly create a Cobra application.`,
 		tenantId = viper.GetString("tenant_id")
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		log.Println("apply called")
+		logger.Debug().Msg("apply called")
 
 		configFilePath := filepath.Join(SharedDirectory, moduleShortName, configFileName)
 		stateFilePath := filepath.Join(SharedDirectory, stateFileName)
 		c, s, err := checkAndLoad(stateFilePath, configFilePath)
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal().Err(err)
 		}
 
 		if !reflect.DeepEqual(s.AzBI, &state.AzBIState{}) && s.AzBI.Status != state.Initialized && s.AzBI.Status != state.Destroyed {
-			log.Fatal(errors.New(string("unexpected state: " + s.AzBI.Status)))
+			logger.Fatal().Err(errors.New(string("unexpected state: " + s.AzBI.Status)))
 		}
 
 		err = showModulePlan(c, s)
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal().Err(err)
 		}
-		err = terraformApply()
+		output, err := terraformApply()
 		if err != nil {
-			log.Fatal(err)
+			logger.Error().Msgf("registered following output: \n%s\n", output)
+			logger.Fatal().Err(err)
 		}
+		msg, err := count(output)
+		if err != nil {
+			logger.Fatal().Err(err)
+		}
+		logger.Info().Msg("Performed following changes: " + msg)
+		fmt.Println("Performed following changes: \n\t" + msg)
 
 		s.AzBI.Config = c
 		s.AzBI.Status = state.Applied
 
-		log.Println("backup state file")
+		logger.Debug().Msg("backup state file")
 		err = backupFile(stateFilePath)
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal().Err(err)
 		}
-		log.Println("save state")
+		logger.Debug().Msg("save state")
 		err = saveState(stateFilePath, s)
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal().Err(err)
 		}
 
 		m, err := getTerraformOutput()
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal().Err(err)
 		}
 
 		s.AzBI.Output = produceOutput(m)
 		err = saveState(stateFilePath, s)
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal().Err(err)
 		}
 
 		b, err := s.Marshall()
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal().Err(err)
 		}
-		log.Println(string(b))
+		logger.Info().Msg(string(b))
+		fmt.Println("State after apply: \n" + string(b))
 	},
 }
 

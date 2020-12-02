@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"log"
+	"fmt"
 	"path/filepath"
 
 	"github.com/spf13/cobra"
@@ -18,29 +18,30 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		log.Println("output called")
+		logger.Debug().Msg("output called")
 		configFilePath := filepath.Join(SharedDirectory, moduleShortName, configFileName)
 		stateFilePath := filepath.Join(SharedDirectory, stateFileName)
 		_, s, err := checkAndLoad(stateFilePath, configFilePath)
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal().Err(err)
 		}
 		m, err := getTerraformOutput()
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal().Err(err)
 		}
 
 		s.AzBI.Output = produceOutput(m)
 		err = saveState(stateFilePath, s)
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal().Err(err)
 		}
 
 		b, err := s.Marshall()
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal().Err(err)
 		}
-		log.Println(string(b))
+		logger.Info().Msg(string(b))
+		fmt.Println("Updated output: \n" + string(b))
 	},
 }
 

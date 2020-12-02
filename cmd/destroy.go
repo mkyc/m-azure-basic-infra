@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	state "github.com/epiphany-platform/e-structures/state/v0"
 	"github.com/spf13/viper"
-	"log"
 	"path/filepath"
 	"reflect"
 
@@ -22,11 +22,11 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	PreRun: func(cmd *cobra.Command, args []string) {
-		log.Println("PreRun")
+		logger.Debug().Msg("PreRun")
 
 		err := viper.BindPFlags(cmd.Flags())
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal().Err(err)
 		}
 
 		clientId = viper.GetString("client_id")
@@ -35,30 +35,37 @@ to quickly create a Cobra application.`,
 		tenantId = viper.GetString("tenant_id")
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		log.Println("destroy called")
+		logger.Debug().Msg("destroy called")
 		configFilePath := filepath.Join(SharedDirectory, moduleShortName, configFileName)
 		stateFilePath := filepath.Join(SharedDirectory, stateFileName)
 		c, s, err := checkAndLoad(stateFilePath, configFilePath)
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal().Err(err)
 		}
 
 		if !reflect.DeepEqual(s.AzBI, &state.AzBIState{}) && s.AzBI.Status != state.Applied {
-			log.Fatal(errors.New(string("unexpected state: " + s.AzBI.Status)))
+			logger.Fatal().Err(errors.New(string("unexpected state: " + s.AzBI.Status)))
 		}
 
 		err = templateTfVars(c)
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal().Err(err)
 		}
-		err = terraformDestroy()
+		output, err := terraformDestroy()
 		if err != nil {
-			log.Fatal(err)
+			logger.Error().Msgf("registered following output: \n%s\n", output)
+			logger.Fatal().Err(err)
 		}
+		msg, err := count(output)
+		if err != nil {
+			logger.Fatal().Err(err)
+		}
+		logger.Info().Msg("Performed following changes: " + msg)
+		fmt.Println("Performed following changes: \n\t" + msg)
 		s = updateStateAfterDestroy(s)
 		err = saveState(stateFilePath, s)
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal().Err(err)
 		}
 	},
 }

@@ -3,8 +3,6 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"log"
-
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v2"
@@ -25,19 +23,17 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	PreRun: func(cmd *cobra.Command, args []string) {
-		//TODO move to debug
-		log.Println("PreRun")
+		logger.Debug().Msg("PreRun")
 
 		err := viper.BindPFlags(cmd.Flags())
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal().Err(err)
 		}
 
 		inJson = viper.GetBool("json")
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		//TODO move to debug
-		log.Println("metadata called")
+		logger.Debug().Msg("metadata called")
 		fmt.Println(printMetadata())
 	},
 }
@@ -53,8 +49,7 @@ type Metadata struct {
 }
 
 func printMetadata() string {
-	//TODO move to debug
-	log.Println("printMetadata")
+	logger.Debug().Msg("printMetadata")
 
 	l := Metadata{Labels: map[string]interface{}{
 		"version":         Version,
@@ -73,7 +68,7 @@ func printMetadata() string {
 		b, err = yaml.Marshal(l)
 	}
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal().Err(err)
 	}
 	return string(b)
 }

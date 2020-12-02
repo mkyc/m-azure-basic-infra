@@ -2,28 +2,70 @@ package cmd
 
 import (
 	"encoding/json"
+	"fmt"
 	azbi "github.com/epiphany-platform/e-structures/azbi/v0"
 	state "github.com/epiphany-platform/e-structures/state/v0"
 	"github.com/google/go-cmp/cmp"
 	"github.com/jinzhu/copier"
 	"io/ioutil"
-	"log"
 	"path/filepath"
 
 	terra "github.com/mkyc/go-terraform"
 )
 
+type ZeroLogger struct{}
+
+func (z ZeroLogger) Trace(format string, v ...interface{}) {
+	logger.
+		Trace().
+		Msgf(format, v...)
+}
+
+func (z ZeroLogger) Debug(format string, v ...interface{}) {
+	logger.
+		Debug().
+		Msgf(format, v...)
+}
+
+func (z ZeroLogger) Info(format string, v ...interface{}) {
+	logger.
+		Info().
+		Msgf(format, v...)
+}
+
+func (z ZeroLogger) Warn(format string, v ...interface{}) {
+	logger.
+		Warn().
+		Msgf(format, v...)
+}
+
+func (z ZeroLogger) Error(format string, v ...interface{}) {
+	logger.
+		Error().
+		Msgf(format, v...)
+}
+
+func (z ZeroLogger) Fatal(format string, v ...interface{}) {
+	logger.
+		Fatal().
+		Msgf(format, v...)
+}
+
+func (z ZeroLogger) Panic(format string, v ...interface{}) {
+	logger.
+		Panic().
+		Msgf(format, v...)
+}
+
 func templateTfVars(c *azbi.Config) error {
-	//TODO change to debug log
-	log.Println("templateTfVars")
+	logger.Debug().Msg("templateTfVars")
 	tfVarsFile := filepath.Join(ResourcesDirectory, terraformDir, tfVarsFile)
 	params := c.Params
 	b, err := json.Marshal(&params)
 	if err != nil {
 		return err
 	}
-	//TODO move to debug
-	log.Println(string(b))
+	logger.Info().Msg(string(b))
 	err = ioutil.WriteFile(tfVarsFile, b, 0644)
 	if err != nil {
 		return err
@@ -32,7 +74,7 @@ func templateTfVars(c *azbi.Config) error {
 }
 
 func showModulePlan(c *azbi.Config, s *state.State) error {
-	log.Println("showModulePlan")
+	logger.Debug().Msg("showModulePlan")
 	futureState := &state.State{}
 	err := copier.Copy(futureState, s)
 	if err != nil {
@@ -45,15 +87,17 @@ func showModulePlan(c *azbi.Config, s *state.State) error {
 
 	diff := cmp.Diff(s, futureState)
 	if diff != "" {
-		log.Println(diff)
+		logger.Info().Msg(diff)
+		fmt.Println("Planned changes: \n" + diff)
 	} else {
-		log.Println("no changes predicted")
+		logger.Info().Msg("no changes predicted")
+		fmt.Println("No changes predicted.")
 	}
 	return nil
 }
 
-func terraformPlan() {
-	log.Println("terraformPlan")
+func terraformPlan() string {
+	logger.Debug().Msg("terraformPlan")
 
 	options, err := terra.WithDefaultRetryableErrors(&terra.Options{
 		TerraformDir: filepath.Join(ResourcesDirectory, terraformDir),
@@ -68,18 +112,20 @@ func terraformPlan() {
 		PlanFilePath:  filepath.Join(SharedDirectory, moduleShortName, applyTfPlanFile),
 		StateFilePath: filepath.Join(SharedDirectory, moduleShortName, tfStateFile),
 		NoColor:       true,
+		Logger:        ZeroLogger{},
 	})
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal().Err(err)
 	}
-	_, err = terra.Plan(options)
+	s, err := terra.Plan(options)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal().Err(err)
 	}
+	return s
 }
 
-func terraformPlanDestroy() {
-	log.Println("terraformPlanDestroy")
+func terraformPlanDestroy() string {
+	logger.Debug().Msg("terraformPlanDestroy")
 
 	options, err := terra.WithDefaultRetryableErrors(&terra.Options{
 		TerraformDir: filepath.Join(ResourcesDirectory, terraformDir),
@@ -94,18 +140,20 @@ func terraformPlanDestroy() {
 		PlanFilePath:  filepath.Join(SharedDirectory, moduleShortName, destroyTfPlanFile),
 		StateFilePath: filepath.Join(SharedDirectory, moduleShortName, tfStateFile),
 		NoColor:       true,
+		Logger:        ZeroLogger{},
 	})
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal().Err(err)
 	}
-	_, err = terra.PlanDestroy(options)
+	s, err := terra.PlanDestroy(options)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal().Err(err)
 	}
+	return s
 }
 
-func terraformApply() error {
-	log.Println("terraformApply")
+func terraformApply() (string, error) {
+	logger.Debug().Msg("terraformApply")
 
 	options, err := terra.WithDefaultRetryableErrors(&terra.Options{
 		TerraformDir: filepath.Join(ResourcesDirectory, terraformDir),
@@ -119,25 +167,27 @@ func terraformApply() error {
 		PlanFilePath:  filepath.Join(SharedDirectory, moduleShortName, applyTfPlanFile),
 		StateFilePath: filepath.Join(SharedDirectory, moduleShortName, tfStateFile),
 		NoColor:       true,
+		Logger:        ZeroLogger{},
 	})
 	if err != nil {
-		return err
+		return "", err
 	}
-	_, err = terra.Apply(options)
+	s, err := terra.Apply(options)
 	if err != nil {
-		return err
+		return s, err
 	}
-	return nil
+	return s, nil
 }
 
 func getTerraformOutput() (map[string]interface{}, error) {
-	log.Println("getTerraformOutput")
+	logger.Debug().Msg("getTerraformOutput")
 	options, err := terra.WithDefaultRetryableErrors(&terra.Options{
 		TerraformDir: filepath.Join(ResourcesDirectory, terraformDir),
 		EnvVars: map[string]string{
 			"TF_IN_AUTOMATION": "true",
 		},
 		StateFilePath: filepath.Join(SharedDirectory, moduleShortName, tfStateFile),
+		Logger:        ZeroLogger{},
 	})
 	if err != nil {
 		return nil, err
@@ -149,8 +199,8 @@ func getTerraformOutput() (map[string]interface{}, error) {
 	return m, nil
 }
 
-func terraformDestroy() error {
-	log.Println("terraformDestroy")
+func terraformDestroy() (string, error) {
+	logger.Debug().Msg("terraformDestroy")
 
 	options, err := terra.WithDefaultRetryableErrors(&terra.Options{
 		TerraformDir: filepath.Join(ResourcesDirectory, terraformDir),
@@ -165,20 +215,29 @@ func terraformDestroy() error {
 		PlanFilePath:  filepath.Join(SharedDirectory, moduleShortName, destroyTfPlanFile),
 		StateFilePath: filepath.Join(SharedDirectory, moduleShortName, tfStateFile),
 		NoColor:       true,
+		Logger:        ZeroLogger{},
 	})
 	if err != nil {
-		return err
+		return "", err
 	}
-	_, err = terra.Apply(options)
+	s, err := terra.Apply(options)
 	if err != nil {
-		return err
+		return s, err
 	}
-	return nil
+	return s, nil
 }
 
 func updateStateAfterDestroy(s *state.State) *state.State {
-	log.Println("updateStateAfterDestroy")
+	logger.Debug().Msg("updateStateAfterDestroy")
 	s.AzBI.Output = nil
 	s.AzBI.Status = state.Destroyed
 	return s
+}
+
+func count(output string) (string, error) {
+	c, err := terra.Count(output)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("Add: %d, Change: %d, Destroy: %d", c.Add, c.Change, c.Destroy), nil
 }

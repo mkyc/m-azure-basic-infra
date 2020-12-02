@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"log"
+	"github.com/rs/zerolog"
 	"os"
+	"time"
 
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
@@ -24,6 +25,8 @@ const (
 var (
 	cfgFile string
 
+	enableDebug bool
+
 	Version string
 
 	SharedDirectory    string
@@ -33,6 +36,8 @@ var (
 	clientSecret   string
 	subscriptionId string
 	tenantId       string
+
+	logger zerolog.Logger
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -46,11 +51,11 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		log.Println("PersistentPreRun")
+		logger.Debug().Msg("PersistentPreRun")
 
 		err := viper.BindPFlags(cmd.PersistentFlags())
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal().Err(err)
 		}
 
 		SharedDirectory = viper.GetString("shared")
@@ -64,26 +69,34 @@ to quickly create a Cobra application.`,
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		logger.Fatal().Err(err)
 	}
 }
 
 func init() {
+	output := zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339}
+	logger = zerolog.New(output).With().Caller().Timestamp().Logger()
+
 	cobra.OnInitialize(initConfig)
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.m-azure-basic-infrastructure.yaml)")
+	rootCmd.PersistentFlags().BoolVarP(&enableDebug, "debug", "d", false, "enable debug loglevel")
 
-	//TODO guard for both directories to be not empty
 	rootCmd.PersistentFlags().String("shared", "/shared", "Shared directory location (default is `/shared`")
 	rootCmd.PersistentFlags().String("resources", "/resources", "Resources directory location (default is `/resources`")
 }
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
+	if enableDebug {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	} else {
+		zerolog.SetGlobalLevel(zerolog.WarnLevel)
+	}
+	logger.Debug().Msg("initializing root config")
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
@@ -100,6 +113,7 @@ func initConfig() {
 		viper.SetConfigName(".m-azure-basic-infrastructure")
 	}
 
+	logger.Debug().Msg("read config variables")
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
