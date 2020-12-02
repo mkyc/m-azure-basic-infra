@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	state "github.com/epiphany-platform/e-structures/state/v0"
 	"github.com/epiphany-platform/e-structures/utils/to"
@@ -56,7 +57,7 @@ to quickly create a Cobra application.`,
 		}
 
 		if !reflect.DeepEqual(s.AzBI, &state.AzBIState{}) && s.AzBI.Status != state.Initialized && s.AzBI.Status != state.Destroyed {
-			log.Fatal("impossibru state")
+			log.Fatal(errors.New(string("unexpected state: " + s.AzBI.Status)))
 		}
 
 		log.Println("backup state file")

@@ -1,12 +1,13 @@
 package cmd
 
 import (
+	"errors"
 	state "github.com/epiphany-platform/e-structures/state/v0"
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"
 	"path/filepath"
-
-	"github.com/spf13/cobra"
+	"reflect"
 )
 
 // applyCmd represents the apply command
@@ -35,14 +36,17 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("apply called")
 
-		//TODO check if not applied already
-
 		configFilePath := filepath.Join(SharedDirectory, moduleShortName, configFileName)
 		stateFilePath := filepath.Join(SharedDirectory, stateFileName)
 		c, s, err := checkAndLoad(stateFilePath, configFilePath)
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		if !reflect.DeepEqual(s.AzBI, &state.AzBIState{}) && s.AzBI.Status != state.Initialized && s.AzBI.Status != state.Destroyed {
+			log.Fatal(errors.New(string("unexpected state: " + s.AzBI.Status)))
+		}
+
 		err = showModulePlan(c, s)
 		if err != nil {
 			log.Fatal(err)

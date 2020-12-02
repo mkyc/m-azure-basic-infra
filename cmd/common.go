@@ -79,6 +79,9 @@ func showModulePlan(c *azbi.Config, s *state.State) error {
 	}
 	futureState.AzBI.Config = c
 	futureState.AzBI.Status = state.Applied
+
+	//TODO consider adding Output prediction
+
 	diff := cmp.Diff(s, futureState)
 	if diff != "" {
 		log.Println(diff)

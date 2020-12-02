@@ -40,6 +40,7 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		err = templateTfVars(c)
 		if err != nil {
 			log.Fatal(err)
