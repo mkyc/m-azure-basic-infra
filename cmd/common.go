@@ -189,8 +189,7 @@ func getTerraformOutput() (map[string]interface{}, error) {
 	return m, nil
 }
 
-//TODO make State a receiver
-func terraformDestroy() {
+func terraformDestroy() error {
 	log.Println("terraformDestroy")
 
 	options, err := terra.WithDefaultRetryableErrors(&terra.Options{
@@ -208,17 +207,18 @@ func terraformDestroy() {
 		NoColor:       true,
 	})
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	_, err = terra.Apply(options)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+	return nil
 }
 
-func updateStateAfterDestroy() {
+func updateStateAfterDestroy(s *state.State) *state.State {
 	log.Println("updateStateAfterDestroy")
-	//#AzBI | update-state-after-destroy | will clean state file after destroy
-	//@yq d -i $(M_SHARED)/$(M_STATE_FILE_NAME) '$(M_MODULE_SHORT)'
-	//@yq w -i $(M_SHARED)/$(M_STATE_FILE_NAME) $(M_MODULE_SHORT).status destroyed
+	s.AzBI.Output = nil
+	s.AzBI.Status = state.Destroyed
+	return s
 }

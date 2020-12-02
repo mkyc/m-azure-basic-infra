@@ -7,13 +7,12 @@ require (
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.3
 	github.com/epiphany-platform/e-structures v0.0.1
 	github.com/go-test/deep v1.0.7
-	github.com/google/go-cmp v0.5.4 // indirect
+	github.com/google/go-cmp v0.5.4
 	github.com/gruntwork-io/terratest v0.30.19
-	github.com/jinzhu/copier v0.1.0 // indirect
+	github.com/jinzhu/copier v0.1.0
 	github.com/magiconair/properties v1.8.4 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/mitchellh/mapstructure v1.3.3 // indirect
-	github.com/mkyc/go-terraform v0.0.6
+	github.com/mkyc/go-terraform v0.0.7
 	github.com/pelletier/go-toml v1.8.1 // indirect
 	github.com/spf13/afero v1.4.1 // indirect
 	github.com/spf13/cast v1.3.1 // indirect

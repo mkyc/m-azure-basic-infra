@@ -35,13 +35,23 @@ to quickly create a Cobra application.`,
 		log.Println("destroy called")
 		configFilePath := filepath.Join(SharedDirectory, moduleShortName, configFileName)
 		stateFilePath := filepath.Join(SharedDirectory, stateFileName)
-		c, _, err := checkAndLoad(stateFilePath, configFilePath)
+		c, s, err := checkAndLoad(stateFilePath, configFilePath)
 		if err != nil {
 			log.Fatal(err)
 		}
-		templateTfVars(c)
-		terraformDestroy()
-		updateStateAfterDestroy()
+		err = templateTfVars(c)
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = terraformDestroy()
+		if err != nil {
+			log.Fatal(err)
+		}
+		s = updateStateAfterDestroy(s)
+		err = saveState(stateFilePath, s)
+		if err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 
