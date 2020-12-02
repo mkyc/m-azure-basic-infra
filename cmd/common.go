@@ -13,17 +13,6 @@ import (
 	terra "github.com/mkyc/go-terraform"
 )
 
-const (
-	moduleShortName   = "azbi" //TODO move to main.consts file
-	configFileName    = "azbi-config.yml"
-	stateFileName     = "state.yml"
-	terraformDir      = "terraform"
-	tfVarsFile        = "vars.tfvars.json"
-	tfStateFile       = "terraform.tfstate"
-	applyTfPlanFile   = "terraform-apply.tfplan"
-	destroyTfPlanFile = "terraform-destroy.tfplan"
-)
-
 //TODO consider moving those variables nearer functions
 var (
 	cfgFile string
@@ -50,7 +39,6 @@ var (
 	outputInJson bool
 )
 
-//TODO consider making Params a receiver
 func templateTfVars(c *azbi.Config) error {
 	//TODO change to debug log
 	log.Println("templateTfVars")
@@ -172,7 +160,6 @@ func terraformApply() error {
 	return nil
 }
 
-//TODO make State a receiver
 func getTerraformOutput() (map[string]interface{}, error) {
 	log.Println("getTerraformOutput")
 	options, err := terra.WithDefaultRetryableErrors(&terra.Options{

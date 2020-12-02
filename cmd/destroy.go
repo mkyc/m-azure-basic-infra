@@ -43,7 +43,7 @@ to quickly create a Cobra application.`,
 			log.Fatal(err)
 		}
 
-		if !reflect.DeepEqual(s.AzBI, &state.AzBIState{}) && s.AzBI.Status != state.Destroyed {
+		if !reflect.DeepEqual(s.AzBI, &state.AzBIState{}) && s.AzBI.Status != state.Applied {
 			log.Fatal(errors.New(string("unexpected state: " + s.AzBI.Status)))
 		}
 

@@ -10,6 +10,17 @@ import (
 	"github.com/spf13/viper"
 )
 
+const (
+	moduleShortName   = "azbi"
+	configFileName    = "azbi-config.yml"
+	stateFileName     = "state.yml"
+	terraformDir      = "terraform"
+	tfVarsFile        = "vars.tfvars.json"
+	tfStateFile       = "terraform.tfstate"
+	applyTfPlanFile   = "terraform-apply.tfplan"
+	destroyTfPlanFile = "terraform-destroy.tfplan"
+)
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "m-azure-basic-infrastructure",
