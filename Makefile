@@ -27,18 +27,13 @@ all: build
 
 .PHONY: build test test-release release prepare-service-principal
 
-#TODO remove this tmp copy
 build: guard-VERSION guard-IMAGE guard-USER
-	rm -rf ./tmp
-	mkdir -p ./tmp
-	cp -R ../../epiphany-platform/e-structures/ ./tmp
 	docker build \
 		--build-arg ARG_M_VERSION=$(VERSION) \
 		--build-arg ARG_HOST_UID=$(HOST_UID) \
 		--build-arg ARG_HOST_GID=$(HOST_GID) \
 		-t $(IMAGE_NAME) \
 		.
-	rm -rf ./tmp
 
 #prepare service principal variables file before running this target using `CLIENT_ID=xxx CLIENT_SECRET=yyy SUBSCRIPTION_ID=zzz TENANT_ID=vvv make prepare-service-principal`
 #test targets are located in ./test.mk file
