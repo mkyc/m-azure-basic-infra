@@ -29,6 +29,8 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
+        echo $GOPATH
+        echo $GOBIN
         go get -u github.com/ahmetb/govvv
         go get -u github.com/jstemmer/go-junit-report
         make build
