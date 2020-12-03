@@ -45,7 +45,7 @@ func TestMetadata(t *testing.T) {
   provides-pubips: true
   provides-vms: true
   short: azbi
-  version: dev
+  version: %s
 `,
 		},
 	}
@@ -259,7 +259,7 @@ func TestApply(t *testing.T) {
 				"--name":       "azbi-module-tests",
 				"--vms_rsa":    "test_vms_rsa"},
 			wantPlanOutputLastLine:  "\tAdd: 7, Change: 0, Destroy: 0",
-			wantApplyOutputLastLine: "TODO", //TODO make last line smarter
+			wantApplyOutputLastLine: "\tAdd: 7, Change: 0, Destroy: 0",
 		},
 		{
 			name: "apply 2 machines with public ips and named rg",
@@ -269,7 +269,7 @@ func TestApply(t *testing.T) {
 				"--name":       "azbi-module-tests",
 				"--vms_rsa":    "test_vms_rsa"},
 			wantPlanOutputLastLine:  "\tAdd: 12, Change: 0, Destroy: 0",
-			wantApplyOutputLastLine: "TODO", //TODO make last line smarter
+			wantApplyOutputLastLine: "\tAdd: 12, Change: 0, Destroy: 0",
 		},
 	}
 

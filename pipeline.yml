@@ -18,6 +18,11 @@ steps:
     inputs:
       command: get
       arguments: '-u github.com/jstemmer/go-junit-report'
+  - task: Go@0
+      displayName: 'go get govvv'
+      inputs:
+        command: get
+        arguments: '-u github.com/ahmetb/govvv'
   - task: Bash@3
     displayName: 'Prepend PATH'
     inputs:
@@ -31,7 +36,7 @@ steps:
       targetType: 'inline'
       script: |
         make build
-        go test -v -timeout 30m 2>&1 | tee tests.output
+        go test -ldflags="$(govvv -flags -pkg github.com/epiphany-platform/m-azure-basic-infrastructure/cmd -version $VERSION)" -v -timeout 30m 2>&1 | tee tests.output
         go-junit-report < tests.output > report.xml
       failOnStderr: true
     env:
@@ -42,6 +47,7 @@ steps:
       AZURE_CLIENT_SECRET: $(clientSecret)
       AZURE_SUBSCRIPTION_ID: $(subscriptionId)
       AZURE_TENANT_ID: $(tenantId)
+      VERSION: dev
   - task: PublishTestResults@2
     inputs:
       testRunner: JUnit

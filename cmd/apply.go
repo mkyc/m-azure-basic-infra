@@ -56,12 +56,6 @@ to quickly create a Cobra application.`,
 			logger.Error().Msgf("registered following output: \n%s\n", output)
 			logger.Fatal().Err(err)
 		}
-		msg, err := count(output)
-		if err != nil {
-			logger.Fatal().Err(err)
-		}
-		logger.Info().Msg("Performed following changes: " + msg)
-		fmt.Println("Performed following changes: \n\t" + msg)
 
 		s.AzBI.Config = c
 		s.AzBI.Status = state.Applied
@@ -94,6 +88,13 @@ to quickly create a Cobra application.`,
 		}
 		logger.Info().Msg(string(b))
 		fmt.Println("State after apply: \n" + string(b))
+
+		msg, err := count(output)
+		if err != nil {
+			logger.Fatal().Err(err)
+		}
+		logger.Info().Msg("Performed following changes: " + msg)
+		fmt.Println("Performed following changes: \n\t" + msg)
 	},
 }
 
