@@ -24,14 +24,22 @@ steps:
       script: |
         echo "##vso[task.prependpath]/tools/go/1.15.2/x64/bin"
       failOnStderr: true
+  - task: Go@0
+    displayName: 'go get go-junit-report'
+    inputs:
+      command: get
+      arguments: '-u github.com/jstemmer/go-junit-report'
+  - task: Go@0
+    displayName: 'go get govvv'
+    inputs:
+      command: get
+      arguments: '-u github.com/ahmetb/govvv'
   - task: Bash@3
     displayName: 'go test'
     inputs:
       targetType: 'inline'
       script: |
         echo "$GOBIN"
-        go get -u github.com/ahmetb/govvv
-        go get -u github.com/jstemmer/go-junit-report
         make build
         LDFLAGS=$(govvv -flags -pkg github.com/epiphany-platform/m-azure-basic-infrastructure/cmd -version  $(ver))
         go test -ldflags="$LDFLAGS" -v -timeout 30m 2>&1 | tee tests.output
