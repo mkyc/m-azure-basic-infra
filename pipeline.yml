@@ -47,8 +47,8 @@ steps:
       AZURE_SUBSCRIPTION_ID: $(subscriptionId)
       AZURE_TENANT_ID: $(tenantId)
       VERSION: $(ver)
-      GOPATH: "/root/go"
-      GOBIN: "/root/go/bin"
+      GOPATH: "/tools/go/1.15.2/x64"
+      GOBIN: "/tools/go/1.15.2/x64/bin"
   - task: PublishTestResults@2
     inputs:
       testRunner: JUnit
