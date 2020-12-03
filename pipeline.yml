@@ -13,6 +13,7 @@ variables:
   GOBIN:  '/root/go/bin'
   GOROOT: '/tools/go/1.15.2' # Go installation path
   GOPATH: '/root/go'
+  ver: dev
 
 steps:
   - task: GoTool@0
@@ -42,7 +43,7 @@ steps:
       targetType: 'inline'
       script: |
         make build
-        go test -ldflags="$(govvv -flags -pkg github.com/epiphany-platform/m-azure-basic-infrastructure/cmd -version $(VERSION))" -v -timeout 30m 2>&1 | tee tests.output
+        go test -ldflags="$(govvv -flags -pkg github.com/epiphany-platform/m-azure-basic-infrastructure/cmd -version  ${{ variables.ver }}" -v -timeout 30m 2>&1 | tee tests.output
         go-junit-report < tests.output > report.xml
       failOnStderr: true
     env:
@@ -53,7 +54,7 @@ steps:
       AZURE_CLIENT_SECRET: $(clientSecret)
       AZURE_SUBSCRIPTION_ID: $(subscriptionId)
       AZURE_TENANT_ID: $(tenantId)
-      VERSION: dev
+      VERSION: $(ver)
   - task: PublishTestResults@2
     inputs:
       testRunner: JUnit
