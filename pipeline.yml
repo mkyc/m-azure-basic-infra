@@ -29,7 +29,6 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
-        echo "$GOPATH"
         echo "$GOBIN"
         go get -u github.com/ahmetb/govvv
         go get -u github.com/jstemmer/go-junit-report
@@ -47,7 +46,6 @@ steps:
       AZURE_SUBSCRIPTION_ID: $(subscriptionId)
       AZURE_TENANT_ID: $(tenantId)
       VERSION: $(ver)
-      GOPATH: "/tools/go/1.15.2/x64"
       GOBIN: "/tools/go/1.15.2/x64/bin"
   - task: PublishTestResults@2
     inputs:
