@@ -3,7 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	state "github.com/epiphany-platform/e-structures/state/v0"
+	st "github.com/epiphany-platform/e-structures/state/v0"
 	"github.com/spf13/viper"
 	"path/filepath"
 	"reflect"
@@ -38,16 +38,16 @@ to quickly create a Cobra application.`,
 		logger.Debug().Msg("destroy called")
 		configFilePath := filepath.Join(SharedDirectory, moduleShortName, configFileName)
 		stateFilePath := filepath.Join(SharedDirectory, stateFileName)
-		c, s, err := checkAndLoad(stateFilePath, configFilePath)
+		config, state, err := checkAndLoad(stateFilePath, configFilePath)
 		if err != nil {
 			logger.Fatal().Err(err)
 		}
 
-		if !reflect.DeepEqual(s.AzBI, &state.AzBIState{}) && s.AzBI.Status != state.Applied {
-			logger.Fatal().Err(errors.New(string("unexpected state: " + s.AzBI.Status)))
+		if !reflect.DeepEqual(state.AzBI, &st.AzBIState{}) && state.AzBI.Status != st.Applied {
+			logger.Fatal().Err(errors.New(string("unexpected state: " + state.AzBI.Status)))
 		}
 
-		err = templateTfVars(c)
+		err = templateTfVars(config)
 		if err != nil {
 			logger.Fatal().Err(err)
 		}
@@ -62,8 +62,8 @@ to quickly create a Cobra application.`,
 		}
 		logger.Info().Msg("Performed following changes: " + msg)
 		fmt.Println("Performed following changes: \n\t" + msg)
-		s = updateStateAfterDestroy(s)
-		err = saveState(stateFilePath, s)
+		state = updateStateAfterDestroy(state)
+		err = saveState(stateFilePath, state)
 		if err != nil {
 			logger.Fatal().Err(err)
 		}

@@ -51,7 +51,7 @@ type Metadata struct {
 func printMetadata() string {
 	logger.Debug().Msg("printMetadata")
 
-	l := Metadata{Labels: map[string]interface{}{
+	labels := Metadata{Labels: map[string]interface{}{
 		"version":         Version,
 		"name":            "Azure Basic Infrastructure",
 		"short":           moduleShortName,
@@ -60,15 +60,15 @@ func printMetadata() string {
 		"provides-vms":    true,
 		"provides-pubips": true,
 	}}
-	var b []byte
+	var bytes []byte
 	var err error
 	if inJson {
-		b, err = json.Marshal(l)
+		bytes, err = json.Marshal(labels)
 	} else {
-		b, err = yaml.Marshal(l)
+		bytes, err = yaml.Marshal(labels)
 	}
 	if err != nil {
 		logger.Fatal().Err(err)
 	}
-	return string(b)
+	return string(bytes)
 }

@@ -3,7 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	state "github.com/epiphany-platform/e-structures/state/v0"
+	st "github.com/epiphany-platform/e-structures/state/v0"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"path/filepath"
@@ -38,16 +38,16 @@ to quickly create a Cobra application.`,
 
 		configFilePath := filepath.Join(SharedDirectory, moduleShortName, configFileName)
 		stateFilePath := filepath.Join(SharedDirectory, stateFileName)
-		c, s, err := checkAndLoad(stateFilePath, configFilePath)
+		config, state, err := checkAndLoad(stateFilePath, configFilePath)
 		if err != nil {
 			logger.Fatal().Err(err)
 		}
 
-		if !reflect.DeepEqual(s.AzBI, &state.AzBIState{}) && s.AzBI.Status != state.Initialized && s.AzBI.Status != state.Destroyed {
-			logger.Fatal().Err(errors.New(string("unexpected state: " + s.AzBI.Status)))
+		if !reflect.DeepEqual(state.AzBI, &st.AzBIState{}) && state.AzBI.Status != st.Initialized && state.AzBI.Status != st.Destroyed {
+			logger.Fatal().Err(errors.New(string("unexpected state: " + state.AzBI.Status)))
 		}
 
-		err = showModulePlan(c, s)
+		err = showModulePlan(config, state)
 		if err != nil {
 			logger.Fatal().Err(err)
 		}
@@ -57,8 +57,8 @@ to quickly create a Cobra application.`,
 			logger.Fatal().Err(err)
 		}
 
-		s.AzBI.Config = c
-		s.AzBI.Status = state.Applied
+		state.AzBI.Config = config
+		state.AzBI.Status = st.Applied
 
 		logger.Debug().Msg("backup state file")
 		err = backupFile(stateFilePath)
@@ -66,28 +66,28 @@ to quickly create a Cobra application.`,
 			logger.Fatal().Err(err)
 		}
 		logger.Debug().Msg("save state")
-		err = saveState(stateFilePath, s)
+		err = saveState(stateFilePath, state)
 		if err != nil {
 			logger.Fatal().Err(err)
 		}
 
-		m, err := getTerraformOutput()
+		terraformOutputMap, err := getTerraformOutputMap()
 		if err != nil {
 			logger.Fatal().Err(err)
 		}
 
-		s.AzBI.Output = produceOutput(m)
-		err = saveState(stateFilePath, s)
+		state.AzBI.Output = produceOutput(terraformOutputMap)
+		err = saveState(stateFilePath, state)
 		if err != nil {
 			logger.Fatal().Err(err)
 		}
 
-		b, err := s.Marshall()
+		bytes, err := state.Marshall()
 		if err != nil {
 			logger.Fatal().Err(err)
 		}
-		logger.Info().Msg(string(b))
-		fmt.Println("State after apply: \n" + string(b))
+		logger.Info().Msg(string(bytes))
+		fmt.Println("State after apply: \n" + string(bytes))
 
 		msg, err := count(output)
 		if err != nil {

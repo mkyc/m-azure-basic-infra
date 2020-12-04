@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	azbi "github.com/epiphany-platform/e-structures/azbi/v0"
-	state "github.com/epiphany-platform/e-structures/state/v0"
+	st "github.com/epiphany-platform/e-structures/state/v0"
 	"github.com/google/go-cmp/cmp"
 	"github.com/jinzhu/copier"
 	"io/ioutil"
@@ -57,35 +57,35 @@ func (z ZeroLogger) Panic(format string, v ...interface{}) {
 		Msgf(format, v...)
 }
 
-func templateTfVars(c *azbi.Config) error {
+func templateTfVars(config *azbi.Config) error {
 	logger.Debug().Msg("templateTfVars")
 	tfVarsFile := filepath.Join(ResourcesDirectory, terraformDir, tfVarsFile)
-	params := c.Params
-	b, err := json.Marshal(&params)
+	params := config.Params
+	bytes, err := json.Marshal(&params)
 	if err != nil {
 		return err
 	}
-	logger.Info().Msg(string(b))
-	err = ioutil.WriteFile(tfVarsFile, b, 0644)
+	logger.Info().Msg(string(bytes))
+	err = ioutil.WriteFile(tfVarsFile, bytes, 0644)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func showModulePlan(c *azbi.Config, s *state.State) error {
+func showModulePlan(config *azbi.Config, state *st.State) error {
 	logger.Debug().Msg("showModulePlan")
-	futureState := &state.State{}
-	err := copier.Copy(futureState, s)
+	futureState := &st.State{}
+	err := copier.Copy(futureState, state)
 	if err != nil {
 		return err
 	}
-	futureState.AzBI.Config = c
-	futureState.AzBI.Status = state.Applied
+	futureState.AzBI.Config = config
+	futureState.AzBI.Status = st.Applied
 
 	//TODO consider adding Output prediction
 
-	diff := cmp.Diff(s, futureState)
+	diff := cmp.Diff(state, futureState)
 	if diff != "" {
 		logger.Info().Msg(diff)
 		fmt.Println("Planned changes: \n" + diff)
@@ -117,11 +117,11 @@ func terraformPlan() string {
 	if err != nil {
 		logger.Fatal().Err(err)
 	}
-	s, err := terra.Plan(options)
+	output, err := terra.Plan(options)
 	if err != nil {
 		logger.Fatal().Err(err)
 	}
-	return s
+	return output
 }
 
 func terraformPlanDestroy() string {
@@ -145,11 +145,11 @@ func terraformPlanDestroy() string {
 	if err != nil {
 		logger.Fatal().Err(err)
 	}
-	s, err := terra.PlanDestroy(options)
+	output, err := terra.PlanDestroy(options)
 	if err != nil {
 		logger.Fatal().Err(err)
 	}
-	return s
+	return output
 }
 
 func terraformApply() (string, error) {
@@ -172,15 +172,15 @@ func terraformApply() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	s, err := terra.Apply(options)
+	output, err := terra.Apply(options)
 	if err != nil {
-		return s, err
+		return output, err
 	}
-	return s, nil
+	return output, nil
 }
 
-func getTerraformOutput() (map[string]interface{}, error) {
-	logger.Debug().Msg("getTerraformOutput")
+func getTerraformOutputMap() (map[string]interface{}, error) {
+	logger.Debug().Msg("getTerraformOutputMap")
 	options, err := terra.WithDefaultRetryableErrors(&terra.Options{
 		TerraformDir: filepath.Join(ResourcesDirectory, terraformDir),
 		EnvVars: map[string]string{
@@ -192,11 +192,11 @@ func getTerraformOutput() (map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	m, err := terra.OutputAll(options)
+	outputMap, err := terra.OutputAll(options)
 	if err != nil {
 		return nil, err
 	}
-	return m, nil
+	return outputMap, nil
 }
 
 func terraformDestroy() (string, error) {
@@ -220,24 +220,24 @@ func terraformDestroy() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	s, err := terra.Apply(options)
+	output, err := terra.Apply(options)
 	if err != nil {
-		return s, err
+		return output, err
 	}
-	return s, nil
+	return output, nil
 }
 
-func updateStateAfterDestroy(s *state.State) *state.State {
+func updateStateAfterDestroy(state *st.State) *st.State {
 	logger.Debug().Msg("updateStateAfterDestroy")
-	s.AzBI.Output = nil
-	s.AzBI.Status = state.Destroyed
-	return s
+	state.AzBI.Output = nil
+	state.AzBI.Status = st.Destroyed
+	return state
 }
 
 func count(output string) (string, error) {
-	c, err := terra.Count(output)
+	resourceCount, err := terra.Count(output)
 	if err != nil {
 		return "", err
 	}
-	return fmt.Sprintf("Add: %d, Change: %d, Destroy: %d", c.Add, c.Change, c.Destroy), nil
+	return fmt.Sprintf("Add: %d, Change: %d, Destroy: %d", resourceCount.Add, resourceCount.Change, resourceCount.Destroy), nil
 }

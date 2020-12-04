@@ -39,17 +39,17 @@ to quickly create a Cobra application.`,
 		logger.Debug().Msg("plan called")
 		configFilePath := filepath.Join(SharedDirectory, moduleShortName, configFileName)
 		stateFilePath := filepath.Join(SharedDirectory, stateFileName)
-		c, s, err := checkAndLoad(stateFilePath, configFilePath)
+		config, state, err := checkAndLoad(stateFilePath, configFilePath)
 		if err != nil {
 			logger.Fatal().Err(err)
 		}
 
-		err = templateTfVars(c)
+		err = templateTfVars(config)
 		if err != nil {
 			logger.Fatal().Err(err)
 		}
 		if !doDestroy {
-			err = showModulePlan(c, s)
+			err = showModulePlan(config, state)
 			if err != nil {
 				logger.Fatal().Err(err)
 			}

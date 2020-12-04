@@ -3,7 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	state "github.com/epiphany-platform/e-structures/state/v0"
+	st "github.com/epiphany-platform/e-structures/state/v0"
 	"github.com/epiphany-platform/e-structures/utils/to"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -52,18 +52,18 @@ to quickly create a Cobra application.`,
 			logger.Fatal().Err(err)
 		}
 		logger.Debug().Msg("load state file")
-		s, err := loadState(stateFilePath)
+		state, err := loadState(stateFilePath)
 		if err != nil {
 			logger.Fatal().Err(err)
 		}
 		logger.Debug().Msg("load config file")
-		c, err := loadConfig(configFilePath)
+		config, err := loadConfig(configFilePath)
 		if err != nil {
 			logger.Fatal().Err(err)
 		}
 
-		if !reflect.DeepEqual(s.AzBI, &state.AzBIState{}) && s.AzBI.Status != state.Initialized && s.AzBI.Status != state.Destroyed {
-			logger.Fatal().Err(errors.New(string("unexpected state: " + s.AzBI.Status)))
+		if !reflect.DeepEqual(state.AzBI, &st.AzBIState{}) && state.AzBI.Status != st.Initialized && state.AzBI.Status != st.Destroyed {
+			logger.Fatal().Err(errors.New(string("unexpected state: " + state.AzBI.Status)))
 		}
 
 		logger.Debug().Msg("backup state file")
@@ -77,30 +77,30 @@ to quickly create a Cobra application.`,
 			logger.Fatal().Err(err)
 		}
 
-		c.Params.VmsCount = to.IntPtr(vmsCount)
-		c.Params.UsePublicIP = to.BooPtr(usePublicIPs)
-		c.Params.Name = to.StrPtr(name)
-		c.Params.RsaPublicKeyPath = to.StrPtr(filepath.Join(SharedDirectory, fmt.Sprintf("%s.pub", vmsRsaPath)))
+		config.Params.VmsCount = to.IntPtr(vmsCount)
+		config.Params.UsePublicIP = to.BooPtr(usePublicIPs)
+		config.Params.Name = to.StrPtr(name)
+		config.Params.RsaPublicKeyPath = to.StrPtr(filepath.Join(SharedDirectory, fmt.Sprintf("%s.pub", vmsRsaPath)))
 
-		s.AzBI.Status = state.Initialized
+		state.AzBI.Status = st.Initialized
 
 		logger.Debug().Msg("save config")
-		err = saveConfig(configFilePath, c)
+		err = saveConfig(configFilePath, config)
 		if err != nil {
 			logger.Fatal().Err(err)
 		}
 		logger.Debug().Msg("save state")
-		err = saveState(stateFilePath, s)
+		err = saveState(stateFilePath, state)
 		if err != nil {
 			logger.Fatal().Err(err)
 		}
 
-		b, err := c.Marshall()
+		bytes, err := config.Marshall()
 		if err != nil {
 			logger.Fatal().Err(err)
 		}
-		logger.Info().Msg(string(b))
-		fmt.Println("Initialized config: \n" + string(b))
+		logger.Info().Msg(string(bytes))
+		fmt.Println("Initialized config: \n" + string(bytes))
 	},
 }
 

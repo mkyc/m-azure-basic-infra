@@ -3,7 +3,7 @@ package cmd
 import (
 	"errors"
 	azbi "github.com/epiphany-platform/e-structures/azbi/v0"
-	state "github.com/epiphany-platform/e-structures/state/v0"
+	st "github.com/epiphany-platform/e-structures/state/v0"
 	"github.com/epiphany-platform/e-structures/utils/to"
 	"io/ioutil"
 	"os"
@@ -17,29 +17,29 @@ func ensureDirectory(path string) error {
 	return nil
 }
 
-func loadState(path string) (*state.State, error) {
+func loadState(path string) (*st.State, error) {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return state.NewState(), nil
+		return st.NewState(), nil
 	} else {
-		s := &state.State{}
-		b, err := ioutil.ReadFile(path)
+		state := &st.State{}
+		bytes, err := ioutil.ReadFile(path)
 		if err != nil {
 			return nil, err
 		}
-		err = s.Unmarshall(b)
+		err = state.Unmarshall(bytes)
 		if err != nil {
 			return nil, err
 		}
-		return s, nil
+		return state, nil
 	}
 }
 
-func saveState(path string, s *state.State) error {
-	b, err := s.Marshall()
+func saveState(path string, state *st.State) error {
+	bytes, err := state.Marshall()
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(path, b, 0644)
+	err = ioutil.WriteFile(path, bytes, 0644)
 	if err != nil {
 		return err
 	}
@@ -50,32 +50,32 @@ func loadConfig(path string) (*azbi.Config, error) {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return azbi.NewConfig(), nil
 	} else {
-		c := &azbi.Config{}
-		b, err := ioutil.ReadFile(path)
+		config := &azbi.Config{}
+		bytes, err := ioutil.ReadFile(path)
 		if err != nil {
 			return nil, err
 		}
-		err = c.Unmarshall(b)
+		err = config.Unmarshall(bytes)
 		if err != nil {
 			return nil, err
 		}
-		return c, nil
+		return config, nil
 	}
 }
 
-func saveConfig(path string, c *azbi.Config) error {
-	b, err := c.Marshall()
+func saveConfig(path string, config *azbi.Config) error {
+	bytes, err := config.Marshall()
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(path, b, 0644)
+	err = ioutil.WriteFile(path, bytes, 0644)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func checkAndLoad(stateFilePath string, configFilePath string) (*azbi.Config, *state.State, error) {
+func checkAndLoad(stateFilePath string, configFilePath string) (*azbi.Config, *st.State, error) {
 	if _, err := os.Stat(stateFilePath); os.IsNotExist(err) {
 		return nil, nil, errors.New("state file does not exist, please run init first")
 	}
@@ -83,17 +83,17 @@ func checkAndLoad(stateFilePath string, configFilePath string) (*azbi.Config, *s
 		return nil, nil, errors.New("config file does not exist, please run init first")
 	}
 
-	s, err := loadState(stateFilePath)
+	state, err := loadState(stateFilePath)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	c, err := loadConfig(configFilePath)
+	config, err := loadConfig(configFilePath)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return c, s, nil
+	return config, state, nil
 }
 
 func backupFile(path string) error {
@@ -116,18 +116,18 @@ func backupFile(path string) error {
 }
 
 func produceOutput(m map[string]interface{}) *azbi.Output {
-	o := &azbi.Output{
+	output := &azbi.Output{
 		RgName:   to.StrPtr(m["rg_name"].(string)),
 		VnetName: to.StrPtr(m["vnet_name"].(string)),
 	}
 	for _, i := range m["private_ips"].([]interface{}) {
-		o.PrivateIps = append(o.PrivateIps, i.(string))
+		output.PrivateIps = append(output.PrivateIps, i.(string))
 	}
 	for _, i := range m["public_ips"].([]interface{}) {
-		o.PublicIps = append(o.PublicIps, i.(string))
+		output.PublicIps = append(output.PublicIps, i.(string))
 	}
 	for _, i := range m["vm_names"].([]interface{}) {
-		o.VmNames = append(o.VmNames, i.(string))
+		output.VmNames = append(output.VmNames, i.(string))
 	}
-	return o
+	return output
 }

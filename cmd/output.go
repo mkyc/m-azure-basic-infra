@@ -21,27 +21,27 @@ to quickly create a Cobra application.`,
 		logger.Debug().Msg("output called")
 		configFilePath := filepath.Join(SharedDirectory, moduleShortName, configFileName)
 		stateFilePath := filepath.Join(SharedDirectory, stateFileName)
-		_, s, err := checkAndLoad(stateFilePath, configFilePath)
+		_, state, err := checkAndLoad(stateFilePath, configFilePath)
 		if err != nil {
 			logger.Fatal().Err(err)
 		}
-		m, err := getTerraformOutput()
-		if err != nil {
-			logger.Fatal().Err(err)
-		}
-
-		s.AzBI.Output = produceOutput(m)
-		err = saveState(stateFilePath, s)
+		terraformOutputMap, err := getTerraformOutputMap()
 		if err != nil {
 			logger.Fatal().Err(err)
 		}
 
-		b, err := s.Marshall()
+		state.AzBI.Output = produceOutput(terraformOutputMap)
+		err = saveState(stateFilePath, state)
 		if err != nil {
 			logger.Fatal().Err(err)
 		}
-		logger.Info().Msg(string(b))
-		fmt.Println("Updated output: \n" + string(b))
+
+		bytes, err := state.Marshall()
+		if err != nil {
+			logger.Fatal().Err(err)
+		}
+		logger.Info().Msg(string(bytes))
+		fmt.Println("Updated output: \n" + string(bytes))
 	},
 }
 
