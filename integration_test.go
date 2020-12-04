@@ -74,7 +74,7 @@ func TestInit(t *testing.T) {
 			wantOutput: `Initialized config: 
 {
 	"kind": "azbi",
-	"version": "v0.0.1",
+	"version": "v0.0.2",
 	"params": {
 		"name": "epiphany",
 		"vms_count": 3,
@@ -83,8 +83,13 @@ func TestInit(t *testing.T) {
 		"address_space": [
 			"10.0.0.0/16"
 		],
-		"address_prefixes": [
-			"10.0.1.0/24"
+		"subnets": [
+			{
+				"name": "main",
+				"address_prefixes": [
+					"10.0.1.0/24"
+				]
+			}
 		],
 		"rsa_pub_path": "/shared/vms_rsa.pub"
 	}
@@ -92,7 +97,7 @@ func TestInit(t *testing.T) {
 			wantConfigLocation: "azbi/azbi-config.json",
 			wantConfigContent: `{
 	"kind": "azbi",
-	"version": "v0.0.1",
+	"version": "v0.0.2",
 	"params": {
 		"name": "epiphany",
 		"vms_count": 3,
@@ -101,8 +106,13 @@ func TestInit(t *testing.T) {
 		"address_space": [
 			"10.0.0.0/16"
 		],
-		"address_prefixes": [
-			"10.0.1.0/24"
+		"subnets": [
+			{
+				"name": "main",
+				"address_prefixes": [
+					"10.0.1.0/24"
+				]
+			}
 		],
 		"rsa_pub_path": "/shared/vms_rsa.pub"
 	}
@@ -118,7 +128,7 @@ func TestInit(t *testing.T) {
 			wantOutput: `Initialized config: 
 {
 	"kind": "azbi",
-	"version": "v0.0.1",
+	"version": "v0.0.2",
 	"params": {
 		"name": "azbi-module-tests",
 		"vms_count": 2,
@@ -127,8 +137,13 @@ func TestInit(t *testing.T) {
 		"address_space": [
 			"10.0.0.0/16"
 		],
-		"address_prefixes": [
-			"10.0.1.0/24"
+		"subnets": [
+			{
+				"name": "main",
+				"address_prefixes": [
+					"10.0.1.0/24"
+				]
+			}
 		],
 		"rsa_pub_path": "/shared/test_vms_rsa.pub"
 	}
@@ -136,7 +151,7 @@ func TestInit(t *testing.T) {
 			wantConfigLocation: "azbi/azbi-config.json",
 			wantConfigContent: `{
 	"kind": "azbi",
-	"version": "v0.0.1",
+	"version": "v0.0.2",
 	"params": {
 		"name": "azbi-module-tests",
 		"vms_count": 2,
@@ -145,8 +160,13 @@ func TestInit(t *testing.T) {
 		"address_space": [
 			"10.0.0.0/16"
 		],
-		"address_prefixes": [
-			"10.0.1.0/24"
+		"subnets": [
+			{
+				"name": "main",
+				"address_prefixes": [
+					"10.0.1.0/24"
+				]
+			}
 		],
 		"rsa_pub_path": "/shared/test_vms_rsa.pub"
 	}
@@ -505,6 +525,7 @@ func validateSshConnectivity(t *testing.T, signer ssh.Signer, ipString string) {
 		client, err = ssh.Dial("tcp", fmt.Sprintf("%s:22", ipString), sshConfig)
 		if err != nil {
 			t.Log(err)
+			time.Sleep(1 * time.Second)
 		} else {
 			connected = true
 		}
