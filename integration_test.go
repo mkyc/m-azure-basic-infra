@@ -494,11 +494,25 @@ func validateSshConnectivity(t *testing.T, signer ssh.Signer, ipString string) {
 		Auth:            []ssh.AuthMethod{ssh.PublicKeys(signer)},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
-	connection, err := ssh.Dial("tcp", fmt.Sprintf("%s:22", ipString), sshConfig)
-	if err != nil {
+	var (
+		retries   = 30
+		client    *ssh.Client
+		connected = false
+		err       error
+	)
+
+	for i := 0; i < retries; i++ {
+		client, err = ssh.Dial("tcp", fmt.Sprintf("%s:22", ipString), sshConfig)
+		if err != nil {
+			t.Log(err)
+		} else {
+			connected = true
+		}
+	}
+	if !connected {
 		t.Error(err)
 	}
-	session, err := connection.NewSession()
+	session, err := client.NewSession()
 	if err != nil {
 		t.Error(err)
 	}
