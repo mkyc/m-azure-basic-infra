@@ -3,13 +3,13 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"path/filepath"
+
 	azbi "github.com/epiphany-platform/e-structures/azbi/v0"
 	st "github.com/epiphany-platform/e-structures/state/v0"
 	"github.com/google/go-cmp/cmp"
 	"github.com/jinzhu/copier"
-	"io/ioutil"
-	"path/filepath"
-
 	terra "github.com/mkyc/go-terraform"
 )
 

@@ -9,7 +9,7 @@ COPY . $GOPATH/src/$GO_MODULE_NAME
 WORKDIR $GOPATH/src/$GO_MODULE_NAME
 RUN go get -v
 RUN go get github.com/ahmetb/govvv
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="$(govvv -flags -pkg $GO_MODULE_NAME/cmd -version $M_VERSION)" -x -o /m-azure-basic-infrastructure $GO_MODULE_NAME
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w $(govvv -flags -pkg $GO_MODULE_NAME/cmd -version $M_VERSION)" -x -o /m-azure-basic-infrastructure $GO_MODULE_NAME
 
 # terraform init
 FROM hashicorp/terraform:0.13.2 as initializer

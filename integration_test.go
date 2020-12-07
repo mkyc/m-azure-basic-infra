@@ -9,8 +9,6 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	state "github.com/epiphany-platform/e-structures/state/v0"
-	"github.com/epiphany-platform/m-azure-basic-infrastructure/cmd"
 	"io"
 	"io/ioutil"
 	"os"
@@ -21,10 +19,11 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/resources/mgmt/resources"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
-	"golang.org/x/crypto/ssh"
-
+	state "github.com/epiphany-platform/e-structures/state/v0"
+	"github.com/epiphany-platform/m-azure-basic-infrastructure/cmd"
 	"github.com/go-test/deep"
 	"github.com/gruntwork-io/terratest/modules/docker"
+	"golang.org/x/crypto/ssh"
 )
 
 const (

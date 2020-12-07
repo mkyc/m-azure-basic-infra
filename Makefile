@@ -58,3 +58,9 @@ guard-%:
 		echo "Environment variable $* not set"; \
 		exit 1; \
 	fi
+
+doctor:
+	go mod tidy
+	go fmt ./...
+	go vet ./...
+	goimports -l -w .

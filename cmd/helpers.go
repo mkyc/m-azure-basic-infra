@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"errors"
+	"io/ioutil"
+	"os"
+
 	azbi "github.com/epiphany-platform/e-structures/azbi/v0"
 	st "github.com/epiphany-platform/e-structures/state/v0"
 	"github.com/epiphany-platform/e-structures/utils/to"
-	"io/ioutil"
-	"os"
 )
 
 func ensureDirectory(path string) error {

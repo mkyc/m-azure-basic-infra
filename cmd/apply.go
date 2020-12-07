@@ -3,11 +3,12 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"path/filepath"
+	"reflect"
+
 	st "github.com/epiphany-platform/e-structures/state/v0"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"path/filepath"
-	"reflect"
 )
 
 // applyCmd represents the apply command

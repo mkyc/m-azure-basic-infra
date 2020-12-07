@@ -2,11 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/rs/zerolog"
 	"os"
 	"time"
 
 	"github.com/mitchellh/go-homedir"
+	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
