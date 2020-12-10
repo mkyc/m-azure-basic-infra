@@ -54,8 +54,7 @@ to quickly create a Cobra application.`,
 		}
 		output, err := terraformApply()
 		if err != nil {
-			logger.Error().Msgf("registered following output: \n%s\n", output)
-			logger.Fatal().Err(err)
+			logger.Fatal().Err(err).Msgf("registered following output: \n%s\n", output)
 		}
 
 		state.AzBI.Config = config

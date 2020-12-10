@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	inJson bool
+	useJson bool
 )
 
 // metadataCmd represents the metadata command
@@ -31,7 +31,7 @@ to quickly create a Cobra application.`,
 			logger.Fatal().Err(err)
 		}
 
-		inJson = viper.GetBool("json")
+		useJson = viper.GetBool("json")
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		logger.Debug().Msg("metadata called")
@@ -63,7 +63,7 @@ func printMetadata() string {
 	}}
 	var bytes []byte
 	var err error
-	if inJson {
+	if useJson {
 		bytes, err = json.Marshal(labels)
 	} else {
 		bytes, err = yaml.Marshal(labels)

@@ -19,7 +19,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/resources/mgmt/resources"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
-	state "github.com/epiphany-platform/e-structures/state/v0"
+	st "github.com/epiphany-platform/e-structures/state/v0"
 	"github.com/epiphany-platform/m-azure-basic-infrastructure/cmd"
 	"github.com/go-test/deep"
 	"github.com/gruntwork-io/terratest/modules/docker"
@@ -315,12 +315,12 @@ func TestApply(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				s := &state.State{}
-				err = s.Unmarshall(data)
+				state := &st.State{}
+				err = state.Unmarshall(data)
 				if err != nil {
 					t.Fatal(err)
 				}
-				publicIPs := s.AzBI.Output.PublicIps
+				publicIPs := state.AzBI.Output.PublicIps
 				for _, p := range publicIPs {
 					validateSshConnectivity(t, privateKey, p)
 				}
@@ -330,22 +330,22 @@ func TestApply(t *testing.T) {
 }
 
 // dockerRun function wraps docker run operation and returns `docker run` output.
-func dockerRun(t *testing.T, command string, params map[string]string, environments map[string]string, sharedPath string) string {
-	c := []string{command}
-	for k, v := range params {
-		c = append(c, fmt.Sprintf("%s=%s", k, v))
+func dockerRun(t *testing.T, command string, parameters map[string]string, environments map[string]string, sharedPath string) string {
+	commandWithParameters := []string{command}
+	for k, v := range parameters {
+		commandWithParameters = append(commandWithParameters, fmt.Sprintf("%s=%s", k, v))
 	}
 
 	var opts *docker.RunOptions
 	if sharedPath != "" {
 		opts = &docker.RunOptions{
-			Command: c,
+			Command: commandWithParameters,
 			Remove:  true,
 			Volumes: []string{fmt.Sprintf("%s:/shared", sharedPath)},
 		}
 	} else {
 		opts = &docker.RunOptions{
-			Command: c,
+			Command: commandWithParameters,
 			Remove:  true,
 		}
 	}
@@ -363,12 +363,12 @@ func dockerRun(t *testing.T, command string, params map[string]string, environme
 // setup function ensures that all prerequisites for tests are in place.
 func setup(t *testing.T, initParams map[string]string) (string, string, string, map[string]string, ssh.Signer) {
 	rsaName := "vms_rsa"
-	if v, ok := initParams["--vms_rsa"]; ok {
-		rsaName = v
+	if value, ok := initParams["--vms_rsa"]; ok {
+		rsaName = value
 	}
 	name := "epiphany-rg"
-	if v, ok := initParams["--name"]; ok {
-		name = v
+	if value, ok := initParams["--name"]; ok {
+		name = value
 	}
 
 	environments := loadEnvironmentVariables(t)
