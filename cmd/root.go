@@ -1,11 +1,9 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"time"
 
-	"github.com/mitchellh/go-homedir"
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -26,8 +24,6 @@ const (
 )
 
 var (
-	cfgFile string
-
 	enableDebug bool
 
 	Version string
@@ -76,7 +72,6 @@ func init() {
 
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.m-azure-basic-infrastructure.yaml)")
 	rootCmd.PersistentFlags().BoolVarP(&enableDebug, "debug", "d", false, "print debug information")
 
 	rootCmd.PersistentFlags().String("shared", defaultSharedDirectory, "Shared directory location (default is `"+defaultSharedDirectory+"`")
@@ -90,28 +85,5 @@ func initConfig() {
 	} else {
 		zerolog.SetGlobalLevel(zerolog.WarnLevel)
 	}
-	logger.Debug().Msg("initializing root config")
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Find home directory.
-		home, err := homedir.Dir()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		// Search config in home directory with name ".m-azure-basic-infrastructure" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".m-azure-basic-infrastructure")
-	}
-
-	logger.Debug().Msg("read config variables")
 	viper.AutomaticEnv() // read in environment variables that match
-
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
-	}
 }

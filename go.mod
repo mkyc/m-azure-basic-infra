@@ -11,7 +11,6 @@ require (
 	github.com/gruntwork-io/terratest v0.30.19
 	github.com/jinzhu/copier v0.1.0
 	github.com/magiconair/properties v1.8.4 // indirect
-	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mkyc/go-terraform v0.0.7
 	github.com/pelletier/go-toml v1.8.1 // indirect
 	github.com/rs/zerolog v1.20.0
