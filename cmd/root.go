@@ -20,6 +20,9 @@ const (
 	tfStateFile       = "terraform.tfstate"
 	applyTfPlanFile   = "terraform-apply.tfplan"
 	destroyTfPlanFile = "terraform-destroy.tfplan"
+
+	defaultSharedDirectory    = "/shared"
+	defaultResourcesDirectory = "/resources"
 )
 
 var (
@@ -42,14 +45,9 @@ var (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "m-azure-basic-infrastructure",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Use: "m-azure-basic-infrastructure",
+	Long: `AzBI module is responsible for providing basic Azure cloud resources: eg. resource group, virtual network, 
+subnets, virtual machines, etc.`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		logger.Debug().Msg("PersistentPreRun")
 
@@ -61,7 +59,6 @@ to quickly create a Cobra application.`,
 		SharedDirectory = viper.GetString("shared")
 		ResourcesDirectory = viper.GetString("resources")
 	},
-	//	Run: func(cmd *cobra.Command, args []string) { },
 	Version: Version,
 }
 
@@ -80,10 +77,10 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.m-azure-basic-infrastructure.yaml)")
-	rootCmd.PersistentFlags().BoolVarP(&enableDebug, "debug", "d", false, "enable debug loglevel")
+	rootCmd.PersistentFlags().BoolVarP(&enableDebug, "debug", "d", false, "print debug information")
 
-	rootCmd.PersistentFlags().String("shared", "/shared", "Shared directory location (default is `/shared`")
-	rootCmd.PersistentFlags().String("resources", "/resources", "Resources directory location (default is `/resources`")
+	rootCmd.PersistentFlags().String("shared", defaultSharedDirectory, "Shared directory location (default is `"+defaultSharedDirectory+"`")
+	rootCmd.PersistentFlags().String("resources", defaultResourcesDirectory, "Resources directory location (default is `"+defaultResourcesDirectory+"`")
 }
 
 // initConfig reads in config file and ENV variables if set.
