@@ -2,7 +2,7 @@
 FROM golang:1.15.2 as builder
 ARG ARG_GO_MODULE_NAME="github.com/epiphany-platform/m-azure-basic-infrastructure"
 ENV GO_MODULE_NAME=$ARG_GO_MODULE_NAME
-ARG ARG_M_VERSION="unknown"
+ARG ARG_M_VERSION="dev"
 ENV M_VERSION=$ARG_M_VERSION
 RUN mkdir -p $GOPATH/src/$GO_MODULE_NAME
 COPY . $GOPATH/src/$GO_MODULE_NAME

@@ -2,7 +2,7 @@
 
 Epiphany Module: Azure Basic Infrastructure
 
-AzBI module is responsible for providing basic cloud resources (eg. resource groups, virtual networks, subnets, virtual machines ect.) which will be used by upcoming modules.
+AzBI module is responsible for providing basic cloud resources (eg. resource groups, virtual networks, subnets, virtual machines etc.) which will be used by upcoming modules.
 
 # Basic usage
 
@@ -12,22 +12,21 @@ Requirements are listed in a separate [document](docs/REQUIREMENTS.md).
 
 ## Build image
 
-In main directory, run:
+In the main directory, run:
 
-  ```shell
-  make build
-  ```
+```shell
+make build
+```
 
-  Note: This command uses the default VERSION variable.
+:warning: This command uses the default VERSION variable (default: `dev`).
 
 or directly using Docker:
 
-  ```shell
-  cd m-azure-basic-infrastructure/
-  docker build --tag epiphanyplatform/azbi:latest .
-  ```
+```shell
+docker build --tag epiphanyplatform/azbi:dev .
+```
 
-Note: Re-run the above commands will overwrite your existing docker image (if exists). To bypass that, specify a different tag name
+:warning: Re-run the above commands will overwrite your existing docker image (if exists). To bypass that, specify a different `--tag` parameter. 
 
 ## Run module
 
@@ -37,7 +36,7 @@ Note: Re-run the above commands will overwrite your existing docker image (if ex
   mkdir /tmp/shared
   ```
 
-  This 'shared' dir is a place where all configs and states will be stored while working with modules.
+  This 'shared' dir is a place where all configs and states will be stored while working with Epiphany modules.
 
 * Generate ssh keys in: /tmp/shared/vms_rsa.pub
 
@@ -48,22 +47,25 @@ Note: Re-run the above commands will overwrite your existing docker image (if ex
 * Initialize AzBI module:
 
   ```shell
-  docker run --rm -v /tmp/shared:/shared -t epiphanyplatform/azbi:latest init M_VMS_COUNT=2 M_PUBLIC_IPS=true M_NAME=epiphany-modules-test
+  docker run --rm -v /tmp/shared:/shared epiphanyplatform/azbi:dev init --vms_count=2 --public_ips=true --name=epiphany-modules-test
   ```
 
-Note: Use image's tag according to tag generated in build step.
+  :star: Variable values can be passed as docker environment variables as well. In presented example we could use `docker run` command `-e VMS_COUNT=2` parameter instead of `--vms_count=2` command parameter. 
 
-  This command will create configuration file of AzBI module in /tmp/shared/azbi/azbi-config.yml. You can investigate what is stored in that file. Available parameters are listed in the [inputs](docs/INPUTS.adoc) document.
+  :warning: Use image's tag according to tag generated in build step.
 
-  Note: Pay attention to the docker image tag you are using. `make build` command uses a specific version tag eg. epiphanyplatrofm/azbi:0.0.1.
+  This command will create configuration file of AzBI module in /tmp/shared/azbi/azbi-config.yml. You can investigate what is stored in that file. Available parameters are described in the [inputs](docs/INPUTS.adoc) document.
+
+  :warning: Pay attention to the docker image tag you are using. Command `make build` command uses a specific version tag (default `epiphanyplatrofm/azbi:dev`).
 
 * Plan and apply AzBI module:
 
   ```shell
-  docker run --rm -v /tmp/shared:/shared -t epiphanyplatform/azbi:latest plan M_ARM_CLIENT_ID=appId M_ARM_CLIENT_SECRET=password M_ARM_SUBSCRIPTION_ID=subscriptionId M_ARM_TENANT_ID=tenantId
-  docker run --rm -v /tmp/shared:/shared -t epiphanyplatform/azbi:latest apply M_ARM_CLIENT_ID=appId M_ARM_CLIENT_SECRET=password M_ARM_SUBSCRIPTION_ID=subscriptionId M_ARM_TENANT_ID=tenantId
+  docker run --rm -v /tmp/shared:/shared -e SUBSCRIPTION_ID=subscriptionId -e CLIENT_ID=appId -e CLIENT_SECRET=password -e TENANT_ID=tenantId epiphanyplatform/azbi:dev plan
+  docker run --rm -v /tmp/shared:/shared -e SUBSCRIPTION_ID=subscriptionId -e CLIENT_ID=appId -e CLIENT_SECRET=password -e TENANT_ID=tenantId epiphanyplatform/azbi:dev apply
   ```
-
+  :star: Variable values can be passed as docker environment variables. I's often more convenient to pass sensitive values as presented.
+   
   Running those commands should create resource group, vnet, subnet and 2 virtual machines. You should verify in Azure Portal.
 
 ## Run module with provided example
