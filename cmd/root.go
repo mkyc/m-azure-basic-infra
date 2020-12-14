@@ -41,7 +41,7 @@ var (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use: "m-azure-basic-infrastructure",
+	Use: "azbi",
 	Long: `AzBI module is responsible for providing basic Azure cloud resources: eg. resource group, virtual network, 
 subnets, virtual machines, etc.`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
@@ -74,8 +74,8 @@ func init() {
 
 	rootCmd.PersistentFlags().BoolVarP(&enableDebug, "debug", "d", false, "print debug information")
 
-	rootCmd.PersistentFlags().String("shared", defaultSharedDirectory, "Shared directory location (default is `"+defaultSharedDirectory+"`")
-	rootCmd.PersistentFlags().String("resources", defaultResourcesDirectory, "Resources directory location (default is `"+defaultResourcesDirectory+"`")
+	rootCmd.PersistentFlags().String("shared", defaultSharedDirectory, "shared directory location")
+	rootCmd.PersistentFlags().String("resources", defaultResourcesDirectory, "resources directory location")
 }
 
 // initConfig reads in config file and ENV variables if set.

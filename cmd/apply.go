@@ -14,13 +14,18 @@ import (
 // applyCmd represents the apply command
 var applyCmd = &cobra.Command{
 	Use:   "apply",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "applies planned changes on Azure cloud",
+	Long: `Applies planned changes on Azure cloud. 
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Using plan file created with 'plan' command this command performs actual 'terraform apply' operation. This command
+performs following steps: 
+ - validates presence of config and module state files
+ - checks that module status is either 'Initialized' or 'Destroyed'
+ - performs 'terraform apply' operation using existing plan file
+ - updates module state file with applied config
+ - saves terraform output to module state file. 
+
+This command should always be preceded by 'plan' command.`,
 	PreRun: func(cmd *cobra.Command, args []string) {
 		logger.Debug().Msg("PreRun")
 
@@ -48,6 +53,8 @@ to quickly create a Cobra application.`,
 			logger.Fatal().Err(errors.New(string("unexpected state: " + state.AzBI.Status)))
 		}
 
+		//TODO check if there is terraform plan file present
+
 		err = showModulePlan(config, state)
 		if err != nil {
 			logger.Fatal().Err(err)
@@ -65,11 +72,6 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			logger.Fatal().Err(err)
 		}
-		logger.Debug().Msg("save state")
-		err = saveState(stateFilePath, state)
-		if err != nil {
-			logger.Fatal().Err(err)
-		}
 
 		terraformOutputMap, err := getTerraformOutputMap()
 		if err != nil {
@@ -77,6 +79,8 @@ to quickly create a Cobra application.`,
 		}
 
 		state.AzBI.Output = produceOutput(terraformOutputMap)
+
+		logger.Debug().Msg("save state")
 		err = saveState(stateFilePath, state)
 		if err != nil {
 			logger.Fatal().Err(err)

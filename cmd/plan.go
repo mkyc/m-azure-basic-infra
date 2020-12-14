@@ -15,13 +15,15 @@ var (
 // planCmd represents the plan command
 var planCmd = &cobra.Command{
 	Use:   "plan",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "performs module plan operation",
+	Long: `Performs module plan operation. 
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+There is two steps performed currently: 
+ - simulate how module state will change after apply
+ - perform 'terraform plan' operation (simulate what resources will be installed). 
+
+Predicted module state is not being recorded but terraform plan file is being created. It means that in consecutive 
+invoking of 'apply' command, created plan file would be used.`,
 	PreRun: func(cmd *cobra.Command, args []string) {
 		logger.Debug().Msg("PreRun")
 
@@ -78,5 +80,5 @@ func init() {
 	planCmd.Flags().String("client_secret", "", "Azure client secret")
 	planCmd.Flags().String("subscription_id", "", "Azure subscription identifier")
 	planCmd.Flags().String("tenant_id", "", "Azure tenant identifier")
-	planCmd.Flags().Bool("destroy", false, "make plan for destroy")
+	planCmd.Flags().Bool("destroy", false, "prepare plan for destroy")
 }

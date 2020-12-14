@@ -22,7 +22,7 @@ var (
 // initCmd represents the init command
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "Initializes module configuration file.",
+	Short: "initializes module configuration file",
 	Long:  `Initializes module configuration file (in ` + filepath.Join(defaultSharedDirectory, moduleShortName, configFileName) + `/). `,
 	PreRun: func(cmd *cobra.Command, args []string) {
 		logger.Debug().Msg("PreRun")
