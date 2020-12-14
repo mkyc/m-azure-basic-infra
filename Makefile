@@ -1,6 +1,6 @@
 ROOT_DIR := $(patsubst %/,%,$(dir $(abspath $(firstword $(MAKEFILE_LIST)))))
 
-VERSION ?= 0.0.1
+VERSION ?= dev
 USER := epiphanyplatform
 IMAGE := azbi
 
@@ -38,7 +38,8 @@ build: guard-VERSION guard-IMAGE guard-USER
 #prepare service principal variables file before running this target using `CLIENT_ID=xxx CLIENT_SECRET=yyy SUBSCRIPTION_ID=zzz TENANT_ID=vvv make prepare-service-principal`
 #test targets are located in ./test.mk file
 test: build
-	@AZURE_CLIENT_ID=$(ARM_CLIENT_ID) AZURE_CLIENT_SECRET=$(ARM_CLIENT_SECRET) AZURE_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID) AZURE_TENANT_ID=$(ARM_TENANT_ID) go test -v -timeout 30m
+	$(eval LDFLAGS = $(shell govvv -flags -pkg github.com/epiphany-platform/m-azure-basic-infrastructure/cmd -version $(VERSION)))
+	@AZURE_CLIENT_ID=$(ARM_CLIENT_ID) AZURE_CLIENT_SECRET=$(ARM_CLIENT_SECRET) AZURE_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID) AZURE_TENANT_ID=$(ARM_TENANT_ID) go test -ldflags="$(LDFLAGS)" -v -timeout 30m
 
 test-release: release
 	@AZURE_CLIENT_ID=$(ARM_CLIENT_ID) AZURE_CLIENT_SECRET=$(ARM_CLIENT_SECRET) AZURE_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID) AZURE_TENANT_ID=$(ARM_TENANT_ID) CGO_ENABLED=0 go test -v -timeout 30m
@@ -46,7 +47,7 @@ test-release: release
 prepare-service-principal: guard-CLIENT_ID guard-CLIENT_SECRET guard-SUBSCRIPTION_ID guard-TENANT_ID
 	@echo "$$SERVICE_PRINCIPAL_CONTENT" > $(ROOT_DIR)/service-principal.mk
 
-release: guard-VERSION guard-IMAGE guard-USER
+release: guard-VERSION guard-IMAGE_NAME
 	docker build \
 		--build-arg ARG_M_VERSION=$(VERSION) \
 		-t $(IMAGE_NAME) \
@@ -57,3 +58,9 @@ guard-%:
 		echo "Environment variable $* not set"; \
 		exit 1; \
 	fi
+
+doctor:
+	go mod tidy
+	go fmt ./...
+	go vet ./...
+	goimports -l -w .

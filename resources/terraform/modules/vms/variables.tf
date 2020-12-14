@@ -3,7 +3,7 @@ variable "name" {
 }
 
 variable "instances" {
-  type = string
+  type    = string
   default = 1
 }
 
@@ -36,31 +36,31 @@ variable "tf_key_path" {
 }
 
 variable "vm_size" {
-  type = string
+  type    = string
   default = "Standard_DS2_v2"
 }
 
 variable "admin_username" {
-  type = string
+  type    = string
   default = "operations"
 }
 
 variable "image_publisher" {
-  type = string
+  type    = string
   default = "Canonical"
 }
 
 variable "image_offer" {
-  type = string
+  type    = string
   default = "UbuntuServer"
 }
 
 variable "image_sku" {
-  type = string
+  type    = string
   default = "18.04-LTS"
 }
 
 variable "image_version" {
-  type = string
+  type    = string
   default = "18.04.202006101"
 }

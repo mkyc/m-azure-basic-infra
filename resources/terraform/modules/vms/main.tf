@@ -53,7 +53,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
   name                  = "${var.name}-${var.service}-${count.index}"
   location              = var.location
   resource_group_name   = var.rg_name
-  size               = var.vm_size
+  size                  = var.vm_size
   network_interface_ids = [azurerm_network_interface.nic[count.index].id]
 
   disable_password_authentication = true
@@ -73,9 +73,9 @@ resource "azurerm_linux_virtual_machine" "vm" {
   }
 
   os_disk {
-    name              = "${var.name}-${var.service}-${count.index}-disk"
-    caching           = "ReadWrite"
-    disk_size_gb      = "32"
+    name                 = "${var.name}-${var.service}-${count.index}-disk"
+    caching              = "ReadWrite"
+    disk_size_gb         = "32"
     storage_account_type = "Premium_LRS"
   }
 }

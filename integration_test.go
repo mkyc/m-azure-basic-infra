@@ -9,7 +9,6 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"gopkg.in/yaml.v3"
 	"io"
 	"io/ioutil"
 	"os"
@@ -20,15 +19,45 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/resources/mgmt/resources"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
-	"golang.org/x/crypto/ssh"
-
+	st "github.com/epiphany-platform/e-structures/state/v0"
+	"github.com/epiphany-platform/m-azure-basic-infrastructure/cmd"
 	"github.com/go-test/deep"
 	"github.com/gruntwork-io/terratest/modules/docker"
+	"golang.org/x/crypto/ssh"
 )
 
 const (
-	imageTag = "epiphanyplatform/azbi:0.0.1"
+	imageTag = "epiphanyplatform/azbi"
 )
+
+func TestMetadata(t *testing.T) {
+	tests := []struct {
+		name               string
+		wantOutputTemplate string
+	}{
+		{
+			name: "default metadata",
+			wantOutputTemplate: `labels:
+  kind: infrastructure
+  name: Azure Basic Infrastructure
+  provider: azure
+  provides-pubips: true
+  provides-vms: true
+  short: azbi
+  version: %s
+`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotOutput := dockerRun(t, "metadata", nil, nil, "")
+			if diff := deep.Equal(gotOutput, fmt.Sprintf(tt.wantOutputTemplate, cmd.Version)); diff != nil {
+				t.Error(diff)
+			}
+		})
+	}
+}
 
 func TestInit(t *testing.T) {
 	tests := []struct {
@@ -41,73 +70,115 @@ func TestInit(t *testing.T) {
 		{
 			name:       "default init",
 			initParams: nil,
-			wantOutput: `#AzBI | setup | ensure required directories
-#AzBI | ensure-state-file | checks if state file exists
-#AzBI | template-config-file | will template config file (and backup previous if exists)
-#AzBI | initialize-state-file | will initialize state file
-#AzBI | display-config-file | config file content is:
-kind: azbi-config
-azbi:
-  size: 3
-  use_public_ip: true
-  location: "northeurope"
-  name: "epiphany"
-  address_space: ["10.0.0.0/16"]
-  address_prefixes: ["10.0.1.0/24"]
-  rsa_pub_path: "/shared/vms_rsa.pub"`,
-			wantConfigLocation: "azbi/azbi-config.yml",
-			wantConfigContent: `kind: azbi-config
-azbi:
-  size: 3
-  use_public_ip: true
-  location: "northeurope"
-  name: "epiphany"
-  address_space: ["10.0.0.0/16"]
-  address_prefixes: ["10.0.1.0/24"]
-  rsa_pub_path: "/shared/vms_rsa.pub"
-`,
+			wantOutput: `Initialized config: 
+{
+	"kind": "azbi",
+	"version": "v0.0.2",
+	"params": {
+		"name": "epiphany",
+		"vms_count": 3,
+		"use_public_ip": true,
+		"location": "northeurope",
+		"address_space": [
+			"10.0.0.0/16"
+		],
+		"subnets": [
+			{
+				"name": "main",
+				"address_prefixes": [
+					"10.0.1.0/24"
+				]
+			}
+		],
+		"rsa_pub_path": "/shared/vms_rsa.pub"
+	}
+}`,
+			wantConfigLocation: "azbi/azbi-config.json",
+			wantConfigContent: `{
+	"kind": "azbi",
+	"version": "v0.0.2",
+	"params": {
+		"name": "epiphany",
+		"vms_count": 3,
+		"use_public_ip": true,
+		"location": "northeurope",
+		"address_space": [
+			"10.0.0.0/16"
+		],
+		"subnets": [
+			{
+				"name": "main",
+				"address_prefixes": [
+					"10.0.1.0/24"
+				]
+			}
+		],
+		"rsa_pub_path": "/shared/vms_rsa.pub"
+	}
+}`,
 		},
 		{
 			name: "init 2 machines no public ips and named rg",
 			initParams: map[string]string{
-				"M_VMS_COUNT":  "2",
-				"M_PUBLIC_IPS": "false",
-				"M_NAME":       "azbi-module-tests",
-				"M_VMS_RSA":    "test_vms_rsa"},
-			wantOutput: `#AzBI | setup | ensure required directories
-#AzBI | ensure-state-file | checks if state file exists
-#AzBI | template-config-file | will template config file (and backup previous if exists)
-#AzBI | initialize-state-file | will initialize state file
-#AzBI | display-config-file | config file content is:
-kind: azbi-config
-azbi:
-  size: 2
-  use_public_ip: false
-  location: "northeurope"
-  name: "azbi-module-tests"
-  address_space: ["10.0.0.0/16"]
-  address_prefixes: ["10.0.1.0/24"]
-  rsa_pub_path: "/shared/test_vms_rsa.pub"`,
-			wantConfigLocation: "azbi/azbi-config.yml",
-			wantConfigContent: `kind: azbi-config
-azbi:
-  size: 2
-  use_public_ip: false
-  location: "northeurope"
-  name: "azbi-module-tests"
-  address_space: ["10.0.0.0/16"]
-  address_prefixes: ["10.0.1.0/24"]
-  rsa_pub_path: "/shared/test_vms_rsa.pub"
-`,
+				"--vms_count":  "2",
+				"--public_ips": "false",
+				"--name":       "azbi-module-tests",
+				"--vms_rsa":    "test_vms_rsa"},
+			wantOutput: `Initialized config: 
+{
+	"kind": "azbi",
+	"version": "v0.0.2",
+	"params": {
+		"name": "azbi-module-tests",
+		"vms_count": 2,
+		"use_public_ip": false,
+		"location": "northeurope",
+		"address_space": [
+			"10.0.0.0/16"
+		],
+		"subnets": [
+			{
+				"name": "main",
+				"address_prefixes": [
+					"10.0.1.0/24"
+				]
+			}
+		],
+		"rsa_pub_path": "/shared/test_vms_rsa.pub"
+	}
+}`,
+			wantConfigLocation: "azbi/azbi-config.json",
+			wantConfigContent: `{
+	"kind": "azbi",
+	"version": "v0.0.2",
+	"params": {
+		"name": "azbi-module-tests",
+		"vms_count": 2,
+		"use_public_ip": false,
+		"location": "northeurope",
+		"address_space": [
+			"10.0.0.0/16"
+		],
+		"subnets": [
+			{
+				"name": "main",
+				"address_prefixes": [
+					"10.0.1.0/24"
+				]
+			}
+		],
+		"rsa_pub_path": "/shared/test_vms_rsa.pub"
+	}
+}`,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			name, remoteSharedPath, localSharedPath, environments, _ := setup(t, tt.initParams)
-			defer cleanup(t, localSharedPath, environments["M_ARM_SUBSCRIPTION_ID"], name)
+			defer cleanup(t, localSharedPath, environments["SUBSCRIPTION_ID"], name)
 
-			gotOutput := dockerRun(t, "init", tt.initParams, remoteSharedPath)
+			gotOutput := dockerRun(t, "init", tt.initParams, nil, remoteSharedPath)
 			if diff := deep.Equal(gotOutput, tt.wantOutput); diff != nil {
 				t.Error(diff)
 			}
@@ -140,16 +211,21 @@ func TestPlan(t *testing.T) {
 		{
 			name: "plan 2 machines no public ips and named rg",
 			initParams: map[string]string{
-				"M_VMS_COUNT":  "2",
-				"M_PUBLIC_IPS": "false",
-				"M_NAME":       "azbi-module-tests",
-				"M_VMS_RSA":    "test_vms_rsa"},
-			wantPlanOutputLastLine: "Plan: 7 to add, 0 to change, 0 to destroy.",
-			wantStateLocation:      "state.yml",
-			wantStateContent: `kind: state
-azbi:
-  status: initialized
-`,
+				"--vms_count":  "2",
+				"--public_ips": "false",
+				"--name":       "azbi-module-tests",
+				"--vms_rsa":    "test_vms_rsa"},
+			wantPlanOutputLastLine: "\tAdd: 7, Change: 0, Destroy: 0",
+			wantStateLocation:      "state.json",
+			wantStateContent: `{
+	"kind": "state",
+	"version": "v0.0.1",
+	"azbi": {
+		"status": "initialized",
+		"config": null,
+		"output": null
+	}
+}`,
 			wantTerraformStateFileLocation: "azbi/terraform-apply.tfplan",
 		},
 	}
@@ -157,11 +233,11 @@ azbi:
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			name, remoteSharedPath, localSharedPath, environments, _ := setup(t, tt.initParams)
-			defer cleanup(t, localSharedPath, environments["M_ARM_SUBSCRIPTION_ID"], name)
+			defer cleanup(t, localSharedPath, environments["SUBSCRIPTION_ID"], name)
 
-			dockerRun(t, "init", tt.initParams, remoteSharedPath)
+			dockerRun(t, "init", tt.initParams, nil, remoteSharedPath)
 
-			gotPlanOutputLastLine := getLastLineFromMultilineSting(t, dockerRun(t, "plan", environments, remoteSharedPath))
+			gotPlanOutputLastLine := getLastLineFromMultilineSting(t, dockerRun(t, "plan", nil, environments, remoteSharedPath))
 			if diff := deep.Equal(gotPlanOutputLastLine, tt.wantPlanOutputLastLine); diff != nil {
 				t.Error(diff)
 			}
@@ -197,57 +273,56 @@ func TestApply(t *testing.T) {
 		{
 			name: "apply 2 machines no public ips and named rg",
 			initParams: map[string]string{
-				"M_VMS_COUNT":  "2",
-				"M_PUBLIC_IPS": "false",
-				"M_NAME":       "azbi-module-tests",
-				"M_VMS_RSA":    "test_vms_rsa"},
-			wantPlanOutputLastLine:  "Plan: 7 to add, 0 to change, 0 to destroy.",
-			wantApplyOutputLastLine: "#AzBI | terraform-output | will prepare terraform output",
+				"--vms_count":  "2",
+				"--public_ips": "false",
+				"--name":       "azbi-module-tests",
+				"--vms_rsa":    "test_vms_rsa"},
+			wantPlanOutputLastLine:  "\tAdd: 7, Change: 0, Destroy: 0",
+			wantApplyOutputLastLine: "\tAdd: 7, Change: 0, Destroy: 0",
 		},
 		{
 			name: "apply 2 machines with public ips and named rg",
 			initParams: map[string]string{
-				"M_VMS_COUNT":  "2",
-				"M_PUBLIC_IPS": "true",
-				"M_NAME":       "azbi-module-tests",
-				"M_VMS_RSA":    "test_vms_rsa"},
-			wantPlanOutputLastLine:  "Plan: 12 to add, 0 to change, 0 to destroy.",
-			wantApplyOutputLastLine: "#AzBI | terraform-output | will prepare terraform output",
+				"--vms_count":  "2",
+				"--public_ips": "true",
+				"--name":       "azbi-module-tests",
+				"--vms_rsa":    "test_vms_rsa"},
+			wantPlanOutputLastLine:  "\tAdd: 12, Change: 0, Destroy: 0",
+			wantApplyOutputLastLine: "\tAdd: 12, Change: 0, Destroy: 0",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			name, remoteSharedPath, localSharedPath, environments, privateKey := setup(t, tt.initParams)
-			defer cleanup(t, localSharedPath, environments["M_ARM_SUBSCRIPTION_ID"], name)
+			defer cleanup(t, localSharedPath, environments["SUBSCRIPTION_ID"], name)
 
-			dockerRun(t, "init", tt.initParams, remoteSharedPath)
+			dockerRun(t, "init", tt.initParams, nil, remoteSharedPath)
 
-			gotPlanOutputLastLine := getLastLineFromMultilineSting(t, dockerRun(t, "plan", environments, remoteSharedPath))
+			gotPlanOutputLastLine := getLastLineFromMultilineSting(t, dockerRun(t, "plan", nil, environments, remoteSharedPath))
 			if diff := deep.Equal(gotPlanOutputLastLine, tt.wantPlanOutputLastLine); diff != nil {
 				t.Error(diff)
 			}
 
-			gotApplyOutputLastLine := getLastLineFromMultilineSting(t, dockerRun(t, "apply", environments, remoteSharedPath))
+			gotApplyOutputLastLine := getLastLineFromMultilineSting(t, dockerRun(t, "apply", nil, environments, remoteSharedPath))
 
 			if diff := deep.Equal(gotApplyOutputLastLine, tt.wantApplyOutputLastLine); diff != nil {
 				t.Error(diff)
 			}
 
-			if v, ok := tt.initParams["M_PUBLIC_IPS"]; ok && v == "true" {
-				data, err := ioutil.ReadFile(path.Join(localSharedPath, "state.yml"))
+			if v, ok := tt.initParams["--public_ips"]; ok && v == "true" {
+				data, err := ioutil.ReadFile(path.Join(localSharedPath, "state.json"))
 				if err != nil {
 					t.Fatal(err)
 				}
-				m := make(map[interface{}]interface{})
-				err = yaml.Unmarshal(data, &m)
+				state := &st.State{}
+				err = state.Unmarshall(data)
 				if err != nil {
 					t.Fatal(err)
 				}
-				publicIPs := m["azbi"].(map[string]interface{})["output"].(map[string]interface{})["public_ips.value"].([]interface{})
+				publicIPs := state.AzBI.Output.PublicIps
 				for _, p := range publicIPs {
-					s := p.(string)
-					validateSshConnectivity(t, privateKey, s)
+					validateSshConnectivity(t, privateKey, p)
 				}
 			}
 		})
@@ -255,30 +330,45 @@ func TestApply(t *testing.T) {
 }
 
 // dockerRun function wraps docker run operation and returns `docker run` output.
-func dockerRun(t *testing.T, command string, params map[string]string, sharedPath string) string {
-	c := []string{command}
-	for k, v := range params {
-		c = append(c, fmt.Sprintf("%s=%s", k, v))
+func dockerRun(t *testing.T, command string, parameters map[string]string, environments map[string]string, sharedPath string) string {
+	commandWithParameters := []string{command}
+	for k, v := range parameters {
+		commandWithParameters = append(commandWithParameters, fmt.Sprintf("%s=%s", k, v))
 	}
 
-	opts := &docker.RunOptions{
-		Command: c,
-		Remove:  true,
-		Volumes: []string{fmt.Sprintf("%s:/shared", sharedPath)},
+	var opts *docker.RunOptions
+	if sharedPath != "" {
+		opts = &docker.RunOptions{
+			Command: commandWithParameters,
+			Remove:  true,
+			Volumes: []string{fmt.Sprintf("%s:/shared", sharedPath)},
+		}
+	} else {
+		opts = &docker.RunOptions{
+			Command: commandWithParameters,
+			Remove:  true,
+		}
 	}
+	var envs []string
+	for k, v := range environments {
+		envs = append(envs, fmt.Sprintf("%s=%s", k, v))
+	}
+
+	opts.EnvironmentVariables = envs
+
 	//in case of error Run function calls FailNow anyways
-	return docker.Run(t, imageTag, opts)
+	return docker.Run(t, fmt.Sprintf("%s:%s", imageTag, cmd.Version), opts)
 }
 
 // setup function ensures that all prerequisites for tests are in place.
 func setup(t *testing.T, initParams map[string]string) (string, string, string, map[string]string, ssh.Signer) {
 	rsaName := "vms_rsa"
-	if v, ok := initParams["M_VMS_RSA"]; ok {
-		rsaName = v
+	if value, ok := initParams["--vms_rsa"]; ok {
+		rsaName = value
 	}
 	name := "epiphany-rg"
-	if v, ok := initParams["M_NAME"]; ok {
-		name = v
+	if value, ok := initParams["--name"]; ok {
+		name = value
 	}
 
 	environments := loadEnvironmentVariables(t)
@@ -305,8 +395,8 @@ func setup(t *testing.T, initParams map[string]string) (string, string, string, 
 	}
 
 	privateKey := generateRsaKeyPair(t, localSharedPath, rsaName)
-	if isResourceGroupPresent(t, environments["M_ARM_SUBSCRIPTION_ID"], name) {
-		removeResourceGroup(t, environments["M_ARM_SUBSCRIPTION_ID"], name)
+	if isResourceGroupPresent(t, environments["SUBSCRIPTION_ID"], name) {
+		removeResourceGroup(t, environments["SUBSCRIPTION_ID"], name)
 	}
 	return name, remoteSharedPath, localSharedPath, environments, privateKey
 }
@@ -423,11 +513,26 @@ func validateSshConnectivity(t *testing.T, signer ssh.Signer, ipString string) {
 		Auth:            []ssh.AuthMethod{ssh.PublicKeys(signer)},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
-	connection, err := ssh.Dial("tcp", fmt.Sprintf("%s:22", ipString), sshConfig)
-	if err != nil {
+	var (
+		retries   = 30
+		client    *ssh.Client
+		connected = false
+		err       error
+	)
+
+	for i := 0; i < retries; i++ {
+		client, err = ssh.Dial("tcp", fmt.Sprintf("%s:22", ipString), sshConfig)
+		if err != nil {
+			t.Log(err)
+			time.Sleep(1 * time.Second)
+		} else {
+			connected = true
+		}
+	}
+	if !connected {
 		t.Error(err)
 	}
-	session, err := connection.NewSession()
+	session, err := client.NewSession()
 	if err != nil {
 		t.Error(err)
 	}
@@ -464,20 +569,20 @@ func getLastLineFromMultilineSting(t *testing.T, s string) string {
 // will cause test to fail.
 func loadEnvironmentVariables(t *testing.T) map[string]string {
 	result := make(map[string]string)
-	result["M_ARM_CLIENT_ID"] = os.Getenv("AZURE_CLIENT_ID")
-	if len(result["M_ARM_CLIENT_ID"]) == 0 {
+	result["CLIENT_ID"] = os.Getenv("AZURE_CLIENT_ID")
+	if len(result["CLIENT_ID"]) == 0 {
 		t.Fatalf("expected AZURE_CLIENT_ID environment variable")
 	}
-	result["M_ARM_CLIENT_SECRET"] = os.Getenv("AZURE_CLIENT_SECRET")
-	if len(result["M_ARM_CLIENT_SECRET"]) == 0 {
+	result["CLIENT_SECRET"] = os.Getenv("AZURE_CLIENT_SECRET")
+	if len(result["CLIENT_SECRET"]) == 0 {
 		t.Fatalf("expected AZURE_CLIENT_SECRET environment variable")
 	}
-	result["M_ARM_SUBSCRIPTION_ID"] = os.Getenv("AZURE_SUBSCRIPTION_ID")
-	if len(result["M_ARM_SUBSCRIPTION_ID"]) == 0 {
+	result["SUBSCRIPTION_ID"] = os.Getenv("AZURE_SUBSCRIPTION_ID")
+	if len(result["SUBSCRIPTION_ID"]) == 0 {
 		t.Fatalf("expected AZURE_SUBSCRIPTION_ID environment variable")
 	}
-	result["M_ARM_TENANT_ID"] = os.Getenv("AZURE_TENANT_ID")
-	if len(result["M_ARM_TENANT_ID"]) == 0 {
+	result["TENANT_ID"] = os.Getenv("AZURE_TENANT_ID")
+	if len(result["TENANT_ID"]) == 0 {
 		t.Fatalf("expected AZURE_TENANT_ID environment variable")
 	}
 	result["K8S_VOL_PATH"] = os.Getenv("K8S_VOL_PATH")
