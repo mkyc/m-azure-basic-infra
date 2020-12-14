@@ -103,8 +103,8 @@ var initCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(initCmd)
 
-	initCmd.Flags().Int("vms_count", 3, "number of virtual machines created by module (default is 3)")
+	initCmd.Flags().Int("vms_count", 3, "number of virtual machines created by module")
 	initCmd.Flags().Bool("public_ips", true, "if created machines should have public IPs attached")
-	initCmd.Flags().String("name", "epiphany", "prefix given to all resources created (default is `epiphany`)") //TODO rename to prefix
-	initCmd.Flags().String("vms_rsa", "vms_rsa", "name of rsa keypair to be provided to machines (default is `vms_rsa`)")
+	initCmd.Flags().String("name", "epiphany", "prefix given to all resources created") //TODO rename to prefix
+	initCmd.Flags().String("vms_rsa", "vms_rsa", "name of rsa keypair to be provided to machines")
 }

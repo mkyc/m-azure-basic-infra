@@ -10,24 +10,6 @@ AzBI module is responsible for providing basic cloud resources (eg. resource gro
 
 Requirements are listed in a separate [document](docs/REQUIREMENTS.md).
 
-## Build image
-
-In the main directory, run:
-
-```shell
-make build
-```
-
-:warning: This command uses the default VERSION variable (default: `dev`).
-
-or directly using Docker:
-
-```shell
-docker build --tag epiphanyplatform/azbi:dev .
-```
-
-:warning: Re-run the above commands will overwrite your existing docker image (if exists). To bypass that, specify a different `--tag` parameter. 
-
 ## Run module
 
 * Create a shared directory:
@@ -68,50 +50,6 @@ docker build --tag epiphanyplatform/azbi:dev .
    
   Running those commands should create resource group, vnet, subnet and 2 virtual machines. You should verify in Azure Portal.
 
-## Run module with provided example
-
-### Prepare config file
-
-Prepare your own variables in azure.mk file to use in the building process.
-Sample file (examples/basic_flow/azure.mk.sample):
-
-  ```shell
-  ARM_CLIENT_ID ?= "appId field"
-  ARM_CLIENT_SECRET ?= "password field"
-  ARM_SUBSCRIPTION_ID ?= "id field"
-  ARM_TENANT_ID ?= "tenant field"
-  ```
-
-* Create an environment
-
-  ```shell
-  cd examples/basic_flow
-  make all
-  ```
-
-* Delete an environment
-
-  ```shell
-  make destroy-plan
-  make destroy
-  ```
-
-## Release module
-
-  ```shell
-  make release
-  ```
-
-or if you want to set different version number:
-
-  ```shell
-  make release VERSION=number_of_your_choice
-  ```
-
-## Run tests
-
-Tests are described in a separate [document](docs/TESTS.md).
-
 # AzBI output data
 
 The output from this module is:
@@ -122,11 +60,17 @@ The output from this module is:
 * rg_name
 * vnet_name
 
+# Examples
+
+For examples runing description please have a look into [this document](docs/EXAMPLES.md).
+
+# Development
+ 
+For development related topics please look into [this document](docs/DEVELOPMENT.md).
+
 # Module dependencies
 
 | Component                 | Version | Repo/Website                                          | License                                                           |
 | ------------------------- | ------- | ----------------------------------------------------- | ----------------------------------------------------------------- |
 | Terraform                 | 0.13.2  | https://www.terraform.io/                             | [Mozilla Public License 2.0](https://github.com/hashicorp/terraform/blob/master/LICENSE) |
 | Terraform AzureRM provider | 2.27.0 | https://github.com/terraform-providers/terraform-provider-azurerm | [Mozilla Public License 2.0](https://github.com/terraform-providers/terraform-provider-azurerm/blob/master/LICENSE) |
-| Make                      | 4.3     | https://www.gnu.org/software/make/                    | [GNU General Public License](https://www.gnu.org/licenses/gpl-3.0.html) |
-| yq                        | 3.3.4   | https://github.com/mikefarah/yq/                      | [MIT License](https://github.com/mikefarah/yq/blob/master/LICENSE) |

@@ -1,32 +1,72 @@
-== Input parameters
+= Input parameters
+
+== Environment variables
+
+Following table presents parameters which should be passes as docker environment variables (`docker run -e KEY=val ...`).
 
 [width="100%",cols="7%,1%,25%a,1%,20%,50%a",options="header",]
 |===
 |Name |Type |Default value |Required |Steps |Description
-|M_ARM_CLIENT_ID |string |unset |yes |plan, apply, plan-destroy, destroy, test
-|Azure service principal client id
+|CLIENT_ID |string |unset |yes |plan, apply, destroy |Azure service principal client id
 
-|M_ARM_CLIENT_SECRET |string |unset |yes |plan, apply, plan-destroy, destroy, test
-|Azure service principal client secret
+|CLIENT_SECRET |string |unset |yes |plan, apply, destroy |Azure service principal client secret
 
-|M_ARM_SUBSCRIPTION_ID |string |unset |yes |plan, apply, plan-destroy, destroy, test
-|Azure subscription id
+|SUBSCRIPTION_ID |string |unset |yes |plan, apply, destroy |Azure subscription id
 
-|M_ARM_TENANT_ID |string |unset |yes |plan, apply, plan-destroy, destroy, test
-|Azure subscription tenant id
-
-|M_VMS_COUNT |number |3 |no |init |Number of instances to launch
-
-|M_PUBLIC_IPS |bool |true |no |init |If true, the instance
-will have associated public IP address
-
-|M_NAME |string |epiphany |no |init |Name to be used on all resources
-as a prefix
-
-|M_VMS_RSA |string |vms_rsa |no |init |SSH key name, should be located in
-shared directory
-
-|M_LOCATION |string |northeurope |no |init |Region to launch
-module in
+|TENANT_ID |string |unset |yes |plan, apply, destroy |Azure subscription tenant id
 
 |===
+
+Environment variables values can also be passed as command variables (`--key=value`), but it's often more convenient to pass sensitive values as presented.
+
+== Command variables
+
+Following table presents parameters which should be passed as command parameters (`docker run ... --key=value`).
+
+[width="100%",cols="7%,1%,25%a,1%,20%,50%a",options="header",]
+|===
+|Name |Type |Default value |Required |Steps |Description
+
+|vms_count |int |3 |no |init |Number of instances to launch
+
+|public_ips |bool |true |no |init |If true, the instance will have associated public IP address
+
+|name |string |epiphany |no |init |Name to be used on all resources
+as a prefix
+
+|vms_rsa |string |vms_rsa |no |init |SSH key name, should be located in shared directory
+
+|===
+
+Variable values can be passed as docker environment variables as well. We could use `docker run` command `-e VMS_COUNT=2` parameter instead of `--vms_count=2` command parameter.
+
+== Configuration file
+
+`init` command provides some parameters to configure the module from command line, but primary way to configure the module is its configuration file located in `shared/azbi/azbi-config.json`.
+
+Only fields that should not be modified are "kind" and "version" fields. All other fields can be modified before running `plan` command. Following listing provides example of configuration file.
+
+----
+{
+	"kind": "azbi",
+	"version": "v0.0.2",
+	"params": {
+		"name": "my-cluster",
+		"vms_count": 3,
+		"use_public_ip": true,
+		"location": "northeurope",
+		"address_space": [
+			"10.0.0.0/16"
+		],
+		"subnets": [
+			{
+				"name": "frst",
+				"address_prefixes": [
+					"10.0.1.0/24"
+				]
+			}
+		],
+		"rsa_pub_path": "/shared/vms_rsa.pub"
+	}
+}
+----
