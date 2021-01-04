@@ -25,7 +25,7 @@ resource "azurerm_network_interface" "nic" {
 
 resource "azurerm_network_security_group" "nsg" {
   count               = var.use_public_ip != true ? 0 : 1
-  name                = "vm-nic-nsg-0"
+  name                = "${var.name}-${var.service}-${count.index}-nic-nsg"
   location            = var.location
   resource_group_name = var.rg_name
 
