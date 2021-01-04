@@ -36,6 +36,8 @@ as a prefix
 
 |vms_rsa |string |vms_rsa |no |init |SSH key name, should be located in shared directory
 
+|debug |bool |false |no |all |prints additional debug information
+
 |===
 
 Variable values can be passed as docker environment variables as well. We could use `docker run` command `-e VMS_COUNT=2` parameter instead of `--vms_count=2` command parameter.
