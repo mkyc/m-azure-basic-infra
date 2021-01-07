@@ -50,6 +50,17 @@ Requirements are listed in a separate [document](docs/REQUIREMENTS.md).
    
   Running those commands should create resource group, vnet, subnet and 2 virtual machines. You should verify in Azure Portal.
 
+* Destroy module resources:
+
+  ```shell
+  docker run --rm -v /tmp/shared:/shared -e SUBSCRIPTION_ID=subscriptionId -e CLIENT_ID=appId -e CLIENT_SECRET=password -e TENANT_ID=tenantId epiphanyplatform/azbi:dev plan --destroy
+  docker run --rm -v /tmp/shared:/shared -e SUBSCRIPTION_ID=subscriptionId -e CLIENT_ID=appId -e CLIENT_SECRET=password -e TENANT_ID=tenantId epiphanyplatform/azbi:dev destroy
+  ```
+  :star: Variable values can be passed as docker environment variables. I's often more convenient to pass sensitive values as presented.
+   
+  :warning: Running those commands will remove all resource group and all its content so be careful. You should verify in Azure Portal.
+
+
 # AzBI output data
 
 The output from this module is:
