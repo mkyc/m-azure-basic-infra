@@ -1,13 +1,13 @@
 output "private_ips" {
-  value = module.vms.private_ips
+  value = module.vm_group.*.private_ips
 }
 
 output "public_ips" {
-  value = module.vms.public_ips
+  value = module.vm_group.*.public_ips
 }
 
 output "vm_names" {
-  value = module.vms.vm_names
+  value = module.vm_group.*.vm_names
 }
 
 output rg_name {
