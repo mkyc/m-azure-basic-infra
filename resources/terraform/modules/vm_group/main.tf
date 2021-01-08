@@ -13,7 +13,7 @@ data "azurerm_network_security_group" "nsg" {
   resource_group_name = var.rg_name
 }
 
-# Allocate public IPs for each VM
+# Allocate public IPs, 1 per VM
 resource "azurerm_public_ip" "pubip" {
   count                   = var.vm_group.use_public_ip != true ? 0 : var.vm_group.vm_count
   name                    = "${var.name}-${var.vm_group.name}-${count.index}-pubip"
@@ -24,7 +24,17 @@ resource "azurerm_public_ip" "pubip" {
   sku                     = "Standard"
 }
 
-# Create NICs for each VM in each subnet
+/*
+Create NICs for each VM in each subnet
+NICs order example:
++----------------+----------------+
+| vm0            | vm1            |
++================+================+
+| net0 net1 net2 | net0 net1 net2 |
++----------------+----------------+
+| nic0 nic1 nic2 | nic3 nic4 nic5 |
++----------------+----------------+
+*/
 resource "azurerm_network_interface" "nic" {
   count                         = length(local.nic_vm_subnet_association)
   name                          = "${var.name}-${var.vm_group.name}-${count.index}-nic"
@@ -33,7 +43,7 @@ resource "azurerm_network_interface" "nic" {
   enable_accelerated_networking = "false"
 
   ip_configuration {
-    name                          = "vm-ipconf-0"
+    name                          = "${var.name}-${var.vm_group.name}-${count.index}-ipconf"
     subnet_id                     = local.nic_vm_subnet_association[count.index][1]
     private_ip_address_allocation = "Dynamic"
     # Assign public IPs only to the NICs in the first subnet
@@ -41,25 +51,24 @@ resource "azurerm_network_interface" "nic" {
   }
 }
 
-# Associate NICs that have public IPs assigned with network security groups
+# Associate NICs that have public IPs assigned with network security groups (1 per VM)
 resource "azurerm_network_interface_security_group_association" "nic-nsg-assoc" {
   count                     = var.vm_group.use_public_ip != true ? 0 : length(local.nic_nsg_vm_association)
-  network_interface_id      = azurerm_network_interface.nic[local.nic_nsg_vm_association[count.index][1]].id
+  # nic_id = nic_id_list[vm_number * subnet_count]
+  network_interface_id      = azurerm_network_interface.nic[local.nic_nsg_vm_association[count.index][1] * length(var.vm_group.subnet_names)].id
   network_security_group_id = local.nic_nsg_vm_association[count.index][0]
 }
 
 # Create VMs
 resource "azurerm_linux_virtual_machine" "vm" {
-  count                 = var.vm_group.vm_count
-  name                  = "${var.name}-${var.vm_group.name}-${count.index}"
-  location              = var.location
-  resource_group_name   = var.rg_name
-  size                  = var.vm_group.vm_size
-  network_interface_ids = slice(azurerm_network_interface.nic.*.id, count.index * length(var.vm_group.subnet_names), count.index * length(var.vm_group.subnet_names) + length(var.vm_group.subnet_names))
-
+  count                           = var.vm_group.vm_count
+  name                            = "${var.name}-${var.vm_group.name}-${count.index}"
+  location                        = var.location
+  resource_group_name             = var.rg_name
+  size                            = var.vm_group.vm_size
+  network_interface_ids           = slice(azurerm_network_interface.nic.*.id, count.index * length(var.vm_group.subnet_names), count.index * length(var.vm_group.subnet_names) + length(var.vm_group.subnet_names))
   disable_password_authentication = true
-
-  admin_username = var.admin_username
+  admin_username                  = var.admin_username
 
   admin_ssh_key {
     username   = var.admin_username

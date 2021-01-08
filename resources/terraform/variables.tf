@@ -66,7 +66,7 @@ variable "network_security_groups" {
     })
   }))
   default     = [{
-    name          = "default-ssh"
+    name          = "ssh"
     security_rule = {
       name                       = "SSH"
       priority                   = 100
@@ -80,7 +80,7 @@ variable "network_security_groups" {
     }
     },
     {
-      name          = "default-http"
+      name          = "http"
       security_rule = {
         name                       = "HTTP"
         priority                   = 200
@@ -118,7 +118,7 @@ variable vm_groups {
       vm_size       = "Standard_DS2_v2"
       use_public_ip = true
       subnet_names  = ["subnet0"]
-      nsg_names     = ["default-ssh", "default-http"]
+      nsg_names     = ["ssh", "http"]
       image         = {
         publisher = "Canonical"
         offer     = "UbuntuServer"
@@ -132,7 +132,7 @@ variable vm_groups {
       vm_size       = "Standard_DS2_v2"
       use_public_ip = true
       subnet_names  = ["subnet1", "subnet2"]
-      nsg_names     = ["default-ssh", "default-http"]
+      nsg_names     = ["ssh", "http"]
       image         = {
         publisher = "Canonical"
         offer     = "UbuntuServer"
