@@ -25,19 +25,19 @@ variable "subnets" {
   }))
   default = [
     {
-      name             = "subnet1"
+      name             = "subnet0"
       address_prefixes = [
         "10.0.1.0/24"
       ]
     },
     {
-      name             = "subnet2"
+      name             = "subnet1"
       address_prefixes = [
         "10.0.2.0/24"
       ]
     },
     {
-      name             = "subnet3"
+      name             = "subnet2"
       address_prefixes = [
         "10.0.3.0/24"
       ]
@@ -113,11 +113,11 @@ variable vm_groups {
   }))
   default = [
     {
-      name          = "vm-group1"
+      name          = "vm-group0"
       vm_count      = 2
       vm_size       = "Standard_DS2_v2"
       use_public_ip = true
-      subnet_names  = ["subnet1"]
+      subnet_names  = ["subnet0"]
       nsg_names     = ["default-ssh", "default-http"]
       image         = {
         publisher = "Canonical"
@@ -127,11 +127,11 @@ variable vm_groups {
       }
     },
     {
-      name          = "vm-group2"
+      name          = "vm-group1"
       vm_count      = 2
       vm_size       = "Standard_DS2_v2"
       use_public_ip = true
-      subnet_names  = ["subnet2", "subnet3"]
+      subnet_names  = ["subnet1", "subnet2"]
       nsg_names     = ["default-ssh", "default-http"]
       image         = {
         publisher = "Canonical"

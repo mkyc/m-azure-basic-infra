@@ -28,12 +28,8 @@ variable "admin_key_path" {
   type = string
 }
 
-variable "vm_group_number" {
-  type = number
-}
-
-variable vm_groups {
-  type = list(object({
+variable vm_group {
+  type = object({
     name          = string
     vm_count      = number
     vm_size       = string
@@ -46,5 +42,5 @@ variable vm_groups {
       sku       = string
       version   = string
     })
-  }))
+  })
 }
