@@ -1,10 +1,9 @@
 ROOT_DIR := $(patsubst %/,%,$(dir $(abspath $(firstword $(MAKEFILE_LIST)))))
 
 VERSION ?= dev
-USER := epiphanyplatform
-IMAGE := azbi
+IMAGE_REPOSITORY := epiphanyplatform/azbi
 
-IMAGE_NAME := $(USER)/$(IMAGE):$(VERSION)
+IMAGE_NAME := $(IMAGE_REPOSITORY):$(VERSION)
 
 define SERVICE_PRINCIPAL_CONTENT
 ARM_CLIENT_ID ?= $(CLIENT_ID)
@@ -27,7 +26,7 @@ all: build
 
 .PHONY: build test test-release release prepare-service-principal
 
-build: guard-VERSION guard-IMAGE guard-USER
+build: guard-IMAGE_NAME
 	docker build \
 		--build-arg ARG_M_VERSION=$(VERSION) \
 		--build-arg ARG_HOST_UID=$(HOST_UID) \
@@ -37,7 +36,7 @@ build: guard-VERSION guard-IMAGE guard-USER
 
 #prepare service principal variables file before running this target using `CLIENT_ID=xxx CLIENT_SECRET=yyy SUBSCRIPTION_ID=zzz TENANT_ID=vvv make prepare-service-principal`
 #test targets are located in ./test.mk file
-test: build
+test: guard-IMAGE_REPOSITORY build
 	$(eval LDFLAGS = $(shell govvv -flags -pkg github.com/epiphany-platform/m-azure-basic-infrastructure/cmd -version $(VERSION)))
 	@AZURE_CLIENT_ID=$(ARM_CLIENT_ID) AZURE_CLIENT_SECRET=$(ARM_CLIENT_SECRET) AZURE_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID) AZURE_TENANT_ID=$(ARM_TENANT_ID) go test -ldflags="$(LDFLAGS)" -v -timeout 30m
 
