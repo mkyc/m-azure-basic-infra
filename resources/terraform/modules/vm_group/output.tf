@@ -1,6 +1,6 @@
 output "vm_group" {
   value = {
-    vm_group: var.vm_group.name,
+    vm_group_name: var.vm_group.name,
     vms: [
     for vm in azurerm_linux_virtual_machine.vm:
     {
