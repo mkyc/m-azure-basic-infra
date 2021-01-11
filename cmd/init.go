@@ -13,10 +13,8 @@ import (
 )
 
 var (
-	vmsCount     int
-	usePublicIPs bool
-	name         string
-	vmsRsaPath   string
+	name       string
+	vmsRsaPath string
 )
 
 // initCmd represents the init command
@@ -32,8 +30,6 @@ var initCmd = &cobra.Command{
 			logger.Fatal().Err(err)
 		}
 
-		vmsCount = viper.GetInt("vms_count")
-		usePublicIPs = viper.GetBool("public_ips")
 		name = viper.GetString("name")
 		vmsRsaPath = viper.GetString("vms_rsa")
 	},
@@ -73,8 +69,6 @@ var initCmd = &cobra.Command{
 			logger.Fatal().Err(err)
 		}
 
-		config.Params.VmsCount = to.IntPtr(vmsCount)
-		config.Params.UsePublicIP = to.BooPtr(usePublicIPs)
 		config.Params.Name = to.StrPtr(name)
 		config.Params.RsaPublicKeyPath = to.StrPtr(filepath.Join(SharedDirectory, fmt.Sprintf("%s.pub", vmsRsaPath)))
 
@@ -103,8 +97,6 @@ var initCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(initCmd)
 
-	initCmd.Flags().Int("vms_count", 3, "number of virtual machines created by module")
-	initCmd.Flags().Bool("public_ips", true, "if created machines should have public IPs attached")
 	initCmd.Flags().String("name", "epiphany", "prefix given to all resources created") //TODO rename to prefix
 	initCmd.Flags().String("vms_rsa", "vms_rsa", "name of rsa keypair to be provided to machines")
 }
