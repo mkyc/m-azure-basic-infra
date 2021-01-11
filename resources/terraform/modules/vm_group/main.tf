@@ -6,13 +6,6 @@ data "azurerm_subnet" "subnets" {
   resource_group_name  = var.rg_name
 }
 
-# Get nsg IDs by names
-data "azurerm_network_security_group" "nsg" {
-  count               = length(var.vm_group.nsg_names)
-  name                = var.vm_group.nsg_names[count.index]
-  resource_group_name = var.rg_name
-}
-
 # Allocate public IPs, 1 per VM
 resource "azurerm_public_ip" "pubip" {
   count                   = var.vm_group.use_public_ip != true ? 0 : var.vm_group.vm_count
@@ -51,12 +44,11 @@ resource "azurerm_network_interface" "nic" {
   }
 }
 
-# Associate NICs that have public IPs assigned with network security groups (1 per VM)
+# Associate NICs that have public IPs assigned with network security group (1 per VM)
 resource "azurerm_network_interface_security_group_association" "nic-nsg-assoc" {
-  count                     = var.vm_group.use_public_ip != true ? 0 : length(local.nic_nsg_vm_association)
-  # nic_id = nic_id_list[vm_number * subnet_count]
-  network_interface_id      = azurerm_network_interface.nic[local.nic_nsg_vm_association[count.index][1] * length(var.vm_group.subnet_names)].id
-  network_security_group_id = local.nic_nsg_vm_association[count.index][0]
+  count                     = var.vm_group.use_public_ip == true ? var.vm_group.vm_count : 0
+  network_interface_id      = azurerm_network_interface.nic[count.index * length(var.vm_group.subnet_names)].id
+  network_security_group_id = var.security_group_id
 }
 
 # Create VMs

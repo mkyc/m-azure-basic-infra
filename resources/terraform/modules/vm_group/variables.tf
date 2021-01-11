@@ -1,13 +1,16 @@
 variable "name" {
-  type = string
+  description = "String value to use as resources name prefix"
+  type        = string
 }
 
 variable "rg_name" {
-  type = string
+  description = "Resource group name"
+  type        = string
 }
 
 variable "vnet_id" {
-  type = string
+  description = "Virtual network id"
+  type        = string
 }
 
 variable "vnet_name" {
@@ -16,26 +19,29 @@ variable "vnet_name" {
 }
 
 variable "location" {
-  type = string
+  description = "Azure location to create resources in"
+  type        = string
 }
 
 variable "admin_username" {
-  type    = string
-  default = "operations"
+  description = "Admin user name"
+  type        = string
+  default     = "operations"
 }
 
 variable "admin_key_path" {
-  type = string
+  description = "The filesystem path to SSH public key"
+  type        = string
 }
 
 variable vm_group {
-  type = object({
+  description = "VM group definition object"
+  type        = object({
     name          = string
     vm_count      = number
     vm_size       = string
     use_public_ip = bool
     subnet_names  = list(string)
-    nsg_names     = list(string)
     image         = object({
       publisher = string
       offer     = string
@@ -43,4 +49,9 @@ variable vm_group {
       version   = string
     })
   })
+}
+
+variable "security_group_id" {
+  description = "Security group id for NICs with assigned public IP address"
+  type        = string
 }

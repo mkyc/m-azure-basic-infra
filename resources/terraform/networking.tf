@@ -14,20 +14,20 @@ resource "azurerm_subnet" "subnets" {
 }
 
 resource "azurerm_network_security_group" "nsg" {
-  count               = length(var.network_security_groups)
-  name                = var.network_security_groups[count.index].name
+  count               = local.create_public_access_nsg == true ? 1 : 0
+  name                = "${var.name}-nsg"
   location            = var.location
   resource_group_name = azurerm_resource_group.rg.name
 
   security_rule {
-    name                       = var.network_security_groups[count.index].security_rule.name
-    priority                   = var.network_security_groups[count.index].security_rule.priority
-    direction                  = var.network_security_groups[count.index].security_rule.direction
-    access                     = var.network_security_groups[count.index].security_rule.access
-    protocol                   = var.network_security_groups[count.index].security_rule.protocol
-    source_port_range          = var.network_security_groups[count.index].security_rule.source_port_range
-    destination_port_range     = var.network_security_groups[count.index].security_rule.destination_port_range
-    source_address_prefix      = var.network_security_groups[count.index].security_rule.source_address_prefix
-    destination_address_prefix = var.network_security_groups[count.index].security_rule.destination_address_prefix
+    name                       = "SSH"
+    priority                   = 100
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "22"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
   }
 }
