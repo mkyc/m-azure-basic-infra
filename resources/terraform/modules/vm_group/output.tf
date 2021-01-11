@@ -1,11 +1,10 @@
-output "private_ips" {
-  value = azurerm_network_interface.nic.*.private_ip_address
-}
-
-output "public_ips" {
-  value = azurerm_public_ip.pubip.*.ip_address
-}
-
-output "vm_names" {
-  value = azurerm_linux_virtual_machine.vm.*.name
+output "vm_group" {
+  value = [
+    for vm in azurerm_linux_virtual_machine.vm:
+    {
+      vm_name: vm.name
+      public_ip: vm.public_ip_address
+      private_ips: vm.private_ip_addresses
+    }
+  ]
 }

@@ -58,9 +58,9 @@ variable vm_groups {
   default     = [
     {
       name          = "vm-group0"
-      vm_count      = 0
+      vm_count      = 1
       vm_size       = "Standard_DS2_v2"
-      use_public_ip = false
+      use_public_ip = true
       subnet_names  = ["subnet0"]
       image         = {
         publisher = "Canonical"
