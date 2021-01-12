@@ -26,10 +26,6 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-const (
-	imageTag = "epiphanyplatform/azbi"
-)
-
 func TestMetadata(t *testing.T) {
 	tests := []struct {
 		name               string
@@ -357,7 +353,7 @@ func dockerRun(t *testing.T, command string, parameters map[string]string, envir
 	opts.EnvironmentVariables = envs
 
 	//in case of error Run function calls FailNow anyways
-	return docker.Run(t, fmt.Sprintf("%s:%s", imageTag, cmd.Version), opts)
+	return docker.Run(t, fmt.Sprintf("%s:%s", prepareImageTag(t), cmd.Version), opts)
 }
 
 // setup function ensures that all prerequisites for tests are in place.
@@ -399,6 +395,15 @@ func setup(t *testing.T, initParams map[string]string) (string, string, string, 
 		removeResourceGroup(t, environments["SUBSCRIPTION_ID"], name)
 	}
 	return name, remoteSharedPath, localSharedPath, environments, privateKey
+}
+
+// prepareImageTag returns IMAGE_REPOSITORY environment variable
+func prepareImageTag(t *testing.T) string {
+	imageRepository := os.Getenv("IMAGE_REPOSITORY")
+	if len(imageRepository) == 0 {
+		t.Fatal("expected IMAGE_REPOSITORY environment variable")
+	}
+	return imageRepository
 }
 
 // cleanup function removes directories created during test and ensures that resource
