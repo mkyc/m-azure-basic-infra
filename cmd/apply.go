@@ -86,7 +86,7 @@ This command should always be preceded by 'plan' command.`,
 			logger.Fatal().Err(err)
 		}
 
-		bytes, err := state.Marshall()
+		bytes, err := state.Marshal()
 		if err != nil {
 			logger.Fatal().Err(err)
 		}

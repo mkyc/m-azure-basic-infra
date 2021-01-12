@@ -85,7 +85,7 @@ var initCmd = &cobra.Command{
 			logger.Fatal().Err(err)
 		}
 
-		bytes, err := config.Marshall()
+		bytes, err := config.Marshal()
 		if err != nil {
 			logger.Fatal().Err(err)
 		}

@@ -27,7 +27,7 @@ func loadState(path string) (*st.State, error) {
 		if err != nil {
 			return nil, err
 		}
-		err = state.Unmarshall(bytes)
+		err = state.Unmarshal(bytes)
 		if err != nil {
 			return nil, err
 		}
@@ -36,7 +36,7 @@ func loadState(path string) (*st.State, error) {
 }
 
 func saveState(path string, state *st.State) error {
-	bytes, err := state.Marshall()
+	bytes, err := state.Marshal()
 	if err != nil {
 		return err
 	}
@@ -56,7 +56,7 @@ func loadConfig(path string) (*azbi.Config, error) {
 		if err != nil {
 			return nil, err
 		}
-		err = config.Unmarshall(bytes)
+		err = config.Unmarshal(bytes)
 		if err != nil {
 			return nil, err
 		}
@@ -65,7 +65,7 @@ func loadConfig(path string) (*azbi.Config, error) {
 }
 
 func saveConfig(path string, config *azbi.Config) error {
-	bytes, err := config.Marshall()
+	bytes, err := config.Marshal()
 	if err != nil {
 		return err
 	}
