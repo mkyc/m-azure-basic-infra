@@ -117,18 +117,28 @@ func backupFile(path string) error {
 }
 
 func produceOutput(m map[string]interface{}) *azbi.Output {
+	logger.Debug().Msgf("Received output map: %#v", m)
 	output := &azbi.Output{
 		RgName:   to.StrPtr(m["rg_name"].(string)),
 		VnetName: to.StrPtr(m["vnet_name"].(string)),
 	}
-	for _, i := range m["private_ips"].([]interface{}) {
-		output.PrivateIps = append(output.PrivateIps, i.(string))
-	}
-	for _, i := range m["public_ips"].([]interface{}) {
-		output.PublicIps = append(output.PublicIps, i.(string))
-	}
-	for _, i := range m["vm_names"].([]interface{}) {
-		output.VmNames = append(output.VmNames, i.(string))
+	for _, i := range m["vm_groups"].([]interface{}) {
+		vmGroup := i.(map[string]interface{})
+		outputVmGroup := azbi.OutputVmGroup{
+			Name: vmGroup["vm_group_name"].(string),
+		}
+		for _, j := range vmGroup["vms"].([]interface{}) {
+			vm := j.(map[string]interface{})
+			outputVm := azbi.OutputVm{
+				Name:     vm["vm_name"].(string),
+				PublicIp: vm["public_ip"].(string),
+			}
+			for _, k := range vm["private_ips"].([]interface{}) {
+				outputVm.PrivateIps = append(outputVm.PrivateIps, k.(string))
+			}
+			outputVmGroup.Vms = append(outputVmGroup.Vms, outputVm)
+		}
+		output.VmGroups = append(output.VmGroups, outputVmGroup)
 	}
 	return output
 }
