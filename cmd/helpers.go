@@ -125,13 +125,13 @@ func produceOutput(m map[string]interface{}) *azbi.Output {
 	for _, i := range m["vm_groups"].([]interface{}) {
 		vmGroup := i.(map[string]interface{})
 		outputVmGroup := azbi.OutputVmGroup{
-			Name: vmGroup["vm_group_name"].(string),
+			Name: to.StrPtr(vmGroup["vm_group_name"].(string)),
 		}
 		for _, j := range vmGroup["vms"].([]interface{}) {
 			vm := j.(map[string]interface{})
 			outputVm := azbi.OutputVm{
-				Name:     vm["vm_name"].(string),
-				PublicIp: vm["public_ip"].(string),
+				Name:     to.StrPtr(vm["vm_name"].(string)),
+				PublicIp: to.StrPtr(vm["public_ip"].(string)),
 			}
 			for _, k := range vm["private_ips"].([]interface{}) {
 				outputVm.PrivateIps = append(outputVm.PrivateIps, k.(string))
