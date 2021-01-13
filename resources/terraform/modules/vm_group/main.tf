@@ -68,10 +68,10 @@ resource "azurerm_linux_virtual_machine" "vm" {
   }
 
   source_image_reference {
-    publisher = var.vm_group.image.publisher
-    offer     = var.vm_group.image.offer
-    sku       = var.vm_group.image.sku
-    version   = var.vm_group.image.version
+    publisher = var.vm_group.vm_image.publisher
+    offer     = var.vm_group.vm_image.offer
+    sku       = var.vm_group.vm_image.sku
+    version   = var.vm_group.vm_image.version
   }
 
   os_disk {

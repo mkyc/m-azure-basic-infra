@@ -48,7 +48,7 @@ variable vm_groups {
     vm_size       = string
     use_public_ip = bool
     subnet_names  = list(string)
-    image         = object({
+    vm_image      = object({
       publisher = string
       offer     = string
       sku       = string
@@ -62,7 +62,7 @@ variable vm_groups {
       vm_size       = "Standard_DS2_v2"
       use_public_ip = true
       subnet_names  = ["subnet0"]
-      image         = {
+      vm_image      = {
         publisher = "Canonical"
         offer     = "UbuntuServer"
         sku       = "18.04-LTS"

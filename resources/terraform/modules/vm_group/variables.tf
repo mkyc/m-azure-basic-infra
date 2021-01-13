@@ -42,7 +42,7 @@ variable vm_group {
     vm_size       = string
     use_public_ip = bool
     subnet_names  = list(string)
-    image         = object({
+    vm_image      = object({
       publisher = string
       offer     = string
       sku       = string

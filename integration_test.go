@@ -94,7 +94,7 @@ func TestInit(t *testing.T) {
 			"vm_size": "Standard_DS2_v2",
 			"use_public_ip": true,
 			"subnet_names": ["main"],
-			"image": {
+			"vm_image": {
 				"publisher": "Canonical",
 				"offer": "UbuntuServer",
 				"sku": "18.04-LTS",
@@ -128,7 +128,7 @@ func TestInit(t *testing.T) {
 			"vm_size": "Standard_DS2_v2",
 			"use_public_ip": true,
 			"subnet_names": ["main"],
-			"image": {
+			"vm_image": {
 				"publisher": "Canonical",
 				"offer": "UbuntuServer",
 				"sku": "18.04-LTS",
@@ -168,7 +168,7 @@ func TestInit(t *testing.T) {
 			"vm_size": "Standard_DS2_v2",
 			"use_public_ip": true,
 			"subnet_names": ["main"],
-			"image": {
+			"vm_image": {
 				"publisher": "Canonical",
 				"offer": "UbuntuServer",
 				"sku": "18.04-LTS",
@@ -202,7 +202,7 @@ func TestInit(t *testing.T) {
 			"vm_size": "Standard_DS2_v2",
 			"use_public_ip": true,
 			"subnet_names": ["main"],
-			"image": {
+			"vm_image": {
 				"publisher": "Canonical",
 				"offer": "UbuntuServer",
 				"sku": "18.04-LTS",
