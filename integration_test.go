@@ -194,7 +194,7 @@ func TestInit(t *testing.T) {
 		],
 		"vm_groups": [{
 			"name": "vm-group0",
-			"vm_count": 3,
+			"vm_count": 1,
 			"vm_size": "Standard_DS2_v2",
 			"use_public_ip": true,
 			"subnet_names": ["main"],
