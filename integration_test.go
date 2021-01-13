@@ -73,11 +73,9 @@ func TestInit(t *testing.T) {
 			wantOutput: `Initialized config: 
 {
 	"kind": "azbi",
-	"version": "v0.0.2",
+	"version": "v0.1.0",
 	"params": {
 		"name": "epiphany",
-		"vms_count": 3,
-		"use_public_ip": true,
 		"location": "northeurope",
 		"address_space": [
 			"10.0.0.0/16"
@@ -90,17 +88,28 @@ func TestInit(t *testing.T) {
 				]
 			}
 		],
+		"vm_groups": [{
+			"name": "vm-group0",
+			"vm_count": 1,
+			"vm_size": "Standard_DS2_v2",
+			"use_public_ip": true,
+			"subnet_names": ["main"],
+			"image": {
+				"publisher": "Canonical",
+				"offer": "UbuntuServer",
+				"sku": "18.04-LTS",
+				"version": "18.04.202006101"
+			}
+		}],
 		"rsa_pub_path": "/shared/vms_rsa.pub"
 	}
 }`,
 			wantConfigLocation: "azbi/azbi-config.json",
 			wantConfigContent: `{
 	"kind": "azbi",
-	"version": "v0.0.2",
+	"version": "v0.1.0",
 	"params": {
 		"name": "epiphany",
-		"vms_count": 3,
-		"use_public_ip": true,
 		"location": "northeurope",
 		"address_space": [
 			"10.0.0.0/16"
@@ -113,25 +122,34 @@ func TestInit(t *testing.T) {
 				]
 			}
 		],
+		"vm_groups": [{
+			"name": "vm-group0",
+			"vm_count": 1,
+			"vm_size": "Standard_DS2_v2",
+			"use_public_ip": true,
+			"subnet_names": ["main"],
+			"image": {
+				"publisher": "Canonical",
+				"offer": "UbuntuServer",
+				"sku": "18.04-LTS",
+				"version": "18.04.202006101"
+			}
+		}],
 		"rsa_pub_path": "/shared/vms_rsa.pub"
 	}
 }`,
 		},
 		{
-			name: "init 2 machines no public ips and named rg",
+			name: "pass name and vms_rsa cli arguments",
 			initParams: map[string]string{
-				"--vms_count":  "2",
-				"--public_ips": "false",
-				"--name":       "azbi-module-tests",
-				"--vms_rsa":    "test_vms_rsa"},
+				"--name":    "azbi-module-tests",
+				"--vms_rsa": "test_vms_rsa"},
 			wantOutput: `Initialized config: 
 {
 	"kind": "azbi",
 	"version": "v0.0.2",
 	"params": {
 		"name": "azbi-module-tests",
-		"vms_count": 2,
-		"use_public_ip": false,
 		"location": "northeurope",
 		"address_space": [
 			"10.0.0.0/16"
@@ -144,17 +162,28 @@ func TestInit(t *testing.T) {
 				]
 			}
 		],
+		"vm_groups": [{
+			"name": "vm-group0",
+			"vm_count": 1,
+			"vm_size": "Standard_DS2_v2",
+			"use_public_ip": true,
+			"subnet_names": ["main"],
+			"image": {
+				"publisher": "Canonical",
+				"offer": "UbuntuServer",
+				"sku": "18.04-LTS",
+				"version": "18.04.202006101"
+			}
+		}],
 		"rsa_pub_path": "/shared/test_vms_rsa.pub"
 	}
 }`,
 			wantConfigLocation: "azbi/azbi-config.json",
 			wantConfigContent: `{
 	"kind": "azbi",
-	"version": "v0.0.2",
+	"version": "v0.1.0",
 	"params": {
 		"name": "azbi-module-tests",
-		"vms_count": 2,
-		"use_public_ip": false,
 		"location": "northeurope",
 		"address_space": [
 			"10.0.0.0/16"
@@ -167,6 +196,19 @@ func TestInit(t *testing.T) {
 				]
 			}
 		],
+		"vm_groups": [{
+			"name": "vm-group0",
+			"vm_count": 3,
+			"vm_size": "Standard_DS2_v2",
+			"use_public_ip": true,
+			"subnet_names": ["main"],
+			"image": {
+				"publisher": "Canonical",
+				"offer": "UbuntuServer",
+				"sku": "18.04-LTS",
+				"version": "18.04.202006101"
+			}
+		}],
 		"rsa_pub_path": "/shared/test_vms_rsa.pub"
 	}
 }`,
@@ -209,17 +251,15 @@ func TestPlan(t *testing.T) {
 		wantTerraformStateFileLocation string
 	}{
 		{
-			name: "plan 2 machines no public ips and named rg",
+			name: "default plan",
 			initParams: map[string]string{
-				"--vms_count":  "2",
-				"--public_ips": "false",
-				"--name":       "azbi-module-tests",
-				"--vms_rsa":    "test_vms_rsa"},
-			wantPlanOutputLastLine: "\tAdd: 7, Change: 0, Destroy: 0",
+				"--name":    "azbi-module-tests",
+				"--vms_rsa": "test_vms_rsa"},
+			wantPlanOutputLastLine: "\tAdd: 8, Change: 0, Destroy: 0",
 			wantStateLocation:      "state.json",
 			wantStateContent: `{
 	"kind": "state",
-	"version": "v0.0.1",
+	"version": "v0.0.2",
 	"azbi": {
 		"status": "initialized",
 		"config": null,
@@ -271,24 +311,12 @@ func TestApply(t *testing.T) {
 		wantApplyOutputLastLine string
 	}{
 		{
-			name: "apply 2 machines no public ips and named rg",
+			name: "default apply",
 			initParams: map[string]string{
-				"--vms_count":  "2",
-				"--public_ips": "false",
-				"--name":       "azbi-module-tests",
-				"--vms_rsa":    "test_vms_rsa"},
-			wantPlanOutputLastLine:  "\tAdd: 7, Change: 0, Destroy: 0",
-			wantApplyOutputLastLine: "\tAdd: 7, Change: 0, Destroy: 0",
-		},
-		{
-			name: "apply 2 machines with public ips and named rg",
-			initParams: map[string]string{
-				"--vms_count":  "2",
-				"--public_ips": "true",
-				"--name":       "azbi-module-tests",
-				"--vms_rsa":    "test_vms_rsa"},
-			wantPlanOutputLastLine:  "\tAdd: 12, Change: 0, Destroy: 0",
-			wantApplyOutputLastLine: "\tAdd: 12, Change: 0, Destroy: 0",
+				"--name":    "azbi-module-tests",
+				"--vms_rsa": "test_vms_rsa"},
+			wantPlanOutputLastLine:  "\tAdd: 8, Change: 0, Destroy: 0",
+			wantApplyOutputLastLine: "\tAdd: 8, Change: 0, Destroy: 0",
 		},
 	}
 
@@ -310,20 +338,20 @@ func TestApply(t *testing.T) {
 				t.Error(diff)
 			}
 
-			if v, ok := tt.initParams["--public_ips"]; ok && v == "true" {
-				data, err := ioutil.ReadFile(path.Join(localSharedPath, "state.json"))
-				if err != nil {
-					t.Fatal(err)
-				}
-				state := &st.State{}
-				err = state.Unmarshall(data)
-				if err != nil {
-					t.Fatal(err)
-				}
-				publicIPs := state.AzBI.Output.PublicIps
-				for _, p := range publicIPs {
-					validateSshConnectivity(t, privateKey, p)
-				}
+			// public IPs are enabled by default
+			data, err := ioutil.ReadFile(path.Join(localSharedPath, "state.json"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			state := &st.State{}
+			err = state.Unmarshal(data)
+			if err != nil {
+				t.Fatal(err)
+			}
+			// check connectivity to all VMs from default VM group
+			Vms := state.AzBI.Output.VmGroups[0].Vms
+			for _, vm := range Vms {
+				validateSshConnectivity(t, privateKey, *vm.PublicIp)
 			}
 		})
 	}
