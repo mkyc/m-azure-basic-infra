@@ -46,4 +46,66 @@ make release VERSION=number_of_your_choice
 # Run tests
 
 Tests are described in a separate [document](TESTS.md).
- 
+
+# Develop locally with e-structures repository
+
+Assuming you have [e-structures](https://github.com/epiphany-platform/e-structures) repository downloaded locally to directory `../../epiphany-platform/e-structures/` relatively to this repository directory, you should introduce following changes to develop locally with changes introduced also locally in e-structures repository: 
+
+* Add copying and removing instructions to Makefile build target: 
+
+    Change: 
+    
+    ```
+    build: guard-VERSION guard-IMAGE guard-USER
+        docker build \
+            --build-arg ARG_M_VERSION=$(VERSION) \
+            --build-arg ARG_HOST_UID=$(HOST_UID) \
+            --build-arg ARG_HOST_GID=$(HOST_GID) \
+            -t $(IMAGE_NAME) \
+            .
+    ``` 
+    
+    into: 
+    
+    ```
+    build: guard-VERSION guard-IMAGE guard-USER
+        rm -rf ./tmp
+        mkdir -p ./tmp
+        cp -R ../../epiphany-platform/e-structures/ ./tmp
+        docker build \
+            --build-arg ARG_M_VERSION=$(VERSION) \
+            --build-arg ARG_HOST_UID=$(HOST_UID) \
+            --build-arg ARG_HOST_GID=$(HOST_GID) \
+            -t $(IMAGE_NAME) \
+            .
+        rm -rf ./tmp
+    ```
+
+* Add new line to Dockerfile
+
+    Change: 
+    
+    ```
+    ...
+    COPY . $GOPATH/src/$GO_MODULE_NAME
+    ...
+    ```
+    
+    into: 
+    
+    ```
+    ...
+    COPY . $GOPATH/src/$GO_MODULE_NAME
+    COPY tmp $GOPATH/src/github.com/epiphany-platform/e-structures
+    ...
+    ```
+
+* Add the new section to go.mod file
+
+    The new section: 
+    
+    ```
+    replace (
+        github.com/epiphany-platform/e-structures => ../../epiphany-platform/e-structures
+    )
+    ```
