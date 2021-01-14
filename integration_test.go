@@ -84,21 +84,23 @@ func TestInit(t *testing.T) {
 				]
 			}
 		],
-		"vm_groups": [{
-			"name": "vm-group0",
-			"vm_count": 1,
-			"vm_size": "Standard_DS2_v2",
-			"use_public_ip": true,
-			"subnet_names": [
-				"main"
-			],
-			"vm_image": {
-				"publisher": "Canonical",
-				"offer": "UbuntuServer",
-				"sku": "18.04-LTS",
-				"version": "18.04.202006101"
+		"vm_groups": [
+			{
+				"name": "vm-group0",
+				"vm_count": 1,
+				"vm_size": "Standard_DS2_v2",
+				"use_public_ip": true,
+				"subnet_names": [
+					"main"
+				],
+				"vm_image": {
+					"publisher": "Canonical",
+					"offer": "UbuntuServer",
+					"sku": "18.04-LTS",
+					"version": "18.04.202006101"
+				}
 			}
-		}],
+		],
 		"rsa_pub_path": "/shared/vms_rsa.pub"
 	}
 }`,
@@ -120,21 +122,23 @@ func TestInit(t *testing.T) {
 				]
 			}
 		],
-		"vm_groups": [{
-			"name": "vm-group0",
-			"vm_count": 1,
-			"vm_size": "Standard_DS2_v2",
-			"use_public_ip": true,
-			"subnet_names": [
-				"main"
-			],
-			"vm_image": {
-				"publisher": "Canonical",
-				"offer": "UbuntuServer",
-				"sku": "18.04-LTS",
-				"version": "18.04.202006101"
+		"vm_groups": [
+			{
+				"name": "vm-group0",
+				"vm_count": 1,
+				"vm_size": "Standard_DS2_v2",
+				"use_public_ip": true,
+				"subnet_names": [
+					"main"
+				],
+				"vm_image": {
+					"publisher": "Canonical",
+					"offer": "UbuntuServer",
+					"sku": "18.04-LTS",
+					"version": "18.04.202006101"
+				}
 			}
-		}],
+		],
 		"rsa_pub_path": "/shared/vms_rsa.pub"
 	}
 }`,
@@ -162,21 +166,23 @@ func TestInit(t *testing.T) {
 				]
 			}
 		],
-		"vm_groups": [{
-			"name": "vm-group0",
-			"vm_count": 1,
-			"vm_size": "Standard_DS2_v2",
-			"use_public_ip": true,
-			"subnet_names": [
-				"main"
-			],
-			"vm_image": {
-				"publisher": "Canonical",
-				"offer": "UbuntuServer",
-				"sku": "18.04-LTS",
-				"version": "18.04.202006101"
+		"vm_groups": [
+			{
+				"name": "vm-group0",
+				"vm_count": 1,
+				"vm_size": "Standard_DS2_v2",
+				"use_public_ip": true,
+				"subnet_names": [
+					"main"
+				],
+				"vm_image": {
+					"publisher": "Canonical",
+					"offer": "UbuntuServer",
+					"sku": "18.04-LTS",
+					"version": "18.04.202006101"
+				}
 			}
-		}],
+		],
 		"rsa_pub_path": "/shared/test_vms_rsa.pub"
 	}
 }`,
@@ -198,21 +204,23 @@ func TestInit(t *testing.T) {
 				]
 			}
 		],
-		"vm_groups": [{
-			"name": "vm-group0",
-			"vm_count": 1,
-			"vm_size": "Standard_DS2_v2",
-			"use_public_ip": true,
-			"subnet_names": [
-				"main"
-			],
-			"vm_image": {
-				"publisher": "Canonical",
-				"offer": "UbuntuServer",
-				"sku": "18.04-LTS",
-				"version": "18.04.202006101"
+		"vm_groups": [
+			{
+				"name": "vm-group0",
+				"vm_count": 1,
+				"vm_size": "Standard_DS2_v2",
+				"use_public_ip": true,
+				"subnet_names": [
+					"main"
+				],
+				"vm_image": {
+					"publisher": "Canonical",
+					"offer": "UbuntuServer",
+					"sku": "18.04-LTS",
+					"version": "18.04.202006101"
+				}
 			}
-		}],
+		],
 		"rsa_pub_path": "/shared/test_vms_rsa.pub"
 	}
 }`,
