@@ -1,35 +1,34 @@
-variable "vms_count" {
-  type = number
-}
-
-variable "use_public_ip" {
-  type = bool
-}
-
 variable "name" {
-  type = string
+  description = "String value to use as resources name prefix"
+  type        = string
 }
 
 variable "location" {
-  type = string
+  description = "Azure location to create resources in"
+  type        = string
+  default     = "northeurope"
 }
 
 variable "address_space" {
-  type = list(string)
+  description = "VNet address space"
+  type        = list(string)
+  default     = ["10.0.0.0/16"]
 }
 
 variable "rsa_pub_path" {
-  type = string
+  description = "The filesystem path to SSH public key"
+  type        = string
 }
 
 variable "subnets" {
-  type    = list(object({
+  description = "The list of subnets definition objects"
+  type        = list(object({
     name             = string
     address_prefixes = list(string)
   }))
-  default = [
+  default     = [
     {
-      name             = "some-subnet1"
+      name             = "subnet0"
       address_prefixes = [
         "10.0.1.0/24"
       ]
@@ -39,4 +38,36 @@ variable "subnets" {
     condition     = length(var.subnets) > 0
     error_message = "Subnets list needs to have at least one element."
   }
+}
+
+variable vm_groups {
+  description = "The list of VM group definition objects"
+  type        = list(object({
+    name          = string
+    vm_count      = number
+    vm_size       = string
+    use_public_ip = bool
+    subnet_names  = list(string)
+    vm_image      = object({
+      publisher = string
+      offer     = string
+      sku       = string
+      version   = string
+    })
+  }))
+  default     = [
+    {
+      name          = "vm-group0"
+      vm_count      = 1
+      vm_size       = "Standard_DS2_v2"
+      use_public_ip = true
+      subnet_names  = ["subnet0"]
+      vm_image      = {
+        publisher = "Canonical"
+        offer     = "UbuntuServer"
+        sku       = "18.04-LTS"
+        version   = "18.04.202006101"
+      }
+    }
+  ]
 }

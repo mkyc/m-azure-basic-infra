@@ -2,7 +2,8 @@
 
 Epiphany Module: Azure Basic Infrastructure
 
-AzBI module is responsible for providing basic cloud resources (eg. resource groups, virtual networks, subnets, virtual machines etc.) which will be used by upcoming modules.
+AzBI module is responsible for providing basic cloud resources (eg. resource groups, virtual networks, subnets, virtual
+machines etc.) which will be used by upcoming modules.
 
 # Basic usage
 
@@ -26,19 +27,28 @@ Requirements are listed in a separate [document](docs/REQUIREMENTS.md).
   ssh-keygen -t rsa -b 4096 -f /tmp/shared/vms_rsa -N ''
   ```
 
+* Build Docker image if development version is used
+
+  ```shell
+  make build
+  ```
+
 * Initialize AzBI module:
 
   ```shell
-  docker run --rm -v /tmp/shared:/shared epiphanyplatform/azbi:dev init --vms_count=2 --public_ips=true --name=epiphany-modules-test
+  docker run --rm -v /tmp/shared:/shared epiphanyplatform/azbi:dev init --name=epiphany-modules-test
   ```
 
-  :star: Variable values can be passed as docker environment variables as well. In presented example we could use `docker run` command `-e VMS_COUNT=2` parameter instead of `--vms_count=2` command parameter. 
+  :star: Variable values can be passed as docker environment variables as well. In presented example we could
+  use `docker run` command `-e NAME=2` parameter instead of `--name=epiphany-modules-test` command parameter.
 
   :warning: Use image's tag according to tag generated in build step.
 
-  This command will create configuration file of AzBI module in /tmp/shared/azbi/azbi-config.yml. You can investigate what is stored in that file. Available parameters are described in the [inputs](docs/INPUTS.adoc) document.
+  This command will create configuration file of AzBI module in /tmp/shared/azbi/azbi-config.yml. You can investigate
+  what is stored in that file. Available parameters are described in the [inputs](docs/INPUTS.adoc) document.
 
-  :warning: Pay attention to the docker image tag you are using. Command `make build` command uses a specific version tag (default `epiphanyplatrofm/azbi:dev`).
+  :warning: Pay attention to the docker image tag you are using. Command `make build` command uses a specific version
+  tag (default `epiphanyplatrofm/azbi:dev`).
 
 * Plan and apply AzBI module:
 
@@ -46,9 +56,11 @@ Requirements are listed in a separate [document](docs/REQUIREMENTS.md).
   docker run --rm -v /tmp/shared:/shared -e SUBSCRIPTION_ID=subscriptionId -e CLIENT_ID=appId -e CLIENT_SECRET=password -e TENANT_ID=tenantId epiphanyplatform/azbi:dev plan
   docker run --rm -v /tmp/shared:/shared -e SUBSCRIPTION_ID=subscriptionId -e CLIENT_ID=appId -e CLIENT_SECRET=password -e TENANT_ID=tenantId epiphanyplatform/azbi:dev apply
   ```
-  :star: Variable values can be passed as docker environment variables. I's often more convenient to pass sensitive values as presented.
-   
-  Running those commands should create resource group, vnet, subnet and 2 virtual machines. You should verify in Azure Portal.
+  :star: Variable values can be passed as docker environment variables. I's often more convenient to pass sensitive
+  values as presented.
+
+  Running those commands should create resource group, vnet, subnet and 2 virtual machines. You should verify in Azure
+  Portal.
 
 * Destroy module resources:
 
@@ -64,18 +76,16 @@ Requirements are listed in a separate [document](docs/REQUIREMENTS.md).
 
 The output from this module is:
 
-* private_ips
-* public_ips
-* vm_names
 * rg_name
 * vnet_name
+* vm_groups
 
 # Examples
 
-For examples runing description please have a look into [this document](docs/EXAMPLES.md).
+For examples running description please have a look into [this document](docs/EXAMPLES.md).
 
 # Development
- 
+
 For development related topics please look into [this document](docs/DEVELOPMENT.md).
 
 # Module dependencies

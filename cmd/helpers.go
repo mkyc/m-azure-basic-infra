@@ -27,7 +27,7 @@ func loadState(path string) (*st.State, error) {
 		if err != nil {
 			return nil, err
 		}
-		err = state.Unmarshall(bytes)
+		err = state.Unmarshal(bytes)
 		if err != nil {
 			return nil, err
 		}
@@ -36,7 +36,7 @@ func loadState(path string) (*st.State, error) {
 }
 
 func saveState(path string, state *st.State) error {
-	bytes, err := state.Marshall()
+	bytes, err := state.Marshal()
 	if err != nil {
 		return err
 	}
@@ -56,7 +56,7 @@ func loadConfig(path string) (*azbi.Config, error) {
 		if err != nil {
 			return nil, err
 		}
-		err = config.Unmarshall(bytes)
+		err = config.Unmarshal(bytes)
 		if err != nil {
 			return nil, err
 		}
@@ -65,7 +65,7 @@ func loadConfig(path string) (*azbi.Config, error) {
 }
 
 func saveConfig(path string, config *azbi.Config) error {
-	bytes, err := config.Marshall()
+	bytes, err := config.Marshal()
 	if err != nil {
 		return err
 	}
@@ -117,18 +117,28 @@ func backupFile(path string) error {
 }
 
 func produceOutput(m map[string]interface{}) *azbi.Output {
+	logger.Debug().Msgf("Received output map: %#v", m)
 	output := &azbi.Output{
 		RgName:   to.StrPtr(m["rg_name"].(string)),
 		VnetName: to.StrPtr(m["vnet_name"].(string)),
 	}
-	for _, i := range m["private_ips"].([]interface{}) {
-		output.PrivateIps = append(output.PrivateIps, i.(string))
-	}
-	for _, i := range m["public_ips"].([]interface{}) {
-		output.PublicIps = append(output.PublicIps, i.(string))
-	}
-	for _, i := range m["vm_names"].([]interface{}) {
-		output.VmNames = append(output.VmNames, i.(string))
+	for _, i := range m["vm_groups"].([]interface{}) {
+		vmGroup := i.(map[string]interface{})
+		outputVmGroup := azbi.OutputVmGroup{
+			Name: to.StrPtr(vmGroup["vm_group_name"].(string)),
+		}
+		for _, j := range vmGroup["vms"].([]interface{}) {
+			vm := j.(map[string]interface{})
+			outputVm := azbi.OutputVm{
+				Name:     to.StrPtr(vm["vm_name"].(string)),
+				PublicIp: to.StrPtr(vm["public_ip"].(string)),
+			}
+			for _, k := range vm["private_ips"].([]interface{}) {
+				outputVm.PrivateIps = append(outputVm.PrivateIps, k.(string))
+			}
+			outputVmGroup.Vms = append(outputVmGroup.Vms, outputVm)
+		}
+		output.VmGroups = append(output.VmGroups, outputVmGroup)
 	}
 	return output
 }
