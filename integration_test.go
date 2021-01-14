@@ -151,7 +151,7 @@ func TestInit(t *testing.T) {
 			wantOutput: `Initialized config: 
 {
 	"kind": "azbi",
-	"version": "v0.0.2",
+	"version": "v0.1.0",
 	"params": {
 		"name": "azbi-module-tests",
 		"location": "northeurope",
