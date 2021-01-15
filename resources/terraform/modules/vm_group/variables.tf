@@ -48,6 +48,10 @@ variable vm_group {
       sku       = string
       version   = string
     })
+    data_disks    = list(object({
+      disk_size_gb = number
+      mount_point  = string
+    }))
   })
 }
 

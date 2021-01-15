@@ -80,3 +80,23 @@ resource "azurerm_linux_virtual_machine" "vm" {
     storage_account_type = "Premium_LRS"
   }
 }
+
+#Create managed data disks
+resource "azurerm_managed_disk" "data_disks" {
+  count                = length(local.vms_data_disks_product)
+  name                 = "${var.name}-${var.vm_group.name}-${local.vms_data_disks_product[count.index][0]}-data-disk-${local.vms_data_disks_product[count.index][1]}"
+  location             = var.location
+  resource_group_name  = var.rg_name
+  storage_account_type = "Premium_LRS"
+  create_option        = "Empty"
+  disk_size_gb         = var.vm_group.data_disks[local.vms_data_disks_product[count.index][1]].disk_size_gb
+}
+
+#Attach data disk to vm
+resource "azurerm_virtual_machine_data_disk_attachment" "vms-dds-attachment" {
+  count              = length(local.vms_data_disks_product)
+  caching            = "ReadWrite"
+  lun                = 10 + count.index
+  managed_disk_id    = azurerm_managed_disk.data_disks[local.vms_data_disks_product[count.index][1]].id
+  virtual_machine_id = azurerm_linux_virtual_machine.vm[local.vms_data_disks_product[count.index][0]].id
+}
