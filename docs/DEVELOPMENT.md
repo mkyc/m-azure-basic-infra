@@ -68,7 +68,7 @@ Assuming you have [e-structures](https://github.com/epiphany-platform/e-structur
     into: 
     
     ```
-    build: guard-VERSION guard-IMAGE guard-USER
+    build: guard-IMAGE_NAME
         rm -rf ./tmp
         mkdir -p ./tmp
         cp -R ../../epiphany-platform/e-structures/ ./tmp
