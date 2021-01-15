@@ -6,6 +6,8 @@ ARG ARG_M_VERSION="dev"
 ENV M_VERSION=$ARG_M_VERSION
 RUN mkdir -p $GOPATH/src/$GO_MODULE_NAME
 COPY . $GOPATH/src/$GO_MODULE_NAME
+#TODO remove
+COPY tmp $GOPATH/src/github.com/epiphany-platform/e-structures
 WORKDIR $GOPATH/src/$GO_MODULE_NAME
 RUN go get -v
 RUN go get github.com/ahmetb/govvv

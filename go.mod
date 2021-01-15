@@ -2,6 +2,11 @@ module github.com/epiphany-platform/m-azure-basic-infrastructure
 
 go 1.15
 
+//TODO remove
+replace (
+	github.com/epiphany-platform/e-structures => ../../epiphany-platform/e-structures
+)
+
 require (
 	github.com/Azure/azure-sdk-for-go v48.0.0+incompatible
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.3
