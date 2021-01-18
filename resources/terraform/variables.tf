@@ -56,7 +56,6 @@ variable vm_groups {
     })
     data_disks = list(object({
       disk_size_gb = number
-      mount_point = string
     }))
   }))
   default     = [
@@ -74,8 +73,7 @@ variable vm_groups {
       }
       data_disks = [
         {
-          disk_size_gb = 100
-          mount_point = "/data"
+          disk_size_gb = 10
         }
       ]
     }
