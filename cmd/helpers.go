@@ -118,6 +118,16 @@ func backupFile(path string) error {
 
 func produceOutput(m map[string]interface{}) *azbi.Output {
 	logger.Debug().Msgf("Received output map: %#v", m)
+	type dd struct {
+		id   string
+		name string
+		size int
+	}
+	type dda struct {
+		lun              int
+		managedDiskId    string
+		virtualMachineId string
+	}
 	output := &azbi.Output{
 		RgName:   to.StrPtr(m["rg_name"].(string)),
 		VnetName: to.StrPtr(m["vnet_name"].(string)),
@@ -127,14 +137,49 @@ func produceOutput(m map[string]interface{}) *azbi.Output {
 		outputVmGroup := azbi.OutputVmGroup{
 			Name: to.StrPtr(vmGroup["vm_group_name"].(string)),
 		}
+		dataDisks := make([]dd, 0)
+		for _, j := range vmGroup["data_disks"].([]interface{}) {
+			intermediateDataDisk := j.(map[string]interface{})
+			dataDisks = append(dataDisks,
+				dd{
+					id:   intermediateDataDisk["id"].(string),
+					name: intermediateDataDisk["name"].(string),
+					size: int(intermediateDataDisk["size"].(float64)),
+				})
+		}
+		logger.Debug().Msgf("Intermediate data disks struct list: %#v", dataDisks)
+		dataDiskAttachments := make([]dda, 0)
+		for _, j := range vmGroup["dd_attachments"].([]interface{}) {
+			intermediateDataDiskAttachment := j.(map[string]interface{})
+			dataDiskAttachments = append(dataDiskAttachments,
+				dda{
+					lun:              int(intermediateDataDiskAttachment["lun"].(float64)),
+					managedDiskId:    intermediateDataDiskAttachment["managed_disk_id"].(string),
+					virtualMachineId: intermediateDataDiskAttachment["virtual_machine_id"].(string),
+				})
+		}
+		logger.Debug().Msgf("Intermediate data disk attachments struct list: %#v", dataDiskAttachments)
 		for _, j := range vmGroup["vms"].([]interface{}) {
-			vm := j.(map[string]interface{})
+			intermediateVm := j.(map[string]interface{})
 			outputVm := azbi.OutputVm{
-				Name:     to.StrPtr(vm["vm_name"].(string)),
-				PublicIp: to.StrPtr(vm["public_ip"].(string)),
+				Name:     to.StrPtr(intermediateVm["vm_name"].(string)),
+				PublicIp: to.StrPtr(intermediateVm["public_ip"].(string)),
 			}
-			for _, k := range vm["private_ips"].([]interface{}) {
+			for _, k := range intermediateVm["private_ips"].([]interface{}) {
 				outputVm.PrivateIps = append(outputVm.PrivateIps, k.(string))
+			}
+			vmId := intermediateVm["id"].(string)
+			for _, dda := range dataDiskAttachments {
+				if dda.virtualMachineId == vmId {
+					for _, dd := range dataDisks {
+						if dd.id == dda.managedDiskId {
+							outputVm.DataDisks = append(outputVm.DataDisks, azbi.OutputDataDisk{
+								Size: to.IntPtr(dd.size),
+								Lun:  to.IntPtr(dda.lun),
+							})
+						}
+					}
+				}
 			}
 			outputVmGroup.Vms = append(outputVmGroup.Vms, outputVm)
 		}
