@@ -97,7 +97,7 @@ resource "azurerm_managed_disk" "data_disks" {
 resource "azurerm_virtual_machine_data_disk_attachment" "vms-dds-attachment" {
   count              = length(local.vms_data_disks_product)
   caching            = "ReadWrite"
-  lun                = 10 + count.index
+  lun                = 10 + local.vms_data_disks_product[count.index][1]
   managed_disk_id    = azurerm_managed_disk.data_disks[count.index].id
   virtual_machine_id = azurerm_linux_virtual_machine.vm[local.vms_data_disks_product[count.index][0]].id
 }
