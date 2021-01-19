@@ -73,7 +73,7 @@ variable vm_groups {
       }
       data_disks = [
         {
-          disk_size_gb = 10
+          disk_size_gb = 16
         }
       ]
     }

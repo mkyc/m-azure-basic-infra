@@ -124,10 +124,10 @@ There is a simple way to develop terraform scripts independently of module.
    2021-01-15T13:42:27Z INF go/src/github.com/epiphany-platform/m-azure-basic-infrastructure/cmd/common.go:68 > {"name":"epiphany","location":"northeurope","address_space":["10.0.0.0/16"],"subnets":[{"name":"main","address_prefixes":["10.0.1.0/24"]}],"vm_groups":[{"name":"vm-group0","vm_count":1,"vm_size":"Standard_DS2_v2","use_public_ip":true,"subnet_names":["main"],"vm_image":{"publisher":"Canonical","offer":"UbuntuServer","sku":"18.04-LTS","version":"18.04.202006101"}}],"rsa_pub_path":"/shared/vms_rsa.pub"}
    ...
    ```
-1) you should copy provided JSON to file `./terraform/terraform.tfvars.json` relatively to `resources` directory. 
+1) you should copy provided JSON to file `./terraform/terraform.tfvars.json` relatively to `resources` directory
 1) run `mkdir shared` also in that `resources` directory
 1) run `ssh-keygen -t rsa -b 4096 -f ./shared/vms_rsa -N ''` to generate required key pair
-1) now you can run terraform directly from `resources` directory. 
+1) now you can run terraform directly from `resources` directory
 
 To be able to run version of terraform that scripts require you can use following docker snippet: 
 
