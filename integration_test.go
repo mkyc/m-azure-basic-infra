@@ -69,7 +69,7 @@ func TestInit(t *testing.T) {
 			wantOutput: `Initialized config: 
 {
 	"kind": "azbi",
-	"version": "v0.1.0",
+	"version": "v0.1.1",
 	"params": {
 		"name": "epiphany",
 		"location": "northeurope",
@@ -98,7 +98,12 @@ func TestInit(t *testing.T) {
 					"offer": "UbuntuServer",
 					"sku": "18.04-LTS",
 					"version": "18.04.202006101"
-				}
+				},
+				"data_disks": [
+					{
+						"disk_size_gb": 10
+					}
+				]
 			}
 		],
 		"rsa_pub_path": "/shared/vms_rsa.pub"
@@ -107,7 +112,7 @@ func TestInit(t *testing.T) {
 			wantConfigLocation: "azbi/azbi-config.json",
 			wantConfigContent: `{
 	"kind": "azbi",
-	"version": "v0.1.0",
+	"version": "v0.1.1",
 	"params": {
 		"name": "epiphany",
 		"location": "northeurope",
@@ -136,7 +141,12 @@ func TestInit(t *testing.T) {
 					"offer": "UbuntuServer",
 					"sku": "18.04-LTS",
 					"version": "18.04.202006101"
-				}
+				},
+				"data_disks": [
+					{
+						"disk_size_gb": 10
+					}
+				]
 			}
 		],
 		"rsa_pub_path": "/shared/vms_rsa.pub"
@@ -151,7 +161,7 @@ func TestInit(t *testing.T) {
 			wantOutput: `Initialized config: 
 {
 	"kind": "azbi",
-	"version": "v0.1.0",
+	"version": "v0.1.1",
 	"params": {
 		"name": "azbi-module-tests",
 		"location": "northeurope",
@@ -180,7 +190,12 @@ func TestInit(t *testing.T) {
 					"offer": "UbuntuServer",
 					"sku": "18.04-LTS",
 					"version": "18.04.202006101"
-				}
+				},
+				"data_disks": [
+					{
+						"disk_size_gb": 10
+					}
+				]
 			}
 		],
 		"rsa_pub_path": "/shared/test_vms_rsa.pub"
@@ -189,7 +204,7 @@ func TestInit(t *testing.T) {
 			wantConfigLocation: "azbi/azbi-config.json",
 			wantConfigContent: `{
 	"kind": "azbi",
-	"version": "v0.1.0",
+	"version": "v0.1.1",
 	"params": {
 		"name": "azbi-module-tests",
 		"location": "northeurope",
@@ -218,7 +233,12 @@ func TestInit(t *testing.T) {
 					"offer": "UbuntuServer",
 					"sku": "18.04-LTS",
 					"version": "18.04.202006101"
-				}
+				},
+				"data_disks": [
+					{
+						"disk_size_gb": 10
+					}
+				]
 			}
 		],
 		"rsa_pub_path": "/shared/test_vms_rsa.pub"
@@ -267,7 +287,7 @@ func TestPlan(t *testing.T) {
 			initParams: map[string]string{
 				"--name":    "azbi-module-tests",
 				"--vms_rsa": "test_vms_rsa"},
-			wantPlanOutputLastLine: "\tAdd: 8, Change: 0, Destroy: 0",
+			wantPlanOutputLastLine: "\tAdd: 10, Change: 0, Destroy: 0",
 			wantStateLocation:      "state.json",
 			wantStateContent: `{
 	"kind": "state",
@@ -327,8 +347,8 @@ func TestApply(t *testing.T) {
 			initParams: map[string]string{
 				"--name":    "azbi-module-tests",
 				"--vms_rsa": "test_vms_rsa"},
-			wantPlanOutputLastLine:  "\tAdd: 8, Change: 0, Destroy: 0",
-			wantApplyOutputLastLine: "\tAdd: 8, Change: 0, Destroy: 0",
+			wantPlanOutputLastLine:  "\tAdd: 10, Change: 0, Destroy: 0",
+			wantApplyOutputLastLine: "\tAdd: 10, Change: 0, Destroy: 0",
 		},
 	}
 

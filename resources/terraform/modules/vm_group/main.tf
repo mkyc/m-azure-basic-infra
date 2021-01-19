@@ -39,7 +39,8 @@ resource "azurerm_network_interface" "nic" {
     name                          = "${var.name}-${var.vm_group.name}-${count.index}-ipconf"
     subnet_id                     = local.nic_vm_subnet_association[count.index][1]
     private_ip_address_allocation = "Dynamic"
-    # Assign public IPs only to the NICs in the first subnet
+    # Assign public IPs only to the first NICs in the subnet
+    # TODO why?
     public_ip_address_id          = length(azurerm_public_ip.pubip.*.id) > 0 && count.index % var.vm_group.vm_count == 0 ? azurerm_public_ip.pubip[floor(count.index / var.vm_group.vm_count)].id : ""
   }
 }
@@ -75,8 +76,28 @@ resource "azurerm_linux_virtual_machine" "vm" {
   }
 
   os_disk {
-    name                 = "${var.name}-${var.vm_group.name}-${count.index}-disk"
+    name                 = "${var.name}-${var.vm_group.name}-${count.index}-os-disk"
     caching              = "ReadWrite"
     storage_account_type = "Premium_LRS"
   }
+}
+
+#Create managed data disks
+resource "azurerm_managed_disk" "data_disks" {
+  count                = length(local.vms_data_disks_product)
+  name                 = "${var.name}-${var.vm_group.name}-${local.vms_data_disks_product[count.index][0]}-data-disk-${local.vms_data_disks_product[count.index][1]}"
+  location             = var.location
+  resource_group_name  = var.rg_name
+  storage_account_type = "Premium_LRS"
+  create_option        = "Empty"
+  disk_size_gb         = var.vm_group.data_disks[local.vms_data_disks_product[count.index][1]].disk_size_gb
+}
+
+#Attach data disk to vm
+resource "azurerm_virtual_machine_data_disk_attachment" "vms-dds-attachment" {
+  count              = length(local.vms_data_disks_product)
+  caching            = "ReadWrite"
+  lun                = 10 + local.vms_data_disks_product[count.index][1]
+  managed_disk_id    = azurerm_managed_disk.data_disks[count.index].id
+  virtual_machine_id = azurerm_linux_virtual_machine.vm[local.vms_data_disks_product[count.index][0]].id
 }

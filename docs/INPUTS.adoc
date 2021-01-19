@@ -73,7 +73,12 @@ Only fields that should not be modified are "kind" and "version" fields. All oth
 		        "offer": "UbuntuServer",
 		        "sku": "18.04-LTS",
 		        "version": "18.04.202006101"
-		    }
+		    },
+            "data_disks": [
+                {
+                    "disk_size_gb": 10
+                }
+            ]
         }],
 		"rsa_pub_path": "/shared/vms_rsa.pub"
 	}

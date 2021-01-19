@@ -78,7 +78,7 @@ The output from this module is:
 
 * rg_name
 * vnet_name
-* vm_groups
+* vm_groups (complex object)
 
 # Examples
 

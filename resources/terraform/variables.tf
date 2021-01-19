@@ -54,6 +54,9 @@ variable vm_groups {
       sku       = string
       version   = string
     })
+    data_disks = list(object({
+      disk_size_gb = number
+    }))
   }))
   default     = [
     {
@@ -68,6 +71,11 @@ variable vm_groups {
         sku       = "18.04-LTS"
         version   = "18.04.202006101"
       }
+      data_disks = [
+        {
+          disk_size_gb = 16
+        }
+      ]
     }
   ]
 }
