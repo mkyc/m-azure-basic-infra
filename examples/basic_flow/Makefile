@@ -28,8 +28,6 @@ init: setup
 		-v $(ROOT_DIR)/shared:/shared \
 		-t $(AZBI) \
 		init \
-		--vms_count=2 \
-		--public_ips=false \
 		--name=$(M_NAME) \
 		--vms_rsa=$(VMS_RSA_FILENAME)
 
