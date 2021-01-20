@@ -24,7 +24,7 @@ HOST_GID := $(shell id -g)
 
 all: build
 
-.PHONY: build test test-release release prepare-service-principal
+.PHONY: build test pipeline-test release prepare-service-principal
 
 build: guard-IMAGE_NAME
 	docker build \
