@@ -31,6 +31,9 @@ func loadState(path string) (*st.State, error) {
 		if err != nil {
 			return nil, err
 		}
+		if state.AzBI == nil {
+			state.AzBI = &st.AzBIState{}
+		}
 		return state, nil
 	}
 }
