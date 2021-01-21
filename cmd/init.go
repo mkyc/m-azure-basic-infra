@@ -54,6 +54,7 @@ var initCmd = &cobra.Command{
 			logger.Fatal().Err(err)
 		}
 
+		//TODO handle nil if for some reason state is empty
 		if !reflect.DeepEqual(state.AzBI, &st.AzBIState{}) && state.AzBI.Status != st.Initialized && state.AzBI.Status != st.Destroyed {
 			logger.Fatal().Err(errors.New(string("unexpected state: " + state.AzBI.Status)))
 		}
