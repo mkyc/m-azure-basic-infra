@@ -96,6 +96,7 @@ func showModulePlan(config *azbi.Config, state *st.State) error {
 	return nil
 }
 
+//TODO unify return with Apply
 func terraformPlan() string {
 	logger.Debug().Msg("terraformPlan")
 
@@ -115,15 +116,16 @@ func terraformPlan() string {
 		Logger:        ZeroLogger{},
 	})
 	if err != nil {
-		logger.Fatal().Err(err)
+		logger.Fatal().Err(err).Msg("preparing terraform options failed")
 	}
 	output, err := terra.Plan(options)
 	if err != nil {
-		logger.Fatal().Err(err)
+		logger.Fatal().Err(err).Msg("running terraform failed")
 	}
 	return output
 }
 
+//TODO unify return with Apply
 func terraformPlanDestroy() string {
 	logger.Debug().Msg("terraformPlanDestroy")
 
@@ -143,11 +145,11 @@ func terraformPlanDestroy() string {
 		Logger:        ZeroLogger{},
 	})
 	if err != nil {
-		logger.Fatal().Err(err)
+		logger.Fatal().Err(err).Msg("preparing terraform options failed")
 	}
 	output, err := terra.PlanDestroy(options)
 	if err != nil {
-		logger.Fatal().Err(err)
+		logger.Fatal().Err(err).Msg("running terraform failed")
 	}
 	return output
 }

@@ -29,7 +29,7 @@ invoking of 'apply' command, created plan file would be used.`,
 
 		err := viper.BindPFlags(cmd.Flags())
 		if err != nil {
-			logger.Fatal().Err(err)
+			logger.Fatal().Err(err).Msg("BindPFlags failed")
 		}
 
 		clientId = viper.GetString("client_id")
@@ -44,28 +44,28 @@ invoking of 'apply' command, created plan file would be used.`,
 		stateFilePath := filepath.Join(SharedDirectory, stateFileName)
 		config, state, err := checkAndLoad(stateFilePath, configFilePath)
 		if err != nil {
-			logger.Fatal().Err(err)
+			logger.Fatal().Err(err).Msg("checkAndLoad failed")
 		}
 
 		err = templateTfVars(config)
 		if err != nil {
-			logger.Fatal().Err(err)
+			logger.Fatal().Err(err).Msg("templateTfVars failed")
 		}
 		if !doDestroy {
 			err = showModulePlan(config, state)
 			if err != nil {
-				logger.Fatal().Err(err)
+				logger.Fatal().Err(err).Msg("showModulePlan failed")
 			}
 			msg, err := count(terraformPlan())
 			if err != nil {
-				logger.Fatal().Err(err)
+				logger.Fatal().Err(err).Msg("count failed")
 			}
 			logger.Info().Msg("Will perform following changes: " + msg)
 			fmt.Println("Will perform following changes: \n\t" + msg)
 		} else {
 			msg, err := count(terraformPlanDestroy())
 			if err != nil {
-				logger.Fatal().Err(err)
+				logger.Fatal().Err(err).Msg("count failed")
 			}
 			logger.Info().Msg("Will perform following changes: " + msg)
 			fmt.Println("Will perform following changes: \n\t" + msg)

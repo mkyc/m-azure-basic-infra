@@ -21,22 +21,22 @@ module state file output subtree of specific module tree.`,
 		stateFilePath := filepath.Join(SharedDirectory, stateFileName)
 		_, state, err := checkAndLoad(stateFilePath, configFilePath)
 		if err != nil {
-			logger.Fatal().Err(err)
+			logger.Fatal().Err(err).Msg("checkAndLoad failed")
 		}
 		terraformOutputMap, err := getTerraformOutputMap()
 		if err != nil {
-			logger.Fatal().Err(err)
+			logger.Fatal().Err(err).Msg("getTerraformOutputMap failed")
 		}
 
 		state.AzBI.Output = produceOutput(terraformOutputMap)
 		err = saveState(stateFilePath, state)
 		if err != nil {
-			logger.Fatal().Err(err)
+			logger.Fatal().Err(err).Msg("saveState failed")
 		}
 
 		bytes, err := state.Marshal()
 		if err != nil {
-			logger.Fatal().Err(err)
+			logger.Fatal().Err(err).Msg("state.Marshal failed")
 		}
 		logger.Info().Msg(string(bytes))
 		fmt.Println("Updated output: \n" + string(bytes))
