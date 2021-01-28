@@ -38,8 +38,7 @@ module state file output subtree of specific module tree.`,
 		if err != nil {
 			logger.Fatal().Err(err).Msg("state.Marshal failed")
 		}
-		logger.Info().Msg(string(bytes))
-		fmt.Println("Updated output: \n" + string(bytes))
+		fmt.Println(string(bytes))
 	},
 }
 
