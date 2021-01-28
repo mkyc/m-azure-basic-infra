@@ -40,7 +40,7 @@ resource "azurerm_network_interface" "nic" {
     subnet_id                     = local.nic_vm_subnet_association[count.index][1]
     private_ip_address_allocation = "Dynamic"
     # Assign public IPs only to the first NIC of the VM
-    public_ip_address_id          = length(azurerm_public_ip.pubip) > 0 && count.index % length(var.vm_group.subnet_names) == 0 ? azurerm_public_ip.pubip[floor(count.index / length(var.vm_group.subnet_names))].id : ""
+    public_ip_address_id          = length(azurerm_public_ip.pubip) > 0 && count.index % length(var.vm_group.subnet_names) == 0 ? azurerm_public_ip.pubip[count.index / length(var.vm_group.subnet_names)].id : ""
   }
 }
 
