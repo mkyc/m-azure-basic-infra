@@ -287,7 +287,7 @@ func TestPlan(t *testing.T) {
 			initParams: map[string]string{
 				"--name":    "azbi-module-tests",
 				"--vms_rsa": "test_vms_rsa"},
-			wantPlanOutputLastLine: "\tAdd: 10, Change: 0, Destroy: 0",
+			wantPlanOutputLastLine: "\tAdd: 11, Change: 0, Destroy: 0",
 			wantStateLocation:      "state.json",
 			wantStateContent: `{
 	"kind": "state",
@@ -352,8 +352,8 @@ func TestApply(t *testing.T) {
 			initParams: map[string]string{
 				"--name":    "azbi-module-tests",
 				"--vms_rsa": "test_vms_rsa"},
-			wantPlanOutputLastLine:  "\tAdd: 10, Change: 0, Destroy: 0",
-			wantApplyOutputLastLine: "\tAdd: 10, Change: 0, Destroy: 0",
+			wantPlanOutputLastLine:  "\tAdd: 11, Change: 0, Destroy: 0",
+			wantApplyOutputLastLine: "\tAdd: 11, Change: 0, Destroy: 0",
 		},
 	}
 
