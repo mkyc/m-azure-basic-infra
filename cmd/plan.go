@@ -56,14 +56,22 @@ invoking of 'apply' command, created plan file would be used.`,
 			if err != nil {
 				logger.Fatal().Err(err).Msg("showModulePlan failed")
 			}
-			msg, err := count(terraformPlan())
+			output, err := terraformPlan()
+			if err != nil {
+				logger.Fatal().Err(err).Msg("terraform plan failed")
+			}
+			msg, err := count(output)
 			if err != nil {
 				logger.Fatal().Err(err).Msg("count failed")
 			}
 			logger.Info().Msg("Will perform following changes: " + msg)
 			fmt.Println("Will perform following changes: \n\t" + msg)
 		} else {
-			msg, err := count(terraformPlanDestroy())
+			output, err := terraformPlanDestroy()
+			if err != nil {
+				logger.Fatal().Err(err).Msg("terraform plan destroy failed")
+			}
+			msg, err := count(output)
 			if err != nil {
 				logger.Fatal().Err(err).Msg("count failed")
 			}

@@ -53,8 +53,6 @@ This command should always be preceded by 'plan' command.`,
 			logger.Fatal().Err(errors.New(string("unexpected state: " + state.AzBI.Status))).Msg("incorrect state")
 		}
 
-		//TODO check if there is terraform plan file present
-
 		err = showModulePlan(config, state)
 		if err != nil {
 			logger.Fatal().Err(err).Msg("showModulePlan failed")
