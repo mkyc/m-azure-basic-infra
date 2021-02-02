@@ -14,8 +14,8 @@ resource "azurerm_subnet" "subnets" {
 }
 
 resource "azurerm_network_security_group" "nsg" {
-  count               = length(var.subnets)
-  name                = "${var.subnets[count.index].name}-nsg"
+  count               = local.create_public_access_nsg == true ? 1 : 0
+  name                = "${var.name}-nsg"
   location            = var.location
   resource_group_name = azurerm_resource_group.rg.name
 
@@ -35,5 +35,5 @@ resource "azurerm_network_security_group" "nsg" {
 resource "azurerm_subnet_network_security_group_association" "subnets_to_nsg" {
   count                     = length(var.subnets)
   subnet_id                 = "${azurerm_subnet.subnets[count.index].id}"
-  network_security_group_id = "${azurerm_network_security_group.nsg[count.index].id}"
+  network_security_group_id = "${azurerm_network_security_group.nsg[0].id}"
 }
