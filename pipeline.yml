@@ -6,7 +6,7 @@ pr:
   - master
 
 pool:
-  name: 'Azure Epiphany cluster - epiphany-build-agents-v2'
+  name: $(poolName)
 
 
 variables:

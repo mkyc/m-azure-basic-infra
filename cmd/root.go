@@ -49,7 +49,7 @@ subnets, virtual machines, etc.`,
 
 		err := viper.BindPFlags(cmd.PersistentFlags())
 		if err != nil {
-			logger.Fatal().Err(err)
+			logger.Fatal().Err(err).Msg("BindPFlags failed")
 		}
 
 		SharedDirectory = viper.GetString("shared")
@@ -62,7 +62,7 @@ subnets, virtual machines, etc.`,
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		logger.Fatal().Err(err)
+		logger.Fatal().Err(err).Msg("rootCmd.Execute failed")
 	}
 }
 

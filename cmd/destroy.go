@@ -24,7 +24,7 @@ if module status is 'Applied'. `,
 
 		err := viper.BindPFlags(cmd.Flags())
 		if err != nil {
-			logger.Fatal().Err(err)
+			logger.Fatal().Err(err).Msg("BindPFlags failed")
 		}
 
 		clientId = viper.GetString("client_id")
@@ -38,32 +38,31 @@ if module status is 'Applied'. `,
 		stateFilePath := filepath.Join(SharedDirectory, stateFileName)
 		config, state, err := checkAndLoad(stateFilePath, configFilePath)
 		if err != nil {
-			logger.Fatal().Err(err)
+			logger.Fatal().Err(err).Msg("checkAndLoad failed")
 		}
 
 		if !reflect.DeepEqual(state.AzBI, &st.AzBIState{}) && state.AzBI.Status != st.Applied {
-			logger.Fatal().Err(errors.New(string("unexpected state: " + state.AzBI.Status)))
+			logger.Fatal().Err(errors.New(string("unexpected state: " + state.AzBI.Status))).Msg("incorrect state")
 		}
 
 		err = templateTfVars(config)
 		if err != nil {
-			logger.Fatal().Err(err)
+			logger.Fatal().Err(err).Msg("templateTfVars failed")
 		}
 		output, err := terraformDestroy()
 		if err != nil {
-			logger.Error().Msgf("registered following output: \n%s\n", output)
-			logger.Fatal().Err(err)
+			logger.Fatal().Err(err).Msgf("registered following output: \n%s\n", output)
 		}
 		msg, err := count(output)
 		if err != nil {
-			logger.Fatal().Err(err)
+			logger.Fatal().Err(err).Msg("count failed")
 		}
 		logger.Info().Msg("Performed following changes: " + msg)
 		fmt.Println("Performed following changes: \n\t" + msg)
 		state = updateStateAfterDestroy(state)
 		err = saveState(stateFilePath, state)
 		if err != nil {
-			logger.Fatal().Err(err)
+			logger.Fatal().Err(err).Msg("saveState failed")
 		}
 	},
 }

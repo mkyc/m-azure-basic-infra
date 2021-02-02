@@ -19,6 +19,7 @@ func ensureDirectory(path string) error {
 }
 
 func loadState(path string) (*st.State, error) {
+	logger.Debug().Msgf("loadState(%s)", path)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return st.NewState(), nil
 	} else {
@@ -31,11 +32,15 @@ func loadState(path string) (*st.State, error) {
 		if err != nil {
 			return nil, err
 		}
+		if state.AzBI == nil {
+			state.AzBI = &st.AzBIState{}
+		}
 		return state, nil
 	}
 }
 
 func saveState(path string, state *st.State) error {
+	logger.Debug().Msgf("saveState(%s, %v)", path, state)
 	bytes, err := state.Marshal()
 	if err != nil {
 		return err
@@ -48,6 +53,7 @@ func saveState(path string, state *st.State) error {
 }
 
 func loadConfig(path string) (*azbi.Config, error) {
+	logger.Debug().Msgf("loadConfig(%s)", path)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return azbi.NewConfig(), nil
 	} else {
@@ -65,6 +71,7 @@ func loadConfig(path string) (*azbi.Config, error) {
 }
 
 func saveConfig(path string, config *azbi.Config) error {
+	logger.Debug().Msgf("saveConfig(%s, %v)", path, config)
 	bytes, err := config.Marshal()
 	if err != nil {
 		return err
@@ -77,6 +84,7 @@ func saveConfig(path string, config *azbi.Config) error {
 }
 
 func checkAndLoad(stateFilePath string, configFilePath string) (*azbi.Config, *st.State, error) {
+	logger.Debug().Msgf("checkAndLoad(%s, %s)", stateFilePath, configFilePath)
 	if _, err := os.Stat(stateFilePath); os.IsNotExist(err) {
 		return nil, nil, errors.New("state file does not exist, please run init first")
 	}
@@ -98,6 +106,7 @@ func checkAndLoad(stateFilePath string, configFilePath string) (*azbi.Config, *s
 }
 
 func backupFile(path string) error {
+	logger.Debug().Msgf("backupFile(%s)", path)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return nil
 	} else {

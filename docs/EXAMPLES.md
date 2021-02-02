@@ -6,10 +6,10 @@ Prepare your own variables in `azure.mk` file to use in the process.
 Sample file (`examples/basic_flow/azure.mk.sample`):
 
 ```shell
-ARM_CLIENT_ID ?= "appId field"
-ARM_CLIENT_SECRET ?= "password field"
-ARM_SUBSCRIPTION_ID ?= "id field"
-ARM_TENANT_ID ?= "tenant field"
+ARM_CLIENT_ID ?= client-id-value
+ARM_CLIENT_SECRET ?= client-secret-field
+ARM_SUBSCRIPTION_ID ?= subscription-id-field
+ARM_TENANT_ID ?= tenant-id-field
 ```
 
 # Create cluster

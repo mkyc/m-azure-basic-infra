@@ -69,7 +69,7 @@ func TestInit(t *testing.T) {
 			wantOutput: `Initialized config: 
 {
 	"kind": "azbi",
-	"version": "v0.1.1",
+	"version": "v0.1.2",
 	"params": {
 		"name": "epiphany",
 		"location": "northeurope",
@@ -112,7 +112,7 @@ func TestInit(t *testing.T) {
 			wantConfigLocation: "azbi/azbi-config.json",
 			wantConfigContent: `{
 	"kind": "azbi",
-	"version": "v0.1.1",
+	"version": "v0.1.2",
 	"params": {
 		"name": "epiphany",
 		"location": "northeurope",
@@ -161,7 +161,7 @@ func TestInit(t *testing.T) {
 			wantOutput: `Initialized config: 
 {
 	"kind": "azbi",
-	"version": "v0.1.1",
+	"version": "v0.1.2",
 	"params": {
 		"name": "azbi-module-tests",
 		"location": "northeurope",
@@ -204,7 +204,7 @@ func TestInit(t *testing.T) {
 			wantConfigLocation: "azbi/azbi-config.json",
 			wantConfigContent: `{
 	"kind": "azbi",
-	"version": "v0.1.1",
+	"version": "v0.1.2",
 	"params": {
 		"name": "azbi-module-tests",
 		"location": "northeurope",
@@ -291,9 +291,14 @@ func TestPlan(t *testing.T) {
 			wantStateLocation:      "state.json",
 			wantStateContent: `{
 	"kind": "state",
-	"version": "v0.0.2",
+	"version": "v0.0.3",
 	"azbi": {
 		"status": "initialized",
+		"config": null,
+		"output": null
+	},
+	"azks": {
+		"status": "",
 		"config": null,
 		"output": null
 	}

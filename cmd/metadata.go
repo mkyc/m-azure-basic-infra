@@ -25,7 +25,7 @@ This information is required for inter-module dependency checking. This command 
 
 		err := viper.BindPFlags(cmd.Flags())
 		if err != nil {
-			logger.Fatal().Err(err)
+			logger.Fatal().Err(err).Msg("BindPFlags failed")
 		}
 
 		useJson = viper.GetBool("json")
@@ -66,7 +66,7 @@ func printMetadata() string {
 		bytes, err = yaml.Marshal(labels)
 	}
 	if err != nil {
-		logger.Fatal().Err(err)
+		logger.Fatal().Err(err).Msg("Marshal failed")
 	}
 	return string(bytes)
 }
