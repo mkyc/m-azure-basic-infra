@@ -46,41 +46,45 @@ Only fields that should not be modified are "kind" and "version" fields. All oth
 
 ----
 {
-	"kind": "azbi",
-	"version": "v0.1.0",
-	"params": {
-		"name": "my-cluster",
-		"location": "northeurope",
-		"address_space": [
-			"10.0.0.0/16"
-		],
-		"subnets": [
-			{
-				"name": "first",
-				"address_prefixes": [
-					"10.0.1.0/24"
-				]
-			}
-		],
-		"vm_groups": [{
-		    "name": "vm-group0",
-		    "vm_count": 3,
-		    "vm_size": "Standard_DS2_v2",
-		    "use_public_ip": true,
-		    "subnet_names": ["first"],
-		    "vm_image": {
-		        "publisher": "Canonical",
-		        "offer": "UbuntuServer",
-		        "sku": "18.04-LTS",
-		        "version": "18.04.202006101"
-		    },
-            "data_disks": [
-                {
-                    "disk_size_gb": 10
-                }
-            ]
-        }],
-		"rsa_pub_path": "/shared/vms_rsa.pub"
-	}
+  "kind": "azbi",
+  "version": "v0.1.0",
+  "params": {
+    "name": "my-cluster",
+    "location": "northeurope",
+    "address_space": [
+      "10.0.0.0/16"
+    ],
+    "subnets": [
+      {
+        "name": "first",
+        "address_prefixes": [
+          "10.0.1.0/24"
+        ]
+      }
+    ],
+    "vm_groups": [
+      {
+        "name": "vm-group0",
+        "vm_count": 3,
+        "vm_size": "Standard_DS2_v2",
+        "use_public_ip": true,
+        "subnet_names": [
+          "first"
+        ],
+        "vm_image": {
+          "publisher": "Canonical",
+          "offer": "UbuntuServer",
+          "sku": "18.04-LTS",
+          "version": "18.04.202006101"
+        },
+        "data_disks": [
+          {
+            "disk_size_gb": 10
+          }
+        ]
+      }
+    ],
+    "rsa_pub_path": "/shared/vms_rsa.pub"
+  }
 }
 ----
