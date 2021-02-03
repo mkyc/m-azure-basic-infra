@@ -80,7 +80,7 @@ jobs:
       - task: Docker@2
         displayName: 'Build and Push Image'
         inputs:
-          containerRegistry: $(registryName)
+          containerRegistry: $(registry_name)
           command: buildAndPush
           repository: $(IMAGE_REPOSITORY)
           tags: $(Build.BuildId)
