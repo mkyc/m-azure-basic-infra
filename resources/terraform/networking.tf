@@ -31,3 +31,9 @@ resource "azurerm_network_security_group" "nsg" {
     destination_address_prefix = "*"
   }
 }
+
+resource "azurerm_subnet_network_security_group_association" "subnets_to_nsg" {
+  count                     = length(var.subnets)
+  subnet_id                 = azurerm_subnet.subnets[count.index].id
+  network_security_group_id = azurerm_network_security_group.nsg[0].id
+}
