@@ -55,6 +55,7 @@ jobs:
           AZURE_SUBSCRIPTION_ID: $(subscriptionId)
           AZURE_TENANT_ID: $(tenantId)
           VERSION: $(ver)
+          IMAGE_REPOSITORY: $(image)
           GOBIN: "/tools/go/1.15.2/x64/bin"
       - task: PublishTestResults@2
         inputs:
