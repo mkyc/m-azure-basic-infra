@@ -24,7 +24,7 @@ const (
 )
 
 var (
-	enableDebug bool
+	logLevelFlag string
 
 	Version string
 
@@ -72,7 +72,7 @@ func init() {
 
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().BoolVarP(&enableDebug, "debug", "d", false, "print debug information")
+	rootCmd.PersistentFlags().StringVarP(&logLevelFlag, "loglevel", "l", "", "log level flag")
 
 	rootCmd.PersistentFlags().String("shared", defaultSharedDirectory, "shared directory location")
 	rootCmd.PersistentFlags().String("resources", defaultResourcesDirectory, "resources directory location")
@@ -80,10 +80,21 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	if enableDebug {
-		zerolog.SetGlobalLevel(zerolog.DebugLevel)
-	} else {
+	switch logLevelFlag {
+	case "panic":
+		zerolog.SetGlobalLevel(zerolog.PanicLevel)
+	case "fatal":
+		zerolog.SetGlobalLevel(zerolog.FatalLevel)
+	case "error":
+		zerolog.SetGlobalLevel(zerolog.ErrorLevel)
+	case "warn":
 		zerolog.SetGlobalLevel(zerolog.WarnLevel)
+	case "debug":
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	case "trace":
+		zerolog.SetGlobalLevel(zerolog.TraceLevel)
+	default:
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	}
 	viper.AutomaticEnv() // read in environment variables that match
 }
