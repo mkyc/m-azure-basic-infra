@@ -89,7 +89,7 @@ var initCmd = &cobra.Command{
 		if err != nil {
 			logger.Fatal().Err(err).Msg("config.Marshal failed")
 		}
-		logger.Info().Msg(string(bytes))
+		logger.Debug().Msg(string(bytes))
 		fmt.Println("Initialized config: \n" + string(bytes))
 	},
 }
