@@ -32,7 +32,7 @@ as a prefix
 
 |vms_rsa |string |vms_rsa |no |init |SSH key name, should be located in shared directory
 
-|debug |bool |false |no |all |prints additional debug information
+|loglevel |string |info |no |all |Log level flag [panic/fatal/error/warn/debug/trace]
 
 |===
 
