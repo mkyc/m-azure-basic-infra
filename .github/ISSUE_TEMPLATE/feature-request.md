@@ -2,7 +2,7 @@
 name: Feature request
 about: Suggest an idea for this project
 title: "[FEATURE REQUEST] Short description of the feature request"
-labels: feature-request, status/grooming-needed
+labels: status/grooming-needed, type/feature-request
 assignees: ''
 
 ---
