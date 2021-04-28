@@ -4,7 +4,7 @@
 *.swo
 **/shared/
 /service-principal.mk
-/tests/repot.xml
+/tests/report.xml
 /tests/tests.out
 
 # Local .terraform directories
