@@ -17,4 +17,9 @@ az ad sp create-for-rbac --role="Contributor" --scopes="/subscriptions/SUBSCRIPT
 ## Run module
 
 * Docker
-* Make - optional, required only if you want to run examples with Makefiles
+* Make - optional, required only to run examples with Makefiles
+
+# Execute tests
+
+* Golang
+* Make - optional

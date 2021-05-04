@@ -1,5 +1,20 @@
 # Tests
 
+## Install Golang modules
+
+Ensure that `GOPATH` and `PATH` environment variables are set properly
+
+```shell
+export GOPATH=~/go
+export PATH=$PATH:$GOPATH/bin
+```
+
+Install Golang modules
+
+```shell
+go get -u github.com/ahmetb/govvv
+```
+
 ## Prepare service principal
 
 Prepare service principal variables file before running this tests:
