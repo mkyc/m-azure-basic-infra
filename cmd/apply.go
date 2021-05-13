@@ -1,14 +1,11 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
-	"path/filepath"
-	"reflect"
-
 	st "github.com/epiphany-platform/e-structures/state/v0"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"path/filepath"
 )
 
 // applyCmd represents the apply command
@@ -47,10 +44,6 @@ This command should always be preceded by 'plan' command.`,
 		config, state, err := checkAndLoad(stateFilePath, configFilePath)
 		if err != nil {
 			logger.Fatal().Err(err).Msg("checkAndLoad failed")
-		}
-
-		if !reflect.DeepEqual(state.AzBI, &st.AzBIState{}) && state.AzBI.Status != st.Initialized && state.AzBI.Status != st.Destroyed {
-			logger.Fatal().Err(errors.New(string("unexpected state: " + state.AzBI.Status))).Msg("incorrect state")
 		}
 
 		err = showModulePlan(config, state)

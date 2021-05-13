@@ -34,6 +34,11 @@ variable "admin_key_path" {
   type        = string
 }
 
+variable "subnets_available" {
+  description = "Subnets name => id mapping"
+  type        = map(string)
+}
+
 variable vm_group {
   description = "VM group definition object"
   type        = object({
