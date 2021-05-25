@@ -13,6 +13,7 @@ module "vm_group" {
   vnet_name         = azurerm_virtual_network.vnet.name
   location          = var.location
   admin_key_path    = var.rsa_pub_path
+  subnets_available = { for subnet in azurerm_subnet.subnets: subnet.name => subnet.id }
   vm_group          = var.vm_groups[count.index]
   security_group_id = length(azurerm_network_security_group.nsg) == 0 ? "" : azurerm_network_security_group.nsg[0].id
 

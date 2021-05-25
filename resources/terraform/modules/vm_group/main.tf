@@ -1,11 +1,3 @@
-# Get subnet IDs by names
-data "azurerm_subnet" "subnets" {
-  count                = length(var.vm_group.subnet_names)
-  name                 = var.vm_group.subnet_names[count.index]
-  virtual_network_name = var.vnet_name
-  resource_group_name  = var.rg_name
-}
-
 # Allocate public IPs, 1 per VM
 resource "azurerm_public_ip" "pubip" {
   count                   = var.vm_group.use_public_ip != true ? 0 : var.vm_group.vm_count
