@@ -25,18 +25,17 @@ jobs:
           targetType: 'inline'
           script: |
             echo "##vso[task.prependpath]/tools/go/1.16.2/x64/bin"
-            echo '##vso[task.prependpath]$(GOPATH)/bin'
           failOnStderr: true
-      - task: Go@0
-        displayName: 'go install go-junit-report'
+      - task: Bash@3
+        displayName: 'Prepend PATH'
         inputs:
-          command: install
-          arguments: 'github.com/jstemmer/go-junit-report@latest'
-      - task: Go@0
-        displayName: 'go install govvv'
-        inputs:
-          command: install
-          arguments: 'github.com/ahmetb/govvv@latest'
+          targetType: 'inline'
+          script: |
+            cd /tmp
+            go get -u github.com/jstemmer/go-junit-report
+            go get -u github.com/ahmetb/govvv
+            cd -
+          failOnStderr: true
       - task: Bash@3
         displayName: 'go test'
         inputs:
