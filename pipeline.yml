@@ -26,7 +26,7 @@ jobs:
           script: |
             set -x
             echo "##vso[task.prependpath]/tools/go/1.16.2/x64/bin"
-            echo '##vso[task.prependpath]$(go env GOPATH)/bin'
+            echo '##vso[task.prependpath]$(GOPATH)/bin'
           failOnStderr: true
       - task: Go@0
         displayName: 'go install go-junit-report'
