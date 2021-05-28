@@ -25,6 +25,8 @@ jobs:
           targetType: 'inline'
           script: |
             echo "##vso[task.prependpath]/tools/go/1.16.2/x64/bin"
+            echo '##vso[task.prependpath]$(GOBIN)'
+            echo '##vso[task.prependpath]$(GOROOT)/bin'
           failOnStderr: true
       - task: Go@0
         displayName: 'go get go-junit-report'
