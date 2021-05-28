@@ -24,7 +24,6 @@ jobs:
         inputs:
           targetType: 'inline'
           script: |
-            set -x
             echo "##vso[task.prependpath]/tools/go/1.16.2/x64/bin"
             echo '##vso[task.prependpath]$(GOPATH)/bin'
           failOnStderr: true
