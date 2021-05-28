@@ -27,8 +27,6 @@ jobs:
             echo "##vso[task.prependpath]/tools/go/1.16.2/x64/bin"
             echo "##vso[task.prependpath]/root/go/bin"
           failOnStderr: true
-        env:
-          GOBIN: "/tools/go/1.16.2/x64/bin"
       - task: Bash@3
         displayName: 'go get required tools'
         inputs:
@@ -39,8 +37,6 @@ jobs:
             go get -u github.com/ahmetb/govvv
             cd -
           failOnStderr: true
-        env:
-          GOBIN: "/tools/go/1.16.2/x64/bin"
       - task: Bash@3
         displayName: 'go test'
         inputs:
