@@ -25,7 +25,7 @@ jobs:
           targetType: 'inline'
           script: |
             go env
-            ls -la /root/go/
+            ls -la /root/go/bin/
             echo "##vso[task.prependpath]/tools/go/1.16.2/x64/bin"
             echo "##vso[task.prependpath]/root/go/bin"
           failOnStderr: true
@@ -40,8 +40,8 @@ jobs:
             go get -u github.com/jstemmer/go-junit-report
             go get -u github.com/ahmetb/govvv
             cd -
-            ls -la /root/go/
-            tree /tools/go/1.16.2
+            ls -la /root/go/bin/
+            ls -la /tools/go/1.16.2/
           failOnStderr: true
         env:
           GOBIN: "/tools/go/1.16.2/x64/bin"
