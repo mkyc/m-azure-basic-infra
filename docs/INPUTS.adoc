@@ -80,6 +80,7 @@ Only fields that should not be modified are "kind" and "version" fields. All oth
         "data_disks": [
           {
             "disk_size_gb": 10
+            "storage_type": "Premium_LRS"
           }
         ]
       }

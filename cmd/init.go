@@ -1,12 +1,13 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"path/filepath"
 	"reflect"
 
 	st "github.com/epiphany-platform/e-structures/state/v0"
+	"github.com/epiphany-platform/e-structures/utils/load"
+	"github.com/epiphany-platform/e-structures/utils/save"
 	"github.com/epiphany-platform/e-structures/utils/to"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -44,18 +45,24 @@ var initCmd = &cobra.Command{
 			logger.Fatal().Err(err).Msg("ensureDirectory failed")
 		}
 		logger.Debug().Msg("load state file")
-		state, err := loadState(stateFilePath)
+		state, err := load.State(stateFilePath)
 		if err != nil {
 			logger.Fatal().Err(err).Msg("loadState failed")
 		}
 		logger.Debug().Msg("load config file")
-		config, err := loadConfig(configFilePath)
+		config, err := load.AzBIConfig(configFilePath)
 		if err != nil {
 			logger.Fatal().Err(err).Msg("loadConfig failed")
 		}
 
-		if !reflect.DeepEqual(state.AzBI, &st.AzBIState{}) && state.AzBI.Status != st.Initialized && state.AzBI.Status != st.Destroyed {
-			logger.Fatal().Err(errors.New(string("unexpected state: " + state.AzBI.Status))).Msg("incorrect state")
+		if state.GetAzBIState() == nil {
+			state.AzBI = &st.AzBIState{}
+		}
+
+		if state.GetAzBIState() != nil && !reflect.DeepEqual(state.GetAzBIState(), &st.AzBIState{}) {
+			if state.AzBI.Status != st.Initialized && state.AzBI.Status != st.Destroyed {
+				logger.Fatal().Err(fmt.Errorf("unexpected state: %v", state.AzBI.Status)).Msg("incorrect state")
+			}
 		}
 
 		logger.Debug().Msg("backup state file")
@@ -75,12 +82,12 @@ var initCmd = &cobra.Command{
 		state.AzBI.Status = st.Initialized
 
 		logger.Debug().Msg("save config")
-		err = saveConfig(configFilePath, config)
+		err = save.AzBIConfig(configFilePath, config)
 		if err != nil {
 			logger.Fatal().Err(err).Msg("saveConfig failed")
 		}
 		logger.Debug().Msg("save state")
-		err = saveState(stateFilePath, state)
+		err = save.State(stateFilePath, state)
 		if err != nil {
 			logger.Fatal().Err(err).Msg("saveState failed")
 		}

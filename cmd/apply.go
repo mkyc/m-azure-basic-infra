@@ -2,10 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"path/filepath"
+
 	st "github.com/epiphany-platform/e-structures/state/v0"
+	"github.com/epiphany-platform/e-structures/utils/save"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"path/filepath"
 )
 
 // applyCmd represents the apply command
@@ -46,6 +48,11 @@ This command should always be preceded by 'plan' command.`,
 			logger.Fatal().Err(err).Msg("checkAndLoad failed")
 		}
 
+		if state.GetAzBIState() == nil {
+			logger.Fatal().Msg("please run init and plan first")
+		}
+
+		// TODO check if there is terraform plan file present
 		err = showModulePlan(config, state)
 		if err != nil {
 			logger.Fatal().Err(err).Msg("showModulePlan failed")
@@ -72,7 +79,7 @@ This command should always be preceded by 'plan' command.`,
 		state.AzBI.Output = produceOutput(terraformOutputMap)
 
 		logger.Debug().Msg("save state")
-		err = saveState(stateFilePath, state)
+		err = save.State(stateFilePath, state)
 		if err != nil {
 			logger.Fatal().Err(err).Msg("saveState failed")
 		}

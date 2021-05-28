@@ -12,7 +12,7 @@ export PATH=$PATH:$GOPATH/bin
 Install Golang modules
 
 ```shell
-go get -u github.com/ahmetb/govvv
+cd /tmp && go get -u github.com/ahmetb/govvv
 ```
 
 ## Prepare service principal
@@ -29,6 +29,13 @@ In the main directory, run:
 
 ```shell
 make test
+```
+
+Alternatively you can run them without `make`: 
+
+```shell
+docker build --tag epiphanyplatform/azbi:dev .
+AZURE_CLIENT_ID=xxx AZURE_CLIENT_SECRET=yyy AZURE_SUBSCRIPTION_ID=zzz AZURE_TENANT_ID=vvv IMAGE_REPOSITORY=epiphanyplatform/azbi go test -v -timeout 30m -ldflags="-X github.com/epiphany-platform/m-azure-basic-infrastructure/cmd.Version=dev" ./...
 ```
 
 ## Run tests in Kubernetes based build system

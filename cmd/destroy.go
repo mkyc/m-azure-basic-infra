@@ -7,6 +7,7 @@ import (
 	"reflect"
 
 	st "github.com/epiphany-platform/e-structures/state/v0"
+	"github.com/epiphany-platform/e-structures/utils/save"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -60,7 +61,7 @@ if module status is 'Applied'. `,
 		logger.Info().Msg("Performed following changes: " + msg)
 		fmt.Println("Performed following changes: \n\t" + msg)
 		state = updateStateAfterDestroy(state)
-		err = saveState(stateFilePath, state)
+		err = save.State(stateFilePath, state)
 		if err != nil {
 			logger.Fatal().Err(err).Msg("saveState failed")
 		}
