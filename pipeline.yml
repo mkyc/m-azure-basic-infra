@@ -25,9 +25,11 @@ jobs:
           targetType: 'inline'
           script: |
             echo "##vso[task.prependpath]/tools/go/1.16.2/x64/bin"
+            echo '##vso[task.prependpath]$(GOBIN)'
+            echo '##vso[task.prependpath]$(GOROOT)/bin'
           failOnStderr: true
       - task: Bash@3
-        displayName: 'Prepend PATH'
+        displayName: 'go get required tools'
         inputs:
           targetType: 'inline'
           script: |
@@ -42,6 +44,9 @@ jobs:
           targetType: 'inline'
           script: |
             go env
+            echo $PATH
+            which govvv
+            which go-junit-report
             make build
             make pipeline-test | tee tests.output
             go-junit-report < tests.output > report.xml
