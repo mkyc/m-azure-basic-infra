@@ -29,15 +29,15 @@ jobs:
             echo '##vso[task.prependpath]$(GOROOT)/bin'
           failOnStderr: true
       - task: Go@0
-        displayName: 'go get go-junit-report'
+        displayName: 'go install go-junit-report'
         inputs:
           command: install
-          arguments: 'github.com/jstemmer/go-junit-report'
+          arguments: 'github.com/jstemmer/go-junit-report@latest'
       - task: Go@0
-        displayName: 'go get govvv'
+        displayName: 'go install govvv'
         inputs:
           command: install
-          arguments: 'github.com/ahmetb/govvv'
+          arguments: 'github.com/ahmetb/govvv@latest'
       - task: Bash@3
         displayName: 'go test'
         inputs:
