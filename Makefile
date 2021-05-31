@@ -67,6 +67,7 @@ GOFILES_NOVENDOR = $(shell find . -type f -name '*.go' -not -path "./vendor/*")
 GOPACKAGES = $(shell go list ./... | grep -v /vendor/)
 
 doctor:
+	go mod vendor
 	go mod tidy
 	go fmt ${GOPACKAGES}
 	go vet ${GOPACKAGES}
