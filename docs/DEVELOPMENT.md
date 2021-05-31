@@ -73,8 +73,8 @@ To develop terraform scripts independently of go module code.
 1) that would provide you detailed output and one of first lines provides used .tfvars.json file. It will look similar to following: 
    ```
    ...
-   2021-01-15T13:42:27Z DBG go/src/github.com/epiphany-platform/m-azure-basic-infrastructure/cmd/common.go:61 > templateTfVars
-   2021-01-15T13:42:27Z INF go/src/github.com/epiphany-platform/m-azure-basic-infrastructure/cmd/common.go:68 > {"name":"epiphany","location":"northeurope","address_space":["10.0.0.0/16"],"subnets":[{"name":"main","address_prefixes":["10.0.1.0/24"]}],"vm_groups":[{"name":"vm-group0","vm_count":1,"vm_size":"Standard_DS2_v2","use_public_ip":true,"subnet_names":["main"],"vm_image":{"publisher":"Canonical","offer":"UbuntuServer","sku":"18.04-LTS","version":"18.04.202006101"}}],"rsa_pub_path":"/shared/vms_rsa.pub"}
+   2021-05-31T11:38:41Z DBG ../go/src/github.com/epiphany-platform/m-azure-basic-infrastructure/cmd/common.go:61 > templateTfVars
+   2021-05-31T11:38:41Z INF ../go/src/github.com/epiphany-platform/m-azure-basic-infrastructure/cmd/common.go:68 > {"name":"epiphany","location":"northeurope","address_space":["10.0.0.0/16"],"subnets":[{"name":"main","address_prefixes":["10.0.1.0/24"]}],"vm_groups":[{"name":"vm-group0","vm_count":1,"vm_size":"Standard_DS2_v2","use_public_ip":true,"subnet_names":["main"],"vm_image":{"publisher":"Canonical","offer":"UbuntuServer","sku":"18.04-LTS","version":"18.04.202006101"},"data_disks":[{"disk_size_gb":10,"storage_type":"Premium_LRS"}]}],"rsa_pub_path":"/shared/vms_rsa.pub"}
    ...
    ```
 1) you should copy provided JSON to file `./terraform/terraform.tfvars.json` relatively to `resources` directory
@@ -83,6 +83,9 @@ To develop terraform scripts independently of go module code.
 To be able to run version of terraform that scripts require you can use following docker snippet: 
 
 ```shell
-docker run --rm -it -e ARM_SUBSCRIPTION_ID=xxx -e ARM_CLIENT_ID=yyy -e ARM_CLIENT_SECRET=zzz -e ARM_TENANT_ID=vvv -v $(pwd)/terraform:/workspace -v $(pwd)/shared:/shared -w /workspace hashicorp/terraform:0.13.2 apply
+docker run --rm -v $(pwd)/terraform:/workspace -v $(pwd)/shared:/shared -w /workspace hashicorp/terraform:0.13.7 init
+docker run --rm -v $(pwd)/terraform:/workspace -v $(pwd)/shared:/shared -e ARM_CLIENT_ID=xxx -e ARM_CLIENT_SECRET=yyy -e ARM_SUBSCRIPTION_ID=zzz -e ARM_TENANT_ID=vvv -w /workspace hashicorp/terraform:0.13.7 plan
+docker run --rm -it -v $(pwd)/terraform:/workspace -v $(pwd)/shared:/shared -e ARM_CLIENT_ID=xxx -e ARM_CLIENT_SECRET=yyy -e ARM_SUBSCRIPTION_ID=zzz -e ARM_TENANT_ID=vvv -w /workspace hashicorp/terraform:0.13.7 apply
+docker run --rm -it -v $(pwd)/terraform:/workspace -v $(pwd)/shared:/shared -e ARM_CLIENT_ID=xxx -e ARM_CLIENT_SECRET=yyy -e ARM_SUBSCRIPTION_ID=zzz -e ARM_TENANT_ID=vvv -w /workspace hashicorp/terraform:0.13.7 destroy
 ```
 (notice `ARM_` prefix on passed envs)
