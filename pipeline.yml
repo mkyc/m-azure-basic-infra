@@ -46,6 +46,7 @@ jobs:
             echo $PATH
             which govvv
             which go-junit-report
+            go mod vendor
             make build
             make pipeline-test | tee tests.output
             go-junit-report < tests.output > report.xml
