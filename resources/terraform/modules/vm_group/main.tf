@@ -79,7 +79,7 @@ resource "azurerm_managed_disk" "data_disks" {
   name                 = "${var.name}-${var.vm_group.name}-${local.vms_data_disks_product[count.index][0]}-data-disk-${local.vms_data_disks_product[count.index][1]}"
   location             = var.location
   resource_group_name  = var.rg_name
-  storage_account_type = "Premium_LRS"
+  storage_account_type = var.vm_group.data_disks[local.vms_data_disks_product[count.index][1]].storage_type
   create_option        = "Empty"
   disk_size_gb         = var.vm_group.data_disks[local.vms_data_disks_product[count.index][1]].disk_size_gb
 }

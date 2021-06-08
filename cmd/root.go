@@ -72,7 +72,7 @@ func init() {
 
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVarP(&logLevelFlag, "loglevel", "l", "", "log level flag")
+	rootCmd.PersistentFlags().StringVarP(&logLevelFlag, "log-level", "l", "info", "log level flag (values: trace, debug, info, warn, error, fatal, panic)")
 
 	rootCmd.PersistentFlags().String("shared", defaultSharedDirectory, "shared directory location")
 	rootCmd.PersistentFlags().String("resources", defaultResourcesDirectory, "resources directory location")

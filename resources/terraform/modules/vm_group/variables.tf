@@ -55,6 +55,7 @@ variable vm_group {
     })
     data_disks    = list(object({
       disk_size_gb = number
+      storage_type = string
     }))
   })
 }

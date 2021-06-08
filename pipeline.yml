@@ -16,32 +16,37 @@ jobs:
   - job: Build_and_Test
     steps:
       - task: GoTool@0
-        displayName: 'ensure Go 1.15.2'
+        displayName: 'ensure Go 1.16.2'
         inputs:
-          version: '1.15.2'
+          version: '1.16.2'
       - task: Bash@3
         displayName: 'Prepend PATH'
         inputs:
           targetType: 'inline'
           script: |
-            echo "##vso[task.prependpath]/tools/go/1.15.2/x64/bin"
+            echo "##vso[task.prependpath]/tools/go/1.16.2/x64/bin"
+            echo "##vso[task.prependpath]/root/go/bin"
           failOnStderr: true
-      - task: Go@0
-        displayName: 'go get go-junit-report'
+      - task: Bash@3
+        displayName: 'go get required tools'
         inputs:
-          command: get
-          arguments: '-u github.com/jstemmer/go-junit-report'
-      - task: Go@0
-        displayName: 'go get govvv'
-        inputs:
-          command: get
-          arguments: '-u github.com/ahmetb/govvv'
+          targetType: 'inline'
+          script: |
+            cd /tmp
+            go get -u github.com/jstemmer/go-junit-report
+            go get -u github.com/ahmetb/govvv
+            cd -
+          failOnStderr: true
       - task: Bash@3
         displayName: 'go test'
         inputs:
           targetType: 'inline'
           script: |
             go env
+            echo $PATH
+            which govvv
+            which go-junit-report
+            go mod vendor
             make build
             make pipeline-test | tee tests.output
             go-junit-report < tests.output > report.xml
@@ -56,7 +61,7 @@ jobs:
           AZURE_TENANT_ID: $(tenantId)
           VERSION: $(ver)
           IMAGE_REPOSITORY: $(image)
-          GOBIN: "/tools/go/1.15.2/x64/bin"
+          GOBIN: "/tools/go/1.16.2/x64/bin"
       - task: PublishTestResults@2
         inputs:
           testRunner: JUnit

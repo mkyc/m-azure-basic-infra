@@ -27,10 +27,12 @@ all: build
 .PHONY: build test pipeline-test release prepare-service-principal
 
 build: guard-IMAGE_NAME
+	go mod vendor
 	docker build \
 		--build-arg ARG_M_VERSION=$(VERSION) \
 		--build-arg ARG_HOST_UID=$(HOST_UID) \
 		--build-arg ARG_HOST_GID=$(HOST_GID) \
+		--progress plain \
 		-t $(IMAGE_NAME) \
 		.
 
@@ -61,8 +63,12 @@ guard-%:
 		exit 1; \
 	fi
 
+GOFILES_NOVENDOR = $(shell find . -type f -name '*.go' -not -path "./vendor/*")
+GOPACKAGES = $(shell go list ./... | grep -v /vendor/)
+
 doctor:
+	go mod vendor
 	go mod tidy
-	go fmt ./...
-	go vet ./...
-	goimports -l -w .
+	go fmt ${GOPACKAGES}
+	go vet ${GOPACKAGES}
+	goimports -l -w ${GOFILES_NOVENDOR}

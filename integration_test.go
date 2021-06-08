@@ -69,7 +69,7 @@ func TestInit(t *testing.T) {
 			wantOutput: `Initialized config: 
 {
 	"kind": "azbi",
-	"version": "v0.1.2",
+	"version": "v0.1.4",
 	"params": {
 		"name": "epiphany",
 		"location": "northeurope",
@@ -101,7 +101,8 @@ func TestInit(t *testing.T) {
 				},
 				"data_disks": [
 					{
-						"disk_size_gb": 10
+						"disk_size_gb": 10,
+						"storage_type": "Premium_LRS"
 					}
 				]
 			}
@@ -112,7 +113,7 @@ func TestInit(t *testing.T) {
 			wantConfigLocation: "azbi/azbi-config.json",
 			wantConfigContent: `{
 	"kind": "azbi",
-	"version": "v0.1.2",
+	"version": "v0.1.4",
 	"params": {
 		"name": "epiphany",
 		"location": "northeurope",
@@ -144,7 +145,8 @@ func TestInit(t *testing.T) {
 				},
 				"data_disks": [
 					{
-						"disk_size_gb": 10
+						"disk_size_gb": 10,
+						"storage_type": "Premium_LRS"
 					}
 				]
 			}
@@ -161,7 +163,7 @@ func TestInit(t *testing.T) {
 			wantOutput: `Initialized config: 
 {
 	"kind": "azbi",
-	"version": "v0.1.2",
+	"version": "v0.1.4",
 	"params": {
 		"name": "azbi-module-tests",
 		"location": "northeurope",
@@ -193,7 +195,8 @@ func TestInit(t *testing.T) {
 				},
 				"data_disks": [
 					{
-						"disk_size_gb": 10
+						"disk_size_gb": 10,
+						"storage_type": "Premium_LRS"
 					}
 				]
 			}
@@ -204,7 +207,7 @@ func TestInit(t *testing.T) {
 			wantConfigLocation: "azbi/azbi-config.json",
 			wantConfigContent: `{
 	"kind": "azbi",
-	"version": "v0.1.2",
+	"version": "v0.1.4",
 	"params": {
 		"name": "azbi-module-tests",
 		"location": "northeurope",
@@ -236,7 +239,8 @@ func TestInit(t *testing.T) {
 				},
 				"data_disks": [
 					{
-						"disk_size_gb": 10
+						"disk_size_gb": 10,
+						"storage_type": "Premium_LRS"
 					}
 				]
 			}
@@ -291,17 +295,15 @@ func TestPlan(t *testing.T) {
 			wantStateLocation:      "state.json",
 			wantStateContent: `{
 	"kind": "state",
-	"version": "v0.0.3",
+	"version": "v0.0.5",
 	"azbi": {
 		"status": "initialized",
 		"config": null,
 		"output": null
 	},
-	"azks": {
-		"status": "",
-		"config": null,
-		"output": null
-	}
+	"azks": null,
+	"hi": null,
+	"awsbi": null
 }`,
 			wantTerraformStateFileLocation: "azbi/terraform-apply.tfplan",
 		},
@@ -531,7 +533,7 @@ func removeResourceGroup(t *testing.T, subscriptionId string, name string) {
 		err = gdf.Future.WaitForCompletionRef(ctx, groupsClient.BaseClient.Client)
 		t.Logf("Finished RG deletion.")
 		if err != nil {
-			t.Fatal(err)
+			t.Error(err)
 		}
 	}()
 
@@ -610,7 +612,12 @@ func validateSshConnectivity(t *testing.T, signer ssh.Signer, ipString string) {
 	if err != nil {
 		t.Error(err)
 	}
-	defer session.Close()
+	defer func(session *ssh.Session) {
+		err := session.Close()
+		if err != nil {
+			t.Log(err)
+		}
+	}(session)
 	var b bytes.Buffer
 	session.Stdout = &b
 	err = session.Run("uname -a")

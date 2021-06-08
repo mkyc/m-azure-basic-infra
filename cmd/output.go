@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/epiphany-platform/e-structures/utils/save"
 	"github.com/spf13/cobra"
 )
 
@@ -29,7 +30,7 @@ module state file output subtree of specific module tree.`,
 		}
 
 		state.AzBI.Output = produceOutput(terraformOutputMap)
-		err = saveState(stateFilePath, state)
+		err = save.State(stateFilePath, state)
 		if err != nil {
 			logger.Fatal().Err(err).Msg("saveState failed")
 		}

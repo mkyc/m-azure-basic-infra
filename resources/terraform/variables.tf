@@ -56,6 +56,7 @@ variable vm_groups {
     })
     data_disks = list(object({
       disk_size_gb = number
+      storage_type = string
     }))
   }))
   default     = [
@@ -74,6 +75,7 @@ variable vm_groups {
       data_disks = [
         {
           disk_size_gb = 16
+          storage_type = "Premium_LRS"
         }
       ]
     }

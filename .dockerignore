@@ -1,0 +1,12 @@
+.github
+.devcontainer
+.idea
+
+CHANGELOG
+docs
+examples
+
+*.mk
+*.mk.sample
+*.md
+*.adoc
