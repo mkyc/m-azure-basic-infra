@@ -1,7 +1,8 @@
 # Allocate public IPs, 1 per VM
 resource "azurerm_public_ip" "pubip" {
   count                   = var.vm_group.use_public_ip != true ? 0 : var.vm_group.vm_count
-  name                    = "${var.name}-${var.vm_group.name}-${count.index}-pubip"
+  // follow <prefix>-<resource_type>-<index> naming pattern
+  name                    = "${var.name}-${var.vm_group.name}-pubip-${count.index}"
   location                = var.location
   resource_group_name     = var.rg_name
   allocation_method       = "Static"
@@ -22,13 +23,15 @@ NICs order example:
 */
 resource "azurerm_network_interface" "nic" {
   count                         = length(local.nic_vm_subnet_association)
-  name                          = "${var.name}-${var.vm_group.name}-${count.index}-nic"
+  // follow <prefix>-<resource_type>-<index> naming pattern
+  name                          = "${var.name}-${var.vm_group.name}-nic-${count.index}"
   location                      = var.location
   resource_group_name           = var.rg_name
   enable_accelerated_networking = "false"
 
   ip_configuration {
-    name                          = "${var.name}-${var.vm_group.name}-${count.index}-ipconf"
+    // follow <prefix>-<resource_type>-<index> naming pattern
+    name                          = "${var.name}-${var.vm_group.name}-ipconf-${count.index}"
     subnet_id                     = local.nic_vm_subnet_association[count.index][1]
     private_ip_address_allocation = "Dynamic"
     # Assign public IPs only to the first NIC of the VM
@@ -46,7 +49,7 @@ resource "azurerm_network_interface_security_group_association" "nic-nsg-assoc" 
 # Create VMs
 resource "azurerm_linux_virtual_machine" "vm" {
   count                           = var.vm_group.vm_count
-  name                            = "${var.name}-${var.vm_group.name}-${count.index}"
+  name                            = "${var.name}-${var.vm_group.name}-vm-${count.index}"
   location                        = var.location
   resource_group_name             = var.rg_name
   size                            = var.vm_group.vm_size
@@ -67,7 +70,8 @@ resource "azurerm_linux_virtual_machine" "vm" {
   }
 
   os_disk {
-    name                 = "${var.name}-${var.vm_group.name}-${count.index}-os-disk"
+    // follow <prefix>-<resource_type>-<index> naming pattern
+    name                 = "${var.name}-${var.vm_group.name}-vm-${count.index}-os-disk-0"
     caching              = "ReadWrite"
     storage_account_type = "Premium_LRS"
   }
@@ -76,7 +80,8 @@ resource "azurerm_linux_virtual_machine" "vm" {
 #Create managed data disks
 resource "azurerm_managed_disk" "data_disks" {
   count                = length(local.vms_data_disks_product)
-  name                 = "${var.name}-${var.vm_group.name}-${local.vms_data_disks_product[count.index][0]}-data-disk-${local.vms_data_disks_product[count.index][1]}"
+  // follow <prefix>-<resource_type>-<index> naming pattern
+  name                 = "${var.name}-${var.vm_group.name}-vm-${local.vms_data_disks_product[count.index][0]}-data-disk-${local.vms_data_disks_product[count.index][1]}"
   location             = var.location
   resource_group_name  = var.rg_name
   storage_account_type = var.vm_group.data_disks[local.vms_data_disks_product[count.index][1]].storage_type
