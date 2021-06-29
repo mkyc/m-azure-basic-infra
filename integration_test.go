@@ -158,14 +158,14 @@ func TestInit(t *testing.T) {
 		{
 			name: "pass name and vms_rsa cli arguments",
 			initParams: map[string]string{
-				"--name":    "azbi-module-tests",
+				"--name":    "azbi-auto-test",
 				"--vms_rsa": "test_vms_rsa"},
 			wantOutput: `Initialized config: 
 {
 	"kind": "azbi",
 	"version": "v0.1.4",
 	"params": {
-		"name": "azbi-module-tests",
+		"name": "azbi-auto-test",
 		"location": "northeurope",
 		"address_space": [
 			"10.0.0.0/16"
@@ -209,7 +209,7 @@ func TestInit(t *testing.T) {
 	"kind": "azbi",
 	"version": "v0.1.4",
 	"params": {
-		"name": "azbi-module-tests",
+		"name": "azbi-auto-test",
 		"location": "northeurope",
 		"address_space": [
 			"10.0.0.0/16"
@@ -289,7 +289,7 @@ func TestPlan(t *testing.T) {
 		{
 			name: "default plan",
 			initParams: map[string]string{
-				"--name":    "azbi-module-tests",
+				"--name":    "azbi-auto-test",
 				"--vms_rsa": "test_vms_rsa"},
 			wantPlanOutputLastLine: "\tAdd: 11, Change: 0, Destroy: 0",
 			wantStateLocation:      "state.json",
@@ -352,7 +352,7 @@ func TestApply(t *testing.T) {
 		{
 			name: "default apply",
 			initParams: map[string]string{
-				"--name":    "azbi-module-tests",
+				"--name":    "azbi-auto-test",
 				"--vms_rsa": "test_vms_rsa"},
 			wantPlanOutputLastLine:  "\tAdd: 11, Change: 0, Destroy: 0",
 			wantApplyOutputLastLine: "\tAdd: 11, Change: 0, Destroy: 0",
@@ -433,7 +433,7 @@ func setup(t *testing.T, initParams map[string]string) (string, string, string, 
 	if value, ok := initParams["--vms_rsa"]; ok {
 		rsaName = value
 	}
-	name := "epiphany-rg"
+	name := "azbi-auto-test"
 	if value, ok := initParams["--name"]; ok {
 		name = value
 	}
@@ -495,7 +495,7 @@ func isResourceGroupPresent(t *testing.T, subscriptionId string, name string) bo
 		t.Error(err)
 	}
 	groupsClient.Authorizer = authorizer
-	rgName := fmt.Sprintf("%s-rg", name)
+	rgName := fmt.Sprintf("%s-rg-0", name)
 	_, err = groupsClient.Get(context.TODO(), rgName)
 	if err != nil {
 		return false
@@ -515,7 +515,7 @@ func removeResourceGroup(t *testing.T, subscriptionId string, name string) {
 		t.Fatal(err)
 	}
 	groupsClient.Authorizer = authorizer
-	rgName := fmt.Sprintf("%s-rg", name)
+	rgName := fmt.Sprintf("%s-rg-0", name)
 	t.Logf("Will perform delete RG operation")
 	gdf, err := groupsClient.Delete(ctx, rgName)
 	if err != nil {
