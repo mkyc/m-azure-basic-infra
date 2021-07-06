@@ -64,3 +64,8 @@ variable "security_group_id" {
   description = "Security group id for NICs with assigned public IP address"
   type        = string
 }
+
+variable "environment_basename" {
+  description = "general name of whole environment"
+  type        = string
+}

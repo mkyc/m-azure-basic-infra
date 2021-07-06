@@ -1,5 +1,6 @@
 resource "azurerm_virtual_network" "vnet" {
-  name                = "${var.name}-vnet"
+  // follow <prefix>-<resource_type>-<index> naming pattern
+  name                = "${var.name}-vnet-0"
   address_space       = var.address_space
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
@@ -7,7 +8,8 @@ resource "azurerm_virtual_network" "vnet" {
 
 resource "azurerm_subnet" "subnets" {
   count                = length(var.subnets)
-  name                 = var.subnets[count.index].name
+  // do not follow <prefix>-<resource_type>-<index> naming pattern due to reference by name in vm group
+  name                 = "${var.name}-${var.subnets[count.index].name}"
   address_prefixes     = var.subnets[count.index].address_prefixes
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet.name
@@ -15,7 +17,8 @@ resource "azurerm_subnet" "subnets" {
 
 resource "azurerm_network_security_group" "nsg" {
   count               = local.create_public_access_nsg == true ? 1 : 0
-  name                = "${var.name}-nsg"
+  // follow <prefix>-<resource_type>-<index> naming pattern
+  name                = "${var.name}-nsg-0"
   location            = var.location
   resource_group_name = azurerm_resource_group.rg.name
 
